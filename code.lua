@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global, undefined-global
 -- ==================================
 -- F1 MANAGER 2024 DATA EXPORTER
 -- ==================================

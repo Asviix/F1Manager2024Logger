@@ -184,6 +184,7 @@ class TelemetryReceiver:
                         try:
                             self.export_queue.put_nowait(data)  # Non-blocking
                         except queue.Full:
+                            self.export_queue.empty()
                             print("Export queue full - dropping data")
 
                     # Then send to plot queue if there's capacity
@@ -191,7 +192,8 @@ class TelemetryReceiver:
                         try:
                             self.plot_queue.put_nowait(data)
                         except queue.Full:
-                            pass
+                            self.plot_queue.empty()
+                            print("Plot queue full - dropping data")
             except Exception as e:
                 print(f"Broadcast error: {e}")
                 time.sleep(0.1)

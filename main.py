@@ -134,8 +134,8 @@ def main():
         
         processes = [
             Process(target=run_telemetry_server, args=(export_queue, plot_queue)),
-            #Process(target=run_telemetry_exporter, args=(export_queue,)), --DON'T FORGET TO UNCOMMENT
-            Process(target=run_telemetry_plotter, args=(plot_queue,))
+            Process(target=run_telemetry_exporter, args=(export_queue,)),
+            #Process(target=run_telemetry_plotter, args=(plot_queue,))
         ]
         
         try:

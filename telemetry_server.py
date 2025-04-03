@@ -10,110 +10,110 @@ from multiprocessing import Queue, Process
 from threading import Thread
 
 # =============================================
-# DATA STRUCTURE DEFINITIONS (for autocomplete)
+# DATA STRUCTURE DEFINITIONS (Updated to match Lua structure)
 # =============================================
 #region
 @dataclass
-class TyreTemps:
-    front_left: float
-    front_right: float
-    rear_left: float
-    rear_right: float
+class TyreTemperature:
+    flTemp: float
+    frTemp: float
+    rlTemp: float
+    rrTemp: float
 
 @dataclass
 class TyreWear:
-    front_left: float
-    front_right: float
-    rear_left: float
-    rear_right: float
+    flDeg: float
+    frDeg: float
+    rlDeg: float
+    rrDeg: float
 
 @dataclass
 class Tyres:
     compound: str
-    temps: TyreTemps
+    temperature: TyreTemperature
     wear: TyreWear
 
 @dataclass
 class Engine:
-    temp: float
-    deg: float
-
-@dataclass
-class ERS:
-    deg: float
+    engineTemp: float
+    engineDeg: float
 
 @dataclass
 class Gearbox:
-    deg: float
+    gearboxDeg: float
+
+@dataclass
+class ERS:
+    ersDeg: float
 
 @dataclass
 class Components:
     engine: Engine
-    ers: ERS
     gearbox: Gearbox
+    ers: ERS
 
 @dataclass
 class Modes:
-    pace: str
-    fuel: str
-    ers: str
-
-@dataclass
-class LastSectorTimes:
-    s1: float
-    s2: float
-    s3: float
+    paceMode: str
+    fuelMode: str
+    ersMode: str
+    drsMode: str
 
 @dataclass
 class SectorTimes:
-    last: LastSectorTimes
+    lastS1Time: float
+    lastS2Time: float
+    lastS3Time: float
 
 @dataclass
-class LapTime:
-    current: float
-    last: float
-    best: float
-    sector: SectorTimes
+class Timings:
+    currentLapTime: float
+    driverBestLap: float
+    lastLapTime: float
+    sectors: SectorTimes
 
 @dataclass
-class Lap:
-    current: int
-    position: int
-    time: LapTime
+class Status:
+    turnNumber: int
+    currentLap: int
 
 @dataclass
-class Car:
-    driverNumber: int
+class CarTelemetry:
     speed: float
     rpm: float
     gear: int
     charge: float
     fuel: float
-    lap: Lap
     tyres: Tyres
     modes: Modes
     components: Components
 
 @dataclass
-class Track:
-    rubber: float
-    temp: float
-
-@dataclass
 class Weather:
-    air_temp: float
+    airTemp: float
+    trackTemp: float
+    weather: str
 
 @dataclass
 class Session:
-    time_elapsed: float
-    best_time: float
-    track: Track
+    timeElasped: float
+    trackName: str
+    bestSessionTime: float
+    rubber: float
     weather: Weather
 
 @dataclass
+class Driver:
+    driverNumber: int
+    pitstopStatus: str
+    timings: Timings
+    status: Status
+    car: CarTelemetry
+
+@dataclass
 class Telemetry:
-    car: Car
     session: Session
+    driver: Driver
 #endregion
 
 class TelemetryData:
@@ -145,14 +145,14 @@ class TelemetryData:
         return dataclass_type(**kwargs)
 
 # =============================================
-# RECEIVER CLASS
+# RECEIVER CLASS (unchanged)
 # =============================================
 class TelemetryReceiver:
     def __init__(self, export_queue: Queue = None, plot_queue: Queue = None):
         self.mmf = None
         self.file = None
-        self.export_queue = export_queue  # Queue for CSV exporter
-        self.plot_queue = plot_queue      # Queue for live plotter
+        self.export_queue = export_queue
+        self.plot_queue = plot_queue
         self.running = False
         self.last_data_time = time.time()
 
@@ -174,20 +174,17 @@ class TelemetryReceiver:
             return False
 
     def _broadcast_loop(self):
-        """Optimized data broadcasting with queue priority"""
         while self.running:
             try:
                 data = self._read_mmap()
                 if data:
-                    # Always send to export queue first
                     if self.export_queue:
                         try:
-                            self.export_queue.put_nowait(data)  # Non-blocking
+                            self.export_queue.put_nowait(data)
                         except queue.Full:
                             self.export_queue.empty()
                             print("Export queue full - dropping data")
 
-                    # Then send to plot queue if there's capacity
                     if self.plot_queue and not self.plot_queue.full():
                         try:
                             self.plot_queue.put_nowait(data)
@@ -199,7 +196,6 @@ class TelemetryReceiver:
                 time.sleep(0.1)
 
     def _read_mmap(self):
-        """Internal method to read mmap (replaces get_telemetry())."""
         try:
             self.mmf.seek(0)
             length_bytes = self.mmf.read(4)
@@ -227,7 +223,7 @@ class TelemetryReceiver:
             self.file.close()
 
 # =============================================
-# MAIN PROGRAM
+# MAIN PROGRAM (unchanged)
 # =============================================
 if __name__ == "__main__":
     print("F1 Manager Data Server")
@@ -243,17 +239,15 @@ if __name__ == "__main__":
                     break
             start_time = time.time()
             
-            # Add type hint for the received data
             data: Dict[str, TelemetryData] = receiver._read_mmap()
 
             if data:
                 ocon_data: TelemetryData = data['MyTeam1']
-                ocon: Car = ocon_data.telemetry.car #To Export to CSV and Live-Telemetry
+                ocon: Driver = ocon_data.telemetry.driver
                 
                 gasly_data: TelemetryData = data['MyTeam2']
-                gasly: Car = gasly_data.telemetry.car #To Export to CSV and Live-Telemetry
+                gasly: Driver = gasly_data.telemetry.driver
 
-            # Adjust sleep to maintain 100Hz refresh rate
             elapsed = time.time() - start_time
             time.sleep(max(0, 0.01 - elapsed))
             

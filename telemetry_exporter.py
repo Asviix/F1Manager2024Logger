@@ -18,22 +18,19 @@ class TelemetryExporter:
         self._prepare_csv_files()
 
     def _prepare_csv_files(self):
-        """Initialize CSV files with headers."""
+        """Initialize CSV files with headers in the specified order."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         Path("telemetry_data").mkdir(exist_ok=True)
 
         headers = [
-            "timestamp", "time_elapsed", "driver_number",
-            "current_lap", "turn_number", "speed", "gear", "rpm",
-            "current_lap_time", "tyre_compound",
-            "fl_temp", "fl_deg", "fr_temp", "fr_deg",
-            "rl_temp", "rl_deg", "rr_temp", "rr_deg",
-            "pace_mode", "fuel_mode", "ers_mode",
-            "engine_temp", "engine_deg", "gearbox_deg", "ers_deg",
-            "charge", "fuel", "best_session_time",
-            "driver_best_lap", "last_lap_time",
-            "last_s1_time", "last_s2_time", "last_s3_time",
-            "rubber", "air_temp", "track_temp"
+            "timestamp", "trackName", "timeElapsed", "driverNumber",
+            "pitstopStatus", "currentLap", "turnNumber", "compound",
+            "speed", "rpm", "gear", "flTemp", "flDeg", "frTemp", "frDeg",
+            "rlTemp", "rlDeg", "rrTemp", "rrDeg", "engineTemp", "engineDeg",
+            "gearboxDeg", "ersDeg", "charge", "fuel", "paceMode", "fuelMode",
+            "ersMode", "drsMode", "currentLapTime", "driverBestLap",
+            "lastLapTime", "lastS1Time", "lastS2Time", "lastS3Time",
+            "bestSessionTime", "rubber", "airTemp", "trackTemp", "weather"
         ]
 
         self.ocon_file = open(f"telemetry_data/ocon_{timestamp}.csv", "w", newline="")
@@ -57,58 +54,62 @@ class TelemetryExporter:
         return False
 
     def _process_row(self, car_data, is_lap_change: bool):
-        """Prepare a row of data for CSV export."""
-        car = car_data.telemetry.car
+        """Prepare a row of data for CSV export in the specified order."""
+        driver = car_data.telemetry.driver
         session = car_data.telemetry.session
         
         # Base data (always included)
         row = [
-            datetime.now().isoformat(),
-            session.time_elapsed,
-            car.driverNumber,
-            car.lap.current,
-            car.lap.position,
-            car.speed,
-            car.gear,
-            car.rpm,
-            car.lap.time.current,
-            car.tyres.compound,
-            car.tyres.temps.front_left,
-            car.tyres.wear.front_left,
-            car.tyres.temps.front_right,
-            car.tyres.wear.front_right,
-            car.tyres.temps.rear_left,
-            car.tyres.wear.rear_left,
-            car.tyres.temps.rear_right,
-            car.tyres.wear.rear_right,
-            car.modes.pace,
-            car.modes.fuel,
-            car.modes.ers,
-            car.components.engine.temp,
-            car.components.engine.deg,
-            car.components.gearbox.deg,
-            car.components.ers.deg,
-            car.charge,
-            car.fuel,
+            datetime.now().isoformat(),  # timestamp
+            session.trackName,           # trackName
+            session.timeElasped,         # timeElapsed
+            driver.driverNumber,         # driverNumber
+            driver.pitstopStatus,        # pitstopStatus
+            driver.status.currentLap,    # currentLap
+            driver.status.turnNumber,     # turnNumber
+            driver.car.tyres.compound,    # compound
+            driver.car.speed,             # speed
+            driver.car.rpm,               # rpm
+            driver.car.gear,              # gear
+            driver.car.tyres.temperature.flTemp,  # flTemp
+            driver.car.tyres.wear.flDeg,          # flDeg
+            driver.car.tyres.temperature.frTemp,  # frTemp
+            driver.car.tyres.wear.frDeg,          # frDeg
+            driver.car.tyres.temperature.rlTemp,  # rlTemp
+            driver.car.tyres.wear.rlDeg,          # rlDeg
+            driver.car.tyres.temperature.rrTemp,  # rrTemp
+            driver.car.tyres.wear.rrDeg,          # rrDeg
+            driver.car.components.engine.engineTemp,  # engineTemp
+            driver.car.components.engine.engineDeg,   # engineDeg
+            driver.car.components.gearbox.gearboxDeg, # gearboxDeg
+            driver.car.components.ers.ersDeg,         # ersDeg
+            driver.car.charge,                        # charge
+            driver.car.fuel,                          # fuel
+            driver.car.modes.paceMode,                # paceMode
+            driver.car.modes.fuelMode,                # fuelMode
+            driver.car.modes.ersMode,                 # ersMode
+            driver.car.modes.drsMode,                 # drsMode
+            driver.timings.currentLapTime             # currentLapTime
         ]
 
         # Only include these on lap changes
         if is_lap_change:
             row.extend([
-                session.best_time,
-                car.lap.time.best,
-                car.lap.time.last,
-                car.lap.time.sector.last.s1,
-                car.lap.time.sector.last.s2,
-                car.lap.time.sector.last.s3,
+                driver.timings.driverBestLap,         # driverBestLap
+                driver.timings.lastLapTime,           # lastLapTime
+                driver.timings.sectors.lastS1Time,    # lastS1Time
+                driver.timings.sectors.lastS2Time,    # lastS2Time
+                driver.timings.sectors.lastS3Time,   # lastS3Time
             ])
         else:
-            row.extend([""] * 6)  # Empty placeholders
+            row.extend([""] * 5)  # Empty placeholders
 
         row.extend([
-            session.track.rubber,
-            session.weather.air_temp,
-            session.track.temp
+            session.bestSessionTime,      # bestSessionTime
+            session.rubber,               # rubber
+            session.weather.airTemp,      # airTemp
+            session.weather.trackTemp,    # trackTemp
+            session.weather.weather       # weather
         ])
         
         return row
@@ -126,8 +127,8 @@ class TelemetryExporter:
                         continue
 
                     car_data = data[car_name]
-                    current_turn = car_data.telemetry.car.lap.position
-                    current_lap = car_data.telemetry.car.lap.current
+                    current_turn = car_data.telemetry.driver.status.turnNumber
+                    current_lap = car_data.telemetry.driver.status.currentLap
                     is_lap_change = (current_lap != self.last_values[car_name]["lap"])
 
                     if self._should_write(car_name, current_turn, current_lap):

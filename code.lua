@@ -69,6 +69,10 @@ local tyreCompoundMap = {
     [18]="Wet",[19]="Wet"
 }
 
+pitstopStatusMap = {
+    [0]="None",[1]="Requested",[2]="Entering",[3]="Queuing",[4]="Stopped",[5]="Exiting",[6]="In Garage",[7]="Jack Up",[8]="Releasing",[9]="Car Setup",[10]="Pit Stop Approach",[11]="Pit Stop Penalty",[12]="Waiting for Release"
+}
+
 local paceModeMap = {
     [4]="Conserve",[3]="Light",[2]="Standard",[1]="Aggressive",[0]="Attack"
 }
@@ -81,50 +85,100 @@ local ersModeMap = {
     [0]="Neutral",[1]="Harvest",[2]="Deploy",[3]="Top Up"
 }
 
+local drsMap = {
+    [0]="Disabled",[1]="Detected",[2]="Enabled",[3]="Active"
+}
+
+local weatherMap = {
+    [0]="None",[1]="Sunny",[2]="PartlySunny",[4]="Cloudy",[8]="Light Rain",[16]="ModerateRain",[32]="HeavyRain"
+}
+
+local trackNameMap = {
+    [0] = "INVALID",
+    [1] = "Albert Park",
+    [2] = "Bahrain",
+    [3] = "Shanghai",
+    [4] = "Baku",
+    [5] = "Barcelona",
+    [6] = "Monaco",
+    [7] = "Montreal",
+    [8] = "PaulRicard",
+    [9] = "RedBull Ring",
+    [10] = "Silverstone",
+    [11] = "Jeddah",
+    [12] = "Hungaroring",
+    [13] = "Spa-Francorchamps",
+    [14] = "Monza",
+    [15] = "Marina Bay",
+    [16] = "Sochi",
+    [17] = "Suzuka",
+    [18] = "Hermanos Rodriguez",
+    [19] = "Circuit Of The Americas",
+    [20] = "Interlagos",
+    [21] = "Yas Marina",
+    [22] = "Miami",
+    [23] = "Zandvoort",
+    [24] = "Imola",
+    [25] = "Vegas",
+    [26] = "Qatar"
+}
+
 -- CAR STRUCTURE OFFSETS
-local carOffsets = {
-    pilotDataptr = 0x708, -- 8-byte
-    currentLap = 0x7E4, --DONE
-    tyreCompound = 0xED5, --DONE
-    paceMode = 0xEF1, --DONE
-    fuelMode = 0xEF0, --DONE
-    ersMode = 0xEF2, --DONE
-    flTemp = 0x980, flDeg = 0x984, --DONE
-    frTemp = 0x98C, frDeg = 0x990, --DONE
-    rlTemp = 0x998, rlDeg = 0x99C, --DONE
-    rrTemp = 0x9A4, rrDeg = 0x9A8, --DONE
-    engTemp = 0x77C, engDeg = 0x784, --DONE
-    gearboxDeg = 0x78C, --DONE
-    ersDeg = 0x788, --DONE
-    charge = 0x878, --DONE
-    fuel = 0x778 --DONE
-}
-
-local driverOffsets = {
-    sessionDataptr = 0x940,
-    driverNumber = 0x58C, --DONE
-    turnNumber = 0x530, --DONE
-    speed = 0x4F0, --DONE
-    rpm = 0x4EC, --DONE
-    gear = 0x524, -- DONE
-    driverBestLap = 0x538, --DONE
-    lastLapTime = 0x540, --DONE
-    currentLapTime = 0x544, --DONE
-    lastS1Time = 0x548, --DONE
-    lastS2Time = 0x550, --DONE
-    lastS3Time = 0x558 --DONE
-}
-
-local sessionOffsets = {
-    weatherDataptr = 0xA12990,
-    timeElasped = 0x148, --DONE
-    rubber = 0x278, --DONE
-    bestSessionTime = 0x768 --DONE
-}
-
-local weatherOffsets = {
-    airTemp = 0xAC, --DONE
-    trackTemp = 0xB0 --DONE
+local dataStructure = {
+    session = {
+        timeElasped = {source = "session", offset = 0x148, type = "float", default = 0}, --DONE
+        rubber = {source = "session", offset = 0x278, type = "float", default = 0}, --DONE
+        bestSessionTime = {source = "session", offset = 0x768, type = "float", default = 0}, --DONE
+        trackID = {source = "session", offset = 0x228, type = "byte", enum = "trackName", default = "Unknown"} --DONE
+    },
+    driver = {
+        driverNumber = {source = "driver", offset = 0x58C, type = "byte", default = 0}, --DONE
+        turnNumber = {source = "driver", offset = 0x530, type = "integer", default = 0}, --DONE
+        speed = {source = "driver", offset = 0x4F0, type = "integer", default = 0}, --DONE
+        rpm = {source = "driver", offset = 0x4EC, type = "integer", default = 0}, --DONE
+        gear = {source = "driver", offset = 0x524, type = "integer", default = 0}, --DONE
+        drsMode = {source = "driver", offset = 0x521, type = "byte", enum = "drs", default = "Unknown"}, --DONE
+        driverBestLap = {source = "driver", offset = 0x538, type = "float", default = 0}, --DONE
+        lastLapTime = {source = "driver", offset = 0x540, type = "float", default = 0}, --DONE
+        currentLapTime = {source = "driver", offset = 0x544, type = "float", default = 0}, --DONE
+        lastS1Time = {source = "driver", offset = 0x548, type = "float", default = nil}, --DONE
+        lastS2Time = {source = "driver", offset = 0x550, type = "float", default = nil}, --DONE
+        lastS3Time = {source = "driver", offset = 0x558, type = "float", default = nil} --DONE
+    },
+    car = {
+        currentLap = {source = "car", offset = 0x7E4, type = "integer", default = 0}, --DONE
+        tyreCompound = {source = "car", offset = 0xED5, type = "byte", enum = "tyreCompound", default = "Unknown"}, --DONE
+        pitstopStatus = {source = "car", offset = 0x8A8, type = "byte", enum = "pitstopStatus", default = "Unknown"}, --DONE
+        paceMode = {source = "car", offset = 0xEF1, type = "byte", enum = "paceMode", default = "Unknown"}, --DONE
+        fuelMode = {source = "car", offset = 0xEF0, type = "byte", enum = "fuelMode", default = "Unknown"}, --DONE
+        ersMode = {source = "car", offset = 0xEF2, type = "byte", enum = "ersMode", default = "Unknown"}, --DONE
+        flTemp = {source = "car", offset = 0x980, type = "float", default = 0}, --DONE
+        flDeg = {source = "car", offset = 0x984, type = "float", default = 0}, --DONE
+        frTemp = {source = "car", offset = 0x98C, type = "float", default = 0}, --DONE
+        frDeg = {source = "car", offset = 0x990, type = "float", default = 0}, --DONE
+        rlTemp = {source = "car", offset = 0x998, type = "float", default = 0}, --DONE
+        rlDeg = {source = "car", offset = 0x99C, type = "float", default = 0}, --DONE
+        rrTemp = {source = "car", offset = 0x9A4, type = "float", default = 0}, --DONE
+        rrDeg = {source = "car", offset = 0x9A8, type = "float", default = 0}, --DONE
+        engineTemp = {source = "car", offset = 0x77C, type = "float", default = 0}, --DONE
+        engDeg = {source = "car", offset = 0x784, type = "float", default = 0}, --DONE
+        gearboxDeg = {source = "car", offset = 0x78C, type = "float", default = 0}, --DONE
+        ersDeg = {source = "car", offset = 0x788, type = "float", default = 0}, --DONE
+        charge = {source = "car", offset = 0x878, type = "float", default = 0}, --DONE
+        fuel = {source = "car", offset = 0x778, type = "float", default = 0} --DONE
+    },
+    weather = {
+        airTemp = {source = "weather", offset = 0xAC, type = "float", default = 0}, --DONE
+        trackTemp = {source = "weather", offset = 0xB0, type = "float", default = 0}, --DONE
+        weather = {source = "weather", offset = 0xBC, type = "byte", enum = "weather", default = "Unknown"} --DONE
+    },
+    
+    -- Pointer definitions
+    pointers = {
+        pilotDataptr = {source = "car", offset = 0x708, type = "pointer"},
+        sessionDataptr = {source = "driver", offset = 0x940, type = "pointer"},
+        weatherDataptr = {source = "session", offset = 0xA12990, type = "pointer"}
+    }
 }
 
 local mmf = io.open(SHARED_MEM_NAME, "w+b")
@@ -154,6 +208,24 @@ function readPointer8(address, offset)
     return value ~= 0 and value or nil
 end
 
+local readFunctions = {
+    byte = readByte,
+    integer = readInteger,
+    float = readFloat,
+    pointer = readPointer8
+}
+
+local enumMaps = {
+    pitstopStatus = pitstopStatusMap,
+    paceMode = paceModeMap,
+    fuelMode = fuelModeMap,
+    ersMode = ersModeMap,
+    drs = drsMap,
+    weather = weatherMap,
+    tyreCompound = tyreCompoundMap,
+    trackName = trackNameMap,
+}
+
 function collectDriverData(car)
     local carsBase = getAddress(fullPointerPath)
     if not carsBase or carsBase == 0 then sleep(500) return nil end
@@ -161,52 +233,52 @@ function collectDriverData(car)
     local carBase = carsBase + carscarOffsets[car]
     if not carBase or carBase == 0 then return nil end
 
-    local driverBase = readPointer8(carBase, carOffsets.pilotDataptr)
-    if not driverBase or driverBase == 0 then return nil end
-
-    local sessionBase = readPointer8(driverBase, driverOffsets.sessionDataptr)
-    if not sessionBase or sessionBase == 0 then return nil end
-
-    local weatherBase = readPointer8(sessionBase, sessionOffsets.weatherDataptr)
-    if not weatherBase or weatherBase == 0 then return nil end
-
-    return {
-        timeElasped = readMemorySafe(sessionBase, sessionOffsets.timeElasped, readFloat) or 0,
-        driverNumber = readMemorySafe(driverBase, driverOffsets.driverNumber, readByte) or 0,
-        currentLap = readMemorySafe(carBase, carOffsets.currentLap, readInteger) or 0,
-        turnNumber = readMemorySafe(driverBase, driverOffsets.turnNumber, readInteger) or 0,
-        speed = readMemorySafe(driverBase, driverOffsets.speed, readInteger) or 0,
-        gear = readMemorySafe(driverBase, driverOffsets.gear, readInteger) or 0,
-        rpm = readMemorySafe(driverBase, driverOffsets.rpm, readInteger) or 0,
-        currentLapTime = readMemorySafe(driverBase, driverOffsets.currentLapTime, readFloat) or 0,
-        tyreCompound = tyreCompoundMap[readMemorySafe(carBase, carOffsets.tyreCompound, readByte)] or "Unknown",
-        paceMode = paceModeMap[readMemorySafe(carBase, carOffsets.paceMode, readByte) or 2] or "Unknown",
-        fuelMode = fuelModeMap[readMemorySafe(carBase, carOffsets.fuelMode, readByte) or 1] or "Unknown",
-        ersMode = ersModeMap[readMemorySafe(carBase, carOffsets.ersMode, readByte) or 0] or "Unknown",
-        flTemp = readMemorySafe(carBase, carOffsets.flTemp, readFloat) or 0,
-        flDeg = readMemorySafe(carBase, carOffsets.flDeg, readFloat) or 0,
-        frTemp = readMemorySafe(carBase, carOffsets.frTemp, readFloat) or 0,
-        frDeg = readMemorySafe(carBase, carOffsets.frDeg, readFloat) or 0,
-        rlTemp = readMemorySafe(carBase, carOffsets.rlTemp, readFloat) or 0,
-        rlDeg = readMemorySafe(carBase, carOffsets.rlDeg, readFloat) or 0,
-        rrTemp = readMemorySafe(carBase, carOffsets.rrTemp, readFloat) or 0,
-        rrDeg = readMemorySafe(carBase, carOffsets.rrDeg, readFloat) or 0,
-        engineTemp = readMemorySafe(carBase, carOffsets.engineTemp, readFloat) or 0,
-        engDeg = readMemorySafe(carBase, carOffsets.engDeg, readFloat) or 0,
-        gearboxDeg = readMemorySafe(carBase, carOffsets.gearboxDeg, readFloat) or 0,
-        ersDeg = readMemorySafe(carBase, carOffsets.ersDeg, readFloat) or 0,
-        charge = readMemorySafe(carBase, carOffsets.charge, readFloat) or 0,
-        fuel = readMemorySafe(carBase, carOffsets.fuel, readFloat) or 0,
-        bestSessionTime = readMemorySafe(sessionBase, sessionOffsets.bestSessionTime, readFloat) or 0,
-        driverBestLap = readMemorySafe(driverBase, driverOffsets.driverBestLap, readFloat) or 0,
-        lastLapTime = readMemorySafe(driverBase, driverOffsets.lastLapTime, readFloat) or 0,
-        lastS1Time = readMemorySafe(driverBase, driverOffsets.lastS1Time, readFloat),
-        lastS2Time = readMemorySafe(driverBase, driverOffsets.lastS2Time, readFloat),
-        lastS3Time = readMemorySafe(driverBase, driverOffsets.lastS3Time, readFloat),
-        rubber = readMemorySafe(sessionBase, sessionOffsets.rubber, readFloat) or 0,
-        airTemp = readMemorySafe(weatherBase, weatherOffsets.airTemp, readFloat) or 0,
-        trackTemp = readMemorySafe(weatherBase, weatherOffsets.trackTemp, readFloat) or 0
+    local bases = {
+        car = carBase,
+        driver = readMemoryAuto(carBase, dataStructure.pointers.pilotDataptr),
+        session = nil,
+        weather = nil
     }
+    
+    if bases.driver then
+        bases.session = readMemoryAuto(bases.driver, dataStructure.pointers.sessionDataptr)
+        if bases.session then
+            bases.weather = readMemoryAuto(bases.session, dataStructure.pointers.weatherDataptr)
+        end
+    end
+
+    local result = {}
+    
+    for category, fields in pairs(dataStructure) do
+        if category ~= "pointers" then -- Skip the pointers section
+            result[category] = {}
+            for fieldName, fieldDef in pairs(fields) do
+                if fieldDef.source and bases[fieldDef.source] then
+                    local value = readMemoryAuto(bases[fieldDef.source], fieldDef)
+                    result[category][fieldName] = value or fieldDef.default
+                end
+            end
+        end
+    end
+    
+    return result
+end
+
+function readMemoryAuto(baseAddress, fieldDef)
+    if not baseAddress or baseAddress == 0 then return nil end
+    
+    local readFunc = readFunctions[fieldDef.type]
+    if not readFunc then return nil end
+    
+    local rawValue = readMemorySafe(baseAddress, fieldDef.offset, readFunc)
+    if not rawValue then return nil end
+    
+    if fieldDef.enum then
+        local enumMap = enumMaps[fieldDef.enum]
+        return enumMap and enumMap[rawValue] or nil
+    end
+    
+    return rawValue
 end
 
 --#endregion
@@ -227,72 +299,81 @@ function sendData()
             -- Organize into hierarchical structure
             allData[carName] = {
                 telemetry = {
-                    car = {
-                        driverNumber = rawData.driverNumber,
-                        speed = rawData.speed,
-                        rpm = rawData.rpm,
-                        gear = rawData.gear,
-                        charge = rawData.charge,
-                        fuel = rawData.fuel,
-                        lap = {
-                            current = rawData.currentLap,
-                            position = rawData.turnNumber,
-                            time = {
-                                current = rawData.currentLapTime,
-                                last = rawData.lastLapTime,
-                                best = rawData.driverBestLap,
-                                sector = {
-                                    last = {
-                                        s1 = rawData.lastS1Time,
-                                        s2 = rawData.lastS2Time,
-                                        s3 = rawData.lastS3Time,
-                                    }
-                                }
-                            }
-                        },
-                        tyres = {
-                            compound = rawData.tyreCompound,
-                            temps = {
-                                front_left = rawData.flTemp,
-                                front_right = rawData.frTemp,
-                                rear_left = rawData.rlTemp,
-                                rear_right = rawData.rrTemp,
-                            },
-                            wear = {
-                                front_left = rawData.flDeg,
-                                front_right = rawData.frDeg,
-                                rear_left = rawData.rlDeg,
-                                rear_right = rawData.rrDeg,
-                            }
-                        },
-                        modes = {
-                            pace = rawData.paceMode,
-                            fuel = rawData.fuelMode,
-                            ers = rawData.ersMode
-                        },
-                        components = {
-                            engine = {
-                                temp = rawData.engineTemp,
-                                deg = rawData.engDeg,
-                            },
-                            ers = {
-                                deg = rawData.ersDeg
-                            },
-                            gearbox = {
-                                deg = rawData.gearboxDeg
-                            }
+                    session = {
+                        timeElasped = rawValue.timeElasped, --DONE
+                        trackName = rawValue.trackID, --DONE
+                        bestSessionTime = rawValue.bestSessionTime, --DONE
+                        rubber = rawValue.rubber, --DONE
+                        weather = {
+                            airTemp = rawValue.airTemp, --DONE
+                            trackTemp = rawValue.trackTemp, --DONE
+                            weather = rawValue.weather --DONE
                         }
                     },
 
-                    session = {
-                        time_elapsed = rawData.timeElasped,
-                        best_time = rawData.bestSessionTime,
-                        track = {
-                            rubber = rawData.rubber,
-                            temp = rawData.trackTemp
+                    driver = {
+                        driverNumber = rawValue.driverNumber, --DONE
+                        pitstopStatus = rawValue.pitstopStatus, --DONE
+                        timings = {
+                            currentLapTime = rawValue.currentLapTime, --DONE
+                            driverBestLap = rawValue.driverBestLap, --DONE
+                            lastLapTime = rawValue.lastLapTime, --DONE
+                            sectors = {
+                                lastS1Time = rawValue.lastS1Time, --DONE
+                                lastS2Time = rawValue.lastS2Time, --DONE
+                                lastS3Time = rawValue.lastS3Time --DONE
+                            }
                         },
-                        weather = {
-                            air_temp = rawData.airTemp
+                        
+                        status = {
+                            turnNumber = rawValue.turnNumber, --DONE
+                            currentLap = rawValue.currentLap --DONE
+                        },
+
+                        car = {
+                            speed = rawValue.speed, --DONE
+                            rpm = rawValue.rpm, --DONE
+                            gear = rawValue.gear, --DONE
+                            charge = rawValue.charge, --DONE
+                            fuel = rawValue.fuel, --DONE
+                            tyres = {
+                                compound = rawValue.tyreCompound, --DONE
+                                temperature = {
+                                    flTemp = rawValue.flTemp, --DONE
+                                    frTemp = rawValue.frTemp, --DONE
+                                    rlTemp = rawValue.rlTemp, --DONE
+                                    rrTemp = rawValue.rrTemp --DONE
+                                },
+
+                                wear = {
+                                    flDeg = rawValue.flDeg, --DONE
+                                    frDeg = rawValue.frDeg, --DONE
+                                    rlDeg = rawValue.rlDeg, --DONE
+                                    rrDeg = rawValue.rrDeg --DONE
+                                },
+                            },
+
+                            modes = {
+                                paceMode = rawValue.paceMode, --DONE
+                                fuelMode = rawValue.fuelMode, --DONE
+                                ersMode = rawValue.ersMode, --DONE
+                                drsMode = rawValue.drsMode --DONE
+                            },
+
+                            components = {
+                                engine = {
+                                    engineTemp = rawValue.engineTemp, --DONE
+                                    engineDeg = rawValue.engineDeg --DONE
+                                },
+
+                                gearbox = {
+                                    gearboxDeg = rawValue.gearboxDeg --DONE
+                                },
+
+                                ers = {
+                                    ersDeg = rawValue.ersDeg --DONE
+                                }
+                            }
                         }
                     }
                 }

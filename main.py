@@ -7,7 +7,7 @@ from multiprocessing import Process, Manager
 from pathlib import Path
 from telemetry_server import TelemetryReceiver
 from telemetry_exporter import TelemetryExporter
-from telemetry_plotter import TelemetryPlotter
+#from telemetry_plotter import TelemetryPlotter
 
 def kill_cheat_engine():
     """Terminate all Cheat Engine processes"""
@@ -96,7 +96,7 @@ def run_telemetry_exporter(export_queue):
         if exporter:
             exporter.close()
 
-def run_telemetry_plotter(plot_queue):
+"""def run_telemetry_plotter(plot_queue):
     plotter = None
     try:
         print("[Plotter] Starting with shared queue")
@@ -111,7 +111,7 @@ def run_telemetry_plotter(plot_queue):
         pass
     finally:
         if plotter:
-            plotter.stop()
+            plotter.stop()"""
 
 def main():
     # Set multiprocessing start method for Windows

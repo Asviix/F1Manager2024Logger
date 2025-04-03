@@ -118,30 +118,39 @@ class Telemetry:
 
 class TelemetryData:
     def __init__(self, data_dict):
+        # Handle the nested structure properly
+        if 'telemetry' in data_dict:
+            data_dict = data_dict['telemetry']
+        
         # Convert nested dictionaries to dataclasses
-        self.telemetry = self._convert_to_dataclass(data_dict.get('telemetry', {}), Telemetry)
+        self.telemetry = self._convert_to_dataclass(data_dict, Telemetry)
     
     def _convert_to_dataclass(self, data, dataclass_type):
         if not isinstance(data, dict):
             return data
-            
-        # Get the field types from the dataclass
+
         fields = dataclass_type.__dataclass_fields__
-        
-        # Prepare arguments for the dataclass
+
         kwargs = {}
         for field_name, field_info in fields.items():
             field_value = data.get(field_name)
-            
-            # Get the field's type annotation
+
+            if field_value is None:
+                kwargs[field_name] = field_info.default if hasattr(field_info, 'default') else None
+                continue
+                
             field_type = field_info.type
-            
+
             # Handle nested dataclasses
             if hasattr(field_type, '__dataclass_fields__'):
-                kwargs[field_name] = self._convert_to_dataclass(field_value, field_type)
+                # Special case for weather which comes as dict
+                if field_name == 'weather' and isinstance(field_value, dict):
+                    kwargs[field_name] = field_type(**field_value)
+                else:
+                    kwargs[field_name] = self._convert_to_dataclass(field_value, field_type)
             else:
                 kwargs[field_name] = field_value
-                
+
         return dataclass_type(**kwargs)
 
 # =============================================
@@ -181,15 +190,15 @@ class TelemetryReceiver:
                     if self.export_queue:
                         try:
                             self.export_queue.put_nowait(data)
-                        except queue.Full:
-                            self.export_queue.empty()
+                        except self.export_queue.full():
+                            self.export_queue.empty
                             print("Export queue full - dropping data")
 
                     if self.plot_queue and not self.plot_queue.full():
                         try:
                             self.plot_queue.put_nowait(data)
-                        except queue.Full:
-                            self.plot_queue.empty()
+                        except self.plot_queue.full():
+                            self.plot_queue.empty
                             print("Plot queue full - dropping data")
             except Exception as e:
                 print(f"Broadcast error: {e}")
@@ -244,6 +253,7 @@ if __name__ == "__main__":
             if data:
                 ocon_data: TelemetryData = data['MyTeam1']
                 ocon: Driver = ocon_data.telemetry.driver
+                print(ocon_data.telemetry)
                 
                 gasly_data: TelemetryData = data['MyTeam2']
                 gasly: Driver = gasly_data.telemetry.driver

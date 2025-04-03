@@ -90,7 +90,7 @@ local drsMap = {
 }
 
 local weatherMap = {
-    [0]="None",[1]="Sunny",[2]="PartlySunny",[4]="Cloudy",[8]="Light Rain",[16]="ModerateRain",[32]="HeavyRain"
+    [0]="None",[1]="Sunny",[2]="Partly Sunny",[4]="Cloudy",[8]="Light Rain",[16]="ModerateRain",[32]="HeavyRain"
 }
 
 local trackNameMap = {
@@ -297,81 +297,74 @@ function sendData()
         local rawData = collectDriverData(carName)
         if rawData then
             -- Organize into hierarchical structure
+            -- In sendData() function, modify the weather structure:
             allData[carName] = {
                 telemetry = {
                     session = {
-                        timeElasped = rawValue.timeElasped, --DONE
-                        trackName = rawValue.trackID, --DONE
-                        bestSessionTime = rawValue.bestSessionTime, --DONE
-                        rubber = rawValue.rubber, --DONE
-                        weather = {
-                            airTemp = rawValue.airTemp, --DONE
-                            trackTemp = rawValue.trackTemp, --DONE
-                            weather = rawValue.weather --DONE
-                        }
+                    timeElasped = rawData.session.timeElasped or 0,
+                    trackName = rawData.session.trackID or "Unknown",
+                    bestSessionTime = rawData.session.bestSessionTime or 0,
+                    rubber = rawData.session.rubber or 0,
+                    weather = {  -- This should match Python structure
+                            airTemp = rawData.weather.airTemp or 0,
+                        trackTemp = rawData.weather.trackTemp or 0,
+                        weather = rawData.weather.weather or "Unknown"
+                    }
                     },
-
                     driver = {
-                        driverNumber = rawValue.driverNumber, --DONE
-                        pitstopStatus = rawValue.pitstopStatus, --DONE
+                        driverNumber = rawData.driver.driverNumber or 0,
+                        pitstopStatus = rawData.car.pitstopStatus or "Unknown",
+                        status = {
+                            turnNumber = rawData.driver.turnNumber or 0,
+                            currentLap = rawData.car.currentLap or 0
+                        },
                         timings = {
-                            currentLapTime = rawValue.currentLapTime, --DONE
-                            driverBestLap = rawValue.driverBestLap, --DONE
-                            lastLapTime = rawValue.lastLapTime, --DONE
+                            currentLapTime = rawData.driver.currentLapTime or 0,
+                            driverBestLap = rawData.driver.driverBestLap or 0,
+                            lastLapTime = rawData.driver.lastLapTime or 0,
                             sectors = {
-                                lastS1Time = rawValue.lastS1Time, --DONE
-                                lastS2Time = rawValue.lastS2Time, --DONE
-                                lastS3Time = rawValue.lastS3Time --DONE
+                                lastS1Time = rawData.driver.lastS1Time or 0,
+                                lastS2Time = rawData.driver.lastS2Time or 0,
+                                lastS3Time = rawData.driver.lastS3Time or 0
                             }
                         },
-                        
-                        status = {
-                            turnNumber = rawValue.turnNumber, --DONE
-                            currentLap = rawValue.currentLap --DONE
-                        },
-
                         car = {
-                            speed = rawValue.speed, --DONE
-                            rpm = rawValue.rpm, --DONE
-                            gear = rawValue.gear, --DONE
-                            charge = rawValue.charge, --DONE
-                            fuel = rawValue.fuel, --DONE
+                            speed = rawData.driver.speed or 0,
+                            rpm = rawData.driver.rpm or 0,
+                            gear = rawData.driver.gear or 0,
+                            charge = rawData.car.charge or 0,
+                            fuel = rawData.car.fuel or 0,
                             tyres = {
-                                compound = rawValue.tyreCompound, --DONE
+                                compound = rawData.car.tyreCompound or "Unknown",
                                 temperature = {
-                                    flTemp = rawValue.flTemp, --DONE
-                                    frTemp = rawValue.frTemp, --DONE
-                                    rlTemp = rawValue.rlTemp, --DONE
-                                    rrTemp = rawValue.rrTemp --DONE
+                                    flTemp = rawData.car.flTemp or 0,
+                                    frTemp = rawData.car.frTemp or 0,
+                                    rlTemp = rawData.car.rlTemp or 0,
+                                    rrTemp = rawData.car.rrTemp or 0
                                 },
-
                                 wear = {
-                                    flDeg = rawValue.flDeg, --DONE
-                                    frDeg = rawValue.frDeg, --DONE
-                                    rlDeg = rawValue.rlDeg, --DONE
-                                    rrDeg = rawValue.rrDeg --DONE
-                                },
+                                flDeg = rawData.car.flDeg or 0,
+                                    frDeg = rawData.car.frDeg or 0,
+                                    rlDeg = rawData.car.rlDeg or 0,
+                                    rrDeg = rawData.car.rrDeg or 0
+                                }
                             },
-
                             modes = {
-                                paceMode = rawValue.paceMode, --DONE
-                                fuelMode = rawValue.fuelMode, --DONE
-                                ersMode = rawValue.ersMode, --DONE
-                                drsMode = rawValue.drsMode --DONE
+                                paceMode = rawData.car.paceMode or "Unknown",
+                                fuelMode = rawData.car.fuelMode or "Unknown",
+                                ersMode = rawData.car.ersMode or "Unknown",
+                                drsMode = rawData.driver.drsMode or "Unknown"
                             },
-
                             components = {
                                 engine = {
-                                    engineTemp = rawValue.engineTemp, --DONE
-                                    engineDeg = rawValue.engineDeg --DONE
+                                    engineTemp = rawData.car.engineTemp or 0,
+                                    engineDeg = rawData.car.engDeg or 0
                                 },
-
                                 gearbox = {
-                                    gearboxDeg = rawValue.gearboxDeg --DONE
+                                    gearboxDeg = rawData.car.gearboxDeg or 0
                                 },
-
                                 ers = {
-                                    ersDeg = rawValue.ersDeg --DONE
+                                    ersDeg = rawData.car.ersDeg or 0
                                 }
                             }
                         }

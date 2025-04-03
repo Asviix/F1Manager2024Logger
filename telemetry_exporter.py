@@ -54,96 +54,96 @@ class TelemetryExporter:
         return False
 
     def _process_row(self, car_data, is_lap_change: bool):
-        """Prepare a row of data for CSV export in the specified order."""
-        driver = car_data.telemetry.driver
-        session = car_data.telemetry.session
-        
-        # Base data (always included)
-        row = [
-            datetime.now().isoformat(),  # timestamp
-            session.trackName,           # trackName
-            session.timeElasped,         # timeElapsed
-            driver.driverNumber,         # driverNumber
-            driver.pitstopStatus,        # pitstopStatus
-            driver.status.currentLap,    # currentLap
-            driver.status.turnNumber,     # turnNumber
-            driver.car.tyres.compound,    # compound
-            driver.car.speed,             # speed
-            driver.car.rpm,               # rpm
-            driver.car.gear,              # gear
-            driver.car.tyres.temperature.flTemp,  # flTemp
-            driver.car.tyres.wear.flDeg,          # flDeg
-            driver.car.tyres.temperature.frTemp,  # frTemp
-            driver.car.tyres.wear.frDeg,          # frDeg
-            driver.car.tyres.temperature.rlTemp,  # rlTemp
-            driver.car.tyres.wear.rlDeg,          # rlDeg
-            driver.car.tyres.temperature.rrTemp,  # rrTemp
-            driver.car.tyres.wear.rrDeg,          # rrDeg
-            driver.car.components.engine.engineTemp,  # engineTemp
-            driver.car.components.engine.engineDeg,   # engineDeg
-            driver.car.components.gearbox.gearboxDeg, # gearboxDeg
-            driver.car.components.ers.ersDeg,         # ersDeg
-            driver.car.charge,                        # charge
-            driver.car.fuel,                          # fuel
-            driver.car.modes.paceMode,                # paceMode
-            driver.car.modes.fuelMode,                # fuelMode
-            driver.car.modes.ersMode,                 # ersMode
-            driver.car.modes.drsMode,                 # drsMode
-            driver.timings.currentLapTime             # currentLapTime
-        ]
+        try:
+            t = car_data.telemetry
+            row = [
+                datetime.now().isoformat(),
+                t.session.trackName,
+                t.session.timeElasped,
+                t.driver.driverNumber,
+                t.driver.pitstopStatus,
+                t.driver.status.currentLap,
+                t.driver.status.turnNumber,
+                t.driver.car.tyres.compound,
+                t.driver.car.speed,
+                t.driver.car.rpm,
+                t.driver.car.gear,
+                t.driver.car.tyres.temperature.flTemp,
+                t.driver.car.tyres.wear.flDeg,
+                t.driver.car.tyres.temperature.frTemp,
+                t.driver.car.tyres.wear.frDeg,
+                t.driver.car.tyres.temperature.rlTemp,
+                t.driver.car.tyres.wear.rlDeg,
+                t.driver.car.tyres.temperature.rrTemp,
+                t.driver.car.tyres.wear.rrDeg,
+                t.driver.car.components.engine.engineTemp,
+                t.driver.car.components.engine.engineDeg,
+                t.driver.car.components.gearbox.gearboxDeg,
+                t.driver.car.components.ers.ersDeg,
+                t.driver.car.charge,
+                t.driver.car.fuel,
+                t.driver.car.modes.paceMode,
+                t.driver.car.modes.fuelMode,
+                t.driver.car.modes.ersMode,
+                t.driver.car.modes.drsMode,
+                t.driver.timings.currentLapTime,
+                t.driver.timings.driverBestLap,
+                t.driver.timings.lastLapTime,
+                t.driver.timings.sectors.lastS1Time,
+                t.driver.timings.sectors.lastS2Time,
+                t.driver.timings.sectors.lastS3Time,
+                t.session.bestSessionTime,
+                t.session.rubber,
+                t.session.weather.airTemp,
+                t.session.weather.trackTemp,
+                t.session.weather.weather
+            ]
 
-        # Only include these on lap changes
-        if is_lap_change:
-            row.extend([
-                driver.timings.driverBestLap,         # driverBestLap
-                driver.timings.lastLapTime,           # lastLapTime
-                driver.timings.sectors.lastS1Time,    # lastS1Time
-                driver.timings.sectors.lastS2Time,    # lastS2Time
-                driver.timings.sectors.lastS3Time,   # lastS3Time
-            ])
-        else:
-            row.extend([""] * 5)  # Empty placeholders
-
-        row.extend([
-            session.bestSessionTime,      # bestSessionTime
-            session.rubber,               # rubber
-            session.weather.airTemp,      # airTemp
-            session.weather.trackTemp,    # trackTemp
-            session.weather.weather       # weather
-        ])
-        
-        return row
+            return row
+        except Exception as e:
+            print(f"Error processing row: {e}")
+            return None
 
     def export_from_queue(self, queue: Queue):
-        """Main export loop with turn/lap-based writing."""
+    #Improved queue processing
         try:
             while True:
-                data = queue.get()
-                if not data:
-                    continue
-
-                for car_name in ["MyTeam1", "MyTeam2"]:
-                    if car_name not in data:
+                try:
+                    data = queue.get(timeout=1)  # Add timeout to prevent hanging
+                    if not data:
                         continue
 
-                    car_data = data[car_name]
-                    current_turn = car_data.telemetry.driver.status.turnNumber
-                    current_lap = car_data.telemetry.driver.status.currentLap
-                    is_lap_change = (current_lap != self.last_values[car_name]["lap"])
+                    for car_name in ["MyTeam1", "MyTeam2"]:
+                        if car_name not in data:
+                            continue
 
-                    if self._should_write(car_name, current_turn, current_lap):
-                        row = self._process_row(car_data, is_lap_change)
+                        car_data = data[car_name]
+                        if not hasattr(car_data, 'telemetry') or not hasattr(car_data.telemetry, 'driver'):
+                            print(f"Invalid data structure for {car_name}")
+                            continue
 
-                        if car_name == "MyTeam1":
-                            self.ocon_writer.writerow(row)
-                            self.ocon_file.flush()
-                        else:
-                            self.gasly_writer.writerow(row)
-                            self.gasly_file.flush()
+                        current_turn = car_data.telemetry.driver.status.turnNumber
+                        current_lap = car_data.telemetry.driver.status.currentLap
+                        is_lap_change = (current_lap != self.last_values[car_name]["lap"])
 
-                        # Update last recorded values
-                        self.last_values[car_name]["turn"] = current_turn
-                        self.last_values[car_name]["lap"] = current_lap
+                        if self._should_write(car_name, current_turn, current_lap):
+                            row = self._process_row(car_data, is_lap_change)
+
+                            if car_name == "MyTeam1":
+                                self.ocon_writer.writerow(row)
+                                self.ocon_file.flush()
+                            else:
+                                self.gasly_writer.writerow(row)
+                                self.gasly_file.flush()
+
+                            self.last_values[car_name]["turn"] = current_turn
+                            self.last_values[car_name]["lap"] = current_lap
+
+                except queue.Empty:
+                    continue  # No data in queue, continue waiting
+                except Exception as e:
+                    print(f"Error processing data: {e}")
+                    continue
 
         except KeyboardInterrupt:
             print("\nExiting exporter gracefully...")

@@ -186,20 +186,43 @@ class TelemetryReceiver:
         while self.running:
             try:
                 data = self._read_mmap()
-                if data:
-                    if self.export_queue:
+                if not data:
+                    continue
+
+                # Handle export queue
+                if self.export_queue:
+                    try:
+                        self.export_queue.put_nowait(data)
+                    except queue.Full:
+                        try:
+                            # Clear the queue by getting all items
+                            while True:
+                                self.export_queue.get_nowait()
+                        except queue.Empty:
+                            pass  # Queue is now empty
+                        # Retry putting the new data
                         try:
                             self.export_queue.put_nowait(data)
-                        except self.export_queue.full():
-                            self.export_queue.empty
-                            print("Export queue full - dropping data")
+                        except queue.Full:
+                            print("Export queue still full after clearing - dropping data")
 
-                    if self.plot_queue and not self.plot_queue.full():
+                # Handle plot queue
+                if self.plot_queue:
+                    try:
+                        self.plot_queue.put_nowait(data)
+                    except queue.Full:
+                        try:
+                            # Clear the queue by getting all items
+                            while True:
+                                self.plot_queue.get_nowait()
+                        except queue.Empty:
+                            pass  # Queue is now empty
+                        # Retry putting the new data
                         try:
                             self.plot_queue.put_nowait(data)
-                        except self.plot_queue.full():
-                            self.plot_queue.empty
-                            print("Plot queue full - dropping data")
+                        except queue.Full:
+                            print("Plot queue still full after clearing - dropping data")
+
             except Exception as e:
                 print(f"Broadcast error: {e}")
                 time.sleep(0.1)
@@ -253,7 +276,6 @@ if __name__ == "__main__":
             if data:
                 ocon_data: TelemetryData = data['MyTeam1']
                 ocon: Driver = ocon_data.telemetry.driver
-                print(ocon_data.telemetry)
                 
                 gasly_data: TelemetryData = data['MyTeam2']
                 gasly: Driver = gasly_data.telemetry.driver

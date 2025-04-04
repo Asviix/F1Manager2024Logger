@@ -94,7 +94,7 @@ local drsMap = {
 }
 
 local weatherMap = {
-    [0]="None",[1]="Sunny",[2]="Partly Sunny",[4]="Cloudy",[8]="Light Rain",[16]="ModerateRain",[32]="HeavyRain"
+    [0]="None",[1]="Sunny",[2]="Partly Sunny",[4]="Cloudy",[8]="Light Rain",[16]="Moderate Rain",[32]="Heavy Rain"
 }
 
 local trackNameMap = {

@@ -40,8 +40,13 @@ class TelemetryExporter:
         self.ocon_writer.writerow(headers)
         self.gasly_writer.writerow(headers)
 
-    def _should_write(self, car_name: str, current_turn: int, current_lap: int) -> bool:
+    def _should_write(self, car_name: str, current_turn: int, current_lap: int, pitstopStatus: str) -> bool:
         """Determine if we should write based on turn/lap changes."""
+        
+        # Check if car is in the garage
+        if pitstopStatus == "In Garage":
+            return False
+        
         # Always write first data point
         if self.last_values[car_name]["turn"] == 0 and self.last_values[car_name]["lap"] == 0:
             return True
@@ -64,7 +69,7 @@ class TelemetryExporter:
                 t.driver.pitstopStatus,
                 t.driver.status.currentLap,
                 t.driver.status.turnNumber,
-                t.driver.position,
+                t.driver.position + 1,  # Adjust for zero-based index
                 t.driver.car.tyres.compound,
                 t.driver.car.speed,
                 t.driver.car.rpm,
@@ -125,9 +130,10 @@ class TelemetryExporter:
 
                         current_turn = car_data.telemetry.driver.status.turnNumber
                         current_lap = car_data.telemetry.driver.status.currentLap
+                        pitstopStatus = car_data.telemetry.driver.pitstopStatus
                         is_lap_change = (current_lap != self.last_values[car_name]["lap"])
 
-                        if self._should_write(car_name, current_turn, current_lap):
+                        if self._should_write(car_name, current_turn, current_lap, pitstopStatus):
                             row = self._process_row(car_data, is_lap_change)
 
                             if car_name == "MyTeam1":
@@ -140,7 +146,7 @@ class TelemetryExporter:
                             self.last_values[car_name]["turn"] = current_turn
                             self.last_values[car_name]["lap"] = current_lap
 
-                except queue.Empty:
+                except queue.empty:
                     continue  # No data in queue, continue waiting
                 except Exception as e:
                     print(f"Error processing data: {e}")

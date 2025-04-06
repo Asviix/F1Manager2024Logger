@@ -24,7 +24,7 @@ class TelemetryExporter:
 
         headers = [
             "timestamp", "trackName", "timeElapsed", "driverNumber",
-            "pitstopStatus", "currentLap", "turnNumber", "compound",
+            "pitstopStatus", "currentLap", "turnNumber", "position", "compound",
             "speed", "rpm", "gear", "flTemp", "flDeg", "frTemp", "frDeg",
             "rlTemp", "rlDeg", "rrTemp", "rrDeg", "engineTemp", "engineDeg",
             "gearboxDeg", "ersDeg", "charge", "fuel", "paceMode", "fuelMode",
@@ -64,6 +64,7 @@ class TelemetryExporter:
                 t.driver.pitstopStatus,
                 t.driver.status.currentLap,
                 t.driver.status.turnNumber,
+                t.driver.position,
                 t.driver.car.tyres.compound,
                 t.driver.car.speed,
                 t.driver.car.rpm,

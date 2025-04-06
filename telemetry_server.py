@@ -105,6 +105,7 @@ class Session:
 @dataclass
 class Driver:
     driverNumber: int
+    position: int
     pitstopStatus: str
     timings: Timings
     status: Status

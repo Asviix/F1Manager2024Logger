@@ -137,6 +137,7 @@ local dataStructure = {
         speed = {source = "driver", offset = 0x4F0, type = "integer", default = 0}, --DONE
         rpm = {source = "driver", offset = 0x4EC, type = "integer", default = 0}, --DONE
         gear = {source = "driver", offset = 0x524, type = "integer", default = 0}, --DONE
+        positon = {source = "driver", offset = 0x528, type = "integer", default = 0}, --DONE
         drsMode = {source = "driver", offset = 0x521, type = "byte", enum = "drs", default = "Unknown"}, --DONE
         driverBestLap = {source = "driver", offset = 0x538, type = "float", default = 0}, --DONE
         lastLapTime = {source = "driver", offset = 0x540, type = "float", default = 0}, --DONE
@@ -301,17 +302,18 @@ function sendData()
             allData[carName] = {
                 telemetry = {
                     session = {
-                    timeElasped = rawData.session.timeElasped or 0,
-                    trackName = rawData.session.trackID or "Unknown",
-                    bestSessionTime = rawData.session.bestSessionTime or 0,
-                    rubber = rawData.session.rubber or 0,
-                    weather = {  -- This should match Python structure
+                        timeElasped = rawData.session.timeElasped or 0,
+                        trackName = rawData.session.trackID or "Unknown",
+                        bestSessionTime = rawData.session.bestSessionTime or 0,
+                        rubber = rawData.session.rubber or 0,
+                        weather = {  -- This should match Python structure
                             airTemp = rawData.weather.airTemp or 0,
-                        trackTemp = rawData.weather.trackTemp or 0,
-                        weather = rawData.weather.weather or "Unknown"
-                    }
+                            trackTemp = rawData.weather.trackTemp or 0,
+                            weather = rawData.weather.weather or "Unknown"
+                        }
                     },
                     driver = {
+                        position = rawData.driver.positon or 0,
                         driverNumber = rawData.driver.driverNumber or 0,
                         pitstopStatus = rawData.car.pitstopStatus or "Unknown",
                         status = {

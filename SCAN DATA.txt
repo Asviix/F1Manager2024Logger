@@ -159,6 +159,8 @@ DRS Offset = 521
 
 Gear Offset = 524 //4 BYTES
 
+Driver Position offset = 528 //4 BYTES (0 for P1, 1 for P2 etc...)
+
 Best Lap Time Offset = 538
 
 Current Lap Time = 544

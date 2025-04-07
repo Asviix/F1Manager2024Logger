@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|solutionrelative:class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\Class1.cs",
+              "RelativeDocumentMoniker": "Class1.cs",
+              "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\Class1.cs",
+              "RelativeToolTip": "Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-07T21:32:07.976Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

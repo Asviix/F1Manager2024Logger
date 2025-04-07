@@ -1,0 +1,2 @@
+D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Debug\F1Manager2024TelemetryPlugin.csproj.AssemblyReference.cache
+D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Debug\F1Manager2024TelemetryPlugin.csproj.CoreCompileInputs.cache

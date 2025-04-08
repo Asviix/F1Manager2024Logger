@@ -130,7 +130,7 @@ local trackNameMap = {
 -- CAR STRUCTURE OFFSETS
 local dataStructure = {
     session = {
-        timeElasped = {source = "session", offset = 0x148, type = "float", default = 0}, --DONE
+        timeElapsed = {source = "session", offset = 0x148, type = "float", default = 0}, --DONE
         rubber = {source = "session", offset = 0x278, type = "float", default = 0}, --DONE
         bestSessionTime = {source = "session", offset = 0x768, type = "float", default = 0}, --DONE
         trackID = {source = "session", offset = 0x228, type = "byte", enum = "trackName", default = "Unknown"} --DONE
@@ -306,7 +306,7 @@ function sendData()
             allData[carName] = {
                 telemetry = {
                     session = {
-                        timeElasped = rawData.session.timeElasped or 0,
+                        timeElapsed = rawData.session.timeElapsed or 0,
                         trackName = rawData.session.trackID or "Unknown",
                         bestSessionTime = rawData.session.bestSessionTime or 0,
                         rubber = rawData.session.rubber or 0,

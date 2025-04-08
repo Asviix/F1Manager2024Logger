@@ -92,3 +92,5 @@ D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024Tel
 D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Release\F1Manage.79B0ABC6.Up2Date
 D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Release\F1Manager2024TelemetryPlugin.dll
 D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Release\F1Manager2024TelemetryPlugin.pdb
+D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Release\F1Manager2024TelemetryPlugin.GeneratedMSBuildEditorConfig.editorconfig
+D:\F1M\Logging Script\F1Manager2024Logger\Visual Studio Project\F1Manager2024TelemetryPlugin\obj\Release\F1Manager2024TelemetryPlugin.sourcelink.json

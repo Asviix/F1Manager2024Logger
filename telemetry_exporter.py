@@ -3,6 +3,7 @@ import time
 import configparser
 from datetime import datetime
 from multiprocessing import Queue
+from queue import Empty
 from pathlib import Path
 from telemetry_server import TelemetryReceiver
 
@@ -11,26 +12,26 @@ config.read('settings.ini')
 
 class TelemetryExporter:
     def __init__(self, export_queue=None):
-        self.ocon_file = None
-        self.gasly_file = None
-        self.ocon_writer = None
-        self.gasly_writer = None
-        self.last_values = {
-            "MyTeam1": {"turn": 0, "lap": 0},
-            "MyTeam2": {"turn": 0, "lap": 0}
-        }
+        self.car_files = {}
+        self.car_writers = {}
+        self.last_values = {}
+        self.tracked_cars = self._get_tracked_cars()
         self._prepare_csv_files()
     
+    def _get_tracked_cars(self):
+        """Get list of cars to track from settings.ini"""
+        cars = config.get("CSV Settings", "TRACKED_DRIVERS")
+        return [c.strip() for c in cars.split(',')]
+
     def stop(self):
-        """Close the CSV files."""
-        if self.ocon_file:
-            self.ocon_file.close()
-        if self.gasly_file:
-            self.gasly_file.close()
-        print("Exiting plotter gracefully...")
+        """Close all CSV files."""
+        for file in self.car_files.values():
+            if file:
+                file.close()
+        print("Exporter shutdown complete")
 
     def _prepare_csv_files(self):
-        """Initialize CSV files with headers in the specified order."""
+        """Initialize CSV files with headers for each tracked car."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
             Path(config.get("CSV", "CSV_PATH")).mkdir(exist_ok=True)
@@ -49,16 +50,26 @@ class TelemetryExporter:
             "bestSessionTime", "rubber", "airTemp", "trackTemp", "weather"
         ]
 
-        self.ocon_file = open(f"telemetry_data/ocon_{timestamp}.csv", "w", newline="")
-        self.gasly_file = open(f"telemetry_data/gasly_{timestamp}.csv", "w", newline="")
-        self.ocon_writer = csv.writer(self.ocon_file)
-        self.gasly_writer = csv.writer(self.gasly_file)
-        self.ocon_writer.writerow(headers)
-        self.gasly_writer.writerow(headers)
+        for car in self.tracked_cars:
+            filename = f"{config.get('CSV', 'CSV_PATH')}{car}_{timestamp}.csv"
+            
+            try:
+                file = open(filename, "w", newline="")
+                writer = csv.writer(file)
+                writer.writerow(headers)
+                
+                self.car_files[car] = file
+                self.car_writers[car] = writer
+                self.last_values[car] = {"turn": 0, "lap": 0}
+                
+            except Exception as e:
+                print(f"Error creating file for {car}: {e}")
 
     def _should_write(self, car_name: str, current_turn: int, current_lap: int, pitstopStatus: str) -> bool:
         """Determine if we should write based on turn/lap changes."""
-        
+        if car_name not in self.last_values:
+            return False
+            
         # Check if car is in the garage
         if pitstopStatus == "In Garage":
             return False
@@ -74,13 +85,13 @@ class TelemetryExporter:
             
         return False
 
-    def _process_row(self, car_data, is_lap_change: bool):
+    def _process_row(self, car_data):
         try:
             t = car_data.telemetry
-            row = [
+            return [
                 datetime.now().isoformat(),
                 t.session.trackName,
-                t.session.timeElasped,
+                t.session.timeElapsed,
                 t.driver.driverNumber,
                 t.driver.pitstopStatus,
                 t.driver.status.currentLap,
@@ -120,22 +131,19 @@ class TelemetryExporter:
                 t.session.weather.trackTemp,
                 t.session.weather.weather
             ]
-
-            return row
         except Exception as e:
             print(f"Error processing row: {e}")
             return None
 
     def export_from_queue(self, queue: Queue):
-    #Improved queue processing
         try:
             while True:
                 try:
-                    data = queue.get(timeout=1)  # Add timeout to prevent hanging
+                    data = queue.get(timeout=1)
                     if not data:
                         continue
 
-                    for car_name in ["MyTeam1", "MyTeam2"]:
+                    for car_name in self.tracked_cars:
                         if car_name not in data:
                             continue
 
@@ -147,23 +155,18 @@ class TelemetryExporter:
                         current_turn = car_data.telemetry.driver.status.turnNumber
                         current_lap = car_data.telemetry.driver.status.currentLap
                         pitstopStatus = car_data.telemetry.driver.pitstopStatus
-                        is_lap_change = (current_lap != self.last_values[car_name]["lap"])
 
                         if self._should_write(car_name, current_turn, current_lap, pitstopStatus):
-                            row = self._process_row(car_data, is_lap_change)
+                            row = self._process_row(car_data)
 
-                            if car_name == "MyTeam1":
-                                self.ocon_writer.writerow(row)
-                                self.ocon_file.flush()
-                            else:
-                                self.gasly_writer.writerow(row)
-                                self.gasly_file.flush()
+                            if row and car_name in self.car_writers:
+                                self.car_writers[car_name].writerow(row)
+                                self.car_files[car_name].flush()
+                                self.last_values[car_name]["turn"] = current_turn
+                                self.last_values[car_name]["lap"] = current_lap
 
-                            self.last_values[car_name]["turn"] = current_turn
-                            self.last_values[car_name]["lap"] = current_lap
-
-                except queue.empty:
-                    continue  # No data in queue, continue waiting
+                except Empty:
+                    continue
                 except Exception as e:
                     print(f"Error processing data: {e}")
                     continue
@@ -171,10 +174,7 @@ class TelemetryExporter:
         except KeyboardInterrupt:
             print("\nExiting exporter gracefully...")
         finally:
-            if self.ocon_file:
-                self.ocon_file.close()
-            if self.gasly_file:
-                self.gasly_file.close()
+            self.stop()
 
 if __name__ == "__main__":
     print("F1 Telemetry Exporter - Running standalone")

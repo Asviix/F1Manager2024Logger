@@ -15,9 +15,9 @@ namespace F1Manager2024TelemetryPlugin
     [PluginAuthor("Thomas DEFRANCE")]
     public class TelemetryPlugin : IPlugin, IDataPlugin
     {
-        public PluginManager PluginManager { get; set; }
-        public Thread udpListenerThread;
-        public UdpClient udpClient;
+        public PluginManager? PluginManager { get; set; }
+        public Thread? udpListenerThread;
+        public UdpClient? udpClient;
         public bool running = false;
 
         public readonly Dictionary<string, object> latestValues = new Dictionary<string, object>();
@@ -28,17 +28,29 @@ namespace F1Manager2024TelemetryPlugin
 
             pluginManager.AddProperty("F1MConnected", GetType(), typeof(bool), "Is F1Manager connected");
 
-            // Add properties for session + weather
-            pluginManager.AddProperty("SessionType", GetType(), typeof(string), "Current session");
-            pluginManager.AddProperty("Weather", GetType(), typeof(string), "Current weather");
+            // Add session properties
+            pluginManager.AddProperty("timeElapsed", GetType(), typeof(float), "Time Elapsed");
+            pluginManager.AddProperty("trackName", GetType(), typeof(string), "Track Name");
+            pluginManager.AddProperty("bestSessionTime", GetType(), typeof(float), "Best Session Time");
+            pluginManager.AddProperty("rubberState", GetType(), typeof(float), "Rubber State");
+            pluginManager.AddProperty("airTemp", GetType(), typeof(float), "Air Temperature");
+            pluginManager.AddProperty("trackTemp", GetType(), typeof(float), "Track Temperature");
+            pluginManager.AddProperty("weather", GetType(), typeof(string), "Weather");
 
             // Add properties for all 22 drivers
             string[] carNames = new string[]
             {
-                "Ferrari1","Ferrari2","RedBull1","RedBull2","Mercedes1","Mercedes2",
-                "McLaren1","McLaren2","AstonMartin1","AstonMartin2","Alpine1","Alpine2",
-                "AlphaTauri1","AlphaTauri2","AlfaRomeo1","AlfaRomeo2","Haas1","Haas2",
-                "Williams1","Williams2","MyTeam1","MyTeam2"
+                "Ferrari1", "Ferrari2",
+                "McLaren1", "McLaren2",
+                "RedBull1", "RedBull2",
+                "Mercedes1", "Mercedes2",
+                "Alpine1", "Alpine2",
+                "Williams1", "Williams2",
+                "Haas1", "Haas2",
+                "RacingBulls1", "RacingBulls2",
+                "KickSauber1", "KickSauber2",
+                "AstonMartin1", "AstonMartin2",
+                "MyTeam1", "MyTeam2"
             };
 
             foreach (var name in carNames)
@@ -114,8 +126,23 @@ namespace F1Manager2024TelemetryPlugin
                             string name = car.Key;
                             var info = car.Value;
 
-                            latestValues[$"{name}_Position"] = (int?)info["position"] ?? 99;
+                            if (info != null)
+                            {
+                                latestValues[$"{name}_Position"] = (int?)info["position"] + 1 ?? 99; // Adjusted to 1-based index
+                            }
                         }
+                    }
+
+                    var session = parsed["session"] as JObject;
+                    if (session != null)
+                    {
+                        latestValues["timeElapsed"] = (float?)session["timeElapsed"] ?? 0f;
+                        latestValues["trackName"] = (string?)session["trackName"] ?? string.Empty;
+                        latestValues["bestSessionTime"] = (float?)session["bestSessionTime"] ?? 0f;
+                        latestValues["rubberState"] = (float?)session["rubberState"] ?? 0f;
+                        latestValues["airTemp"] = (float?)session["airTemp"] ?? 0f;
+                        latestValues["trackTemp"] = (float?)session["trackTemp"] ?? 0f;
+                        latestValues["weather"] = (string?)session["weather"] ?? string.Empty;
                     }
                 }
             }

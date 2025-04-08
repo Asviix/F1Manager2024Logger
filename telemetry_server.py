@@ -97,7 +97,7 @@ class Weather:
 
 @dataclass
 class Session:
-    timeElasped: float
+    timeElapsed: float
     trackName: str
     bestSessionTime: float
     rubber: float
@@ -170,12 +170,12 @@ class TelemetryReceiver:
     def connect(self):
         try:
             while not Path('F1Manager_Telemetry').exists():
-                print("Waiting for shared memory file...")
+                print("[Server] Waiting for shared memory file...")
                 time.sleep(1)
             
             self.file = open('F1Manager_Telemetry', 'r+b')
             self.mmf = mmap.mmap(self.file.fileno(), 0)
-            print("Connected to telemetry data!")
+            print("[Server] Connected to telemetry data!")
             
             self.running = True
             Thread(target=self._broadcast_loop, daemon=True).start()
@@ -206,7 +206,7 @@ class TelemetryReceiver:
                         try:
                             self.export_queue.put_nowait(data)
                         except queue.Full:
-                            print("Export queue still full after clearing - dropping data")
+                            print("[Server] Export queue still full after clearing - dropping data")
 
                 # Handle plot queue
                 if self.plot_queue:
@@ -223,7 +223,7 @@ class TelemetryReceiver:
                         try:
                             self.plot_queue.put_nowait(data)
                         except queue.Full:
-                            print("Plot queue still full after clearing - dropping data")
+                            print("[Server] Plot queue still full after clearing - dropping data")
 
             except Exception as e:
                 print(f"Broadcast error: {e}")
@@ -246,7 +246,6 @@ class TelemetryReceiver:
             
             return processed
         except Exception as e:
-            print(f"Read error: {str(e)}")
             return None
 
     def close(self):

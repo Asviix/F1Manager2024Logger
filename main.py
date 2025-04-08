@@ -1,9 +1,14 @@
 import os
+import shutil
 import sys
 import time
 import psutil
 import multiprocessing
 import configparser
+import subprocess
+import win32con
+import win32gui
+import win32process
 from multiprocessing import Process, Manager
 from pathlib import Path
 from telemetry_server import TelemetryReceiver
@@ -14,7 +19,6 @@ config = configparser.ConfigParser()
 config.read('settings.ini')
 
 def kill_cheat_engine():
-    """Terminate all Cheat Engine processes"""
     try:
         for proc in psutil.process_iter(['name']):
             if proc.info['name'] and 'cheatengine' in proc.info['name'].lower():
@@ -23,12 +27,11 @@ def kill_cheat_engine():
                     proc.wait(timeout=2)
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                     continue
-        print("Successfully terminated Cheat Engine processes")
+        print("[Main] Successfully terminated Cheat Engine processes")
     except Exception as e:
-        print(f"Error terminating Cheat Engine: {str(e)}")
+        print(f"[Main] Error terminating Cheat Engine: {str(e)}")
 
 def cleanup_shared_memory():
-    """Delete the shared memory file with retries"""
     mem_file = Path("F1Manager_Telemetry")
     max_attempts = 3
     delay = 1
@@ -37,30 +40,44 @@ def cleanup_shared_memory():
         try:
             if mem_file.exists():
                 mem_file.unlink()
-                print("Successfully deleted shared memory file")
+                print("[Main] Successfully deleted shared memory file")
                 return
         except Exception as e:
             if attempt == max_attempts - 1:
-                print(f"Failed to delete shared memory file after {max_attempts} attempts: {str(e)}")
+                print(f"[Main] Failed to delete shared memory file after {max_attempts} attempts: {str(e)}")
             time.sleep(delay)
 
 def launch_cheat_engine_table():
-    """Launch the Cheat Engine table file"""
     try:
         ct_path = Path(config.get("CheatEngine", "CT_PATH"))
-        if not ct_path.exists():
-            raise FileNotFoundError(f"Cheat Engine table not found at {ct_path.resolve()}")
+        ce_path = Path(config.get("CheatEngine", "CE_PATH"))
         
-        os.startfile(str(ct_path))
-        print("Launched Cheat Engine table")
-        time.sleep(5)  # Give CE time to attach to game
+        if not ct_path.exists() or not ce_path.exists():
+            raise FileNotFoundError("Required files not found")
+        
+        proc = subprocess.Popen([str(ce_path), str(ct_path)])
+        print("[Main] Launched Cheat Engine, hiding window...")
+        
+        def hide_ce_window():
+            hwnd = win32gui.FindWindow(None, "Cheat Engine")
+            if hwnd:
+                win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
+                return True
+            return False
+        
+        time.sleep(1)
+        if hide_ce_window():
+            print("[Main] Cheat Engine window hidden successfully")
+            return True
+        
+        print("[Main] Warning: Could not hide Cheat Engine window")
         return True
+        
     except Exception as e:
-        print(f"Error launching Cheat Engine: {str(e)}")
+        print(f"[Main] Error launching Cheat Engine: {str(e)}")
         return False
 
-def run_telemetry_server(export_queue, plot_queue):
-    """Run the telemetry server component"""
+def run_telemetry_server(export_queue, plot_queue, enabled):
     receiver = None
     try:
         print("[Server] Starting with shared queue")
@@ -76,10 +93,10 @@ def run_telemetry_server(export_queue, plot_queue):
         raise
     finally:
         if receiver:
+            print("\n[Server] Exiting server gracefully...")
             receiver.close()
 
 def run_telemetry_exporter(export_queue):
-    """Run the CSV exporter component"""
     exporter = None
     try:
         print("[Exporter] Starting with shared queue")
@@ -93,12 +110,10 @@ def run_telemetry_exporter(export_queue):
             except Exception as e:
                 print(f"EXPORTER ERROR: {e}")
                 time.sleep(1)  # Wait before retrying
-                
-    except KeyboardInterrupt:
-        pass
+
     finally:
         if exporter:
-            print("Exiting plotter gracefully...")
+            print("\n[Exporter] Exiting exporter gracefully...")
             exporter.stop()
 
 def run_telemetry_plotter(plot_queue):
@@ -119,7 +134,7 @@ def run_telemetry_plotter(plot_queue):
         pass
     finally:
         if plotter:
-            print("\nExiting plotter gracefully...")
+            print("\n[Plotter] Exiting plotter gracefully...")
             plotter.stop()
 
 def main():
@@ -160,7 +175,8 @@ def main():
         ]
         
         try:
-            print("\nStarting telemetry components...")
+            print("-------------------------------------------")
+            print("[Main] Starting telemetry components...")
             processes = []
             for definition in process_definitions:
                 if definition['enabled']:
@@ -168,8 +184,9 @@ def main():
                     p.start()
                     processes.append(p)
                     time.sleep(1)  # Stagger process start times
-                
-            print("\nSystem operational - Press Ctrl+C to shutdown")
+            
+            print("-------------------------------------------")
+            print("System operational - Press Ctrl+C to shutdown")
             print("-------------------------------------------")
             
             # Enhanced process monitoring
@@ -179,26 +196,30 @@ def main():
                     print(f"CRASHED: {[p.pid for p in dead]}")
                     break
                 
-                # Debug queue status
-                print(f"Queue Status - Export: {export_queue.qsize()}/100, Plot: {plot_queue.qsize()}/500")
-                time.sleep(1)
-                
         except KeyboardInterrupt:
-            print("\nShutdown signal received...")
+            print("\n[Main] Shutdown signal received...")
         finally:
-            print("\nTerminating processes...")
+            print("\n[Main] Terminating processes...\n")
             for p in processes:
                 if p.is_alive():
                     p.terminate()
                 p.join()
             
-            print("Closing Cheat Engine...")
+            print("\n[Main] Closing Cheat Engine...")
             kill_cheat_engine()
             
-            print("Cleaning up shared memory...")
+            print("\n[Main] Cleaning up shared memory...")
             cleanup_shared_memory()
             
-            print("\nSystem shutdown complete")
+            print("\n[Main] Cleaning up pycache files...")
+            try:
+                shutil.rmtree("__pycache__", ignore_errors=True)
+                print("[Main] Successfully deleted pycache")
+            except Exception as e:
+                print(f"[Main] Error cleaning up pycache: {str(e)}")
+            
+            print("\n-------------------------------------------")
+            print("[Main] System shutdown complete")
 
 if __name__ == "__main__":
     main()

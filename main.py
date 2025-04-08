@@ -3,11 +3,15 @@ import sys
 import time
 import psutil
 import multiprocessing
+import configparser
 from multiprocessing import Process, Manager
 from pathlib import Path
 from telemetry_server import TelemetryReceiver
 from telemetry_exporter import TelemetryExporter
 from telemetry_plotter import TelemetryPlotter
+
+config = configparser.ConfigParser()
+config.read('settings.ini')
 
 def kill_cheat_engine():
     """Terminate all Cheat Engine processes"""
@@ -43,7 +47,7 @@ def cleanup_shared_memory():
 def launch_cheat_engine_table():
     """Launch the Cheat Engine table file"""
     try:
-        ct_path = Path("LoggingTable.ct")
+        ct_path = Path(config.get("CheatEngine", "CT_PATH"))
         if not ct_path.exists():
             raise FileNotFoundError(f"Cheat Engine table not found at {ct_path.resolve()}")
         
@@ -134,20 +138,36 @@ def main():
     
     # Use Manager for cross-process queues
     with Manager() as manager:
-        plot_queue = manager.Queue(maxsize=500)
-        export_queue = manager.Queue(maxsize=100)
+        plot_queue = manager.Queue(maxsize=500) if config.getboolean("Plotter Settings", "ENABLE_PLOTTER") else None
+        export_queue = manager.Queue(maxsize=100) if config.getboolean("CSV", "LOG_TO_CSV") else None
         
-        processes = [
-            Process(target=run_telemetry_server, args=(export_queue, plot_queue)),
-            Process(target=run_telemetry_exporter, args=(export_queue,)),
-            Process(target=run_telemetry_plotter, args=(plot_queue,))
+        process_definitions = [
+            {
+                'target': run_telemetry_server,
+                'args': (export_queue, plot_queue, True),  # Server always enabled
+                'enabled': True  # Server is mandatory
+            },
+            {
+                'target': run_telemetry_exporter,
+                'args': (export_queue,),
+                'enabled': config.getboolean("CSV", "LOG_TO_CSV")
+            },
+            {
+                'target': run_telemetry_plotter,
+                'args': (plot_queue,),
+                'enabled': config.getboolean("Plotter Settings", "ENABLE_PLOTTER")
+            }
         ]
         
         try:
             print("\nStarting telemetry components...")
-            for p in processes:
-                p.start()
-                time.sleep(1)  # Staggered startup
+            processes = []
+            for definition in process_definitions:
+                if definition['enabled']:
+                    p = Process(target=definition['target'], args=definition['args'])
+                    p.start()
+                    processes.append(p)
+                    time.sleep(1)  # Stagger process start times
                 
             print("\nSystem operational - Press Ctrl+C to shutdown")
             print("-------------------------------------------")

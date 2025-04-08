@@ -1,9 +1,13 @@
 import csv
 import time
+import configparser
 from datetime import datetime
 from multiprocessing import Queue
 from pathlib import Path
 from telemetry_server import TelemetryReceiver
+
+config = configparser.ConfigParser()
+config.read('settings.ini')
 
 class TelemetryExporter:
     def __init__(self, export_queue=None):
@@ -28,7 +32,11 @@ class TelemetryExporter:
     def _prepare_csv_files(self):
         """Initialize CSV files with headers in the specified order."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        Path("telemetry_data").mkdir(exist_ok=True)
+        try:
+            Path(config.get("CSV", "CSV_PATH")).mkdir(exist_ok=True)
+        except Exception as e:
+            print(f"Error creating directory: {e}")
+            return
 
         headers = [
             "timestamp", "trackName", "timeElapsed", "driverNumber",

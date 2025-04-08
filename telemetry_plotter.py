@@ -1,13 +1,17 @@
 import socket
 import time
 import json
+import configparser
 from multiprocessing import Queue
+
+config = configparser.ConfigParser()
+config.read('settings.ini')
 
 class TelemetryPlotter:
     def __init__(self, plot_queue: None):
         self.running = True
-        self.udp_ip = "127.0.0.1"
-        self.udp_port = 20777  # SimHub's default UDP port
+        self.udp_ip = config.get("UDP", "IP")
+        self.udp_port = config.get("UDP", "PORT")
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
     def stop(self):

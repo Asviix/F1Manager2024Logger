@@ -16,6 +16,14 @@ class TelemetryExporter:
             "MyTeam2": {"turn": 0, "lap": 0}
         }
         self._prepare_csv_files()
+    
+    def stop(self):
+        """Close the CSV files."""
+        if self.ocon_file:
+            self.ocon_file.close()
+        if self.gasly_file:
+            self.gasly_file.close()
+        print("Exiting plotter gracefully...")
 
     def _prepare_csv_files(self):
         """Initialize CSV files with headers in the specified order."""

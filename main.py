@@ -94,7 +94,7 @@ def run_telemetry_exporter(export_queue):
         pass
     finally:
         if exporter:
-            exporter.close()
+            exporter.stop()
 
 def run_telemetry_plotter(plot_queue):
     plotter = None
@@ -102,16 +102,20 @@ def run_telemetry_plotter(plot_queue):
         print("[Plotter] Starting with shared queue")
         plotter = TelemetryPlotter(plot_queue=plot_queue)
         
-        plotter.run()
-    
-    except Exception as e:
-        print(f"PLOTTER ERROR: {e}")
-        time.sleep(1)
+        while True:
+            try:
+                if not plot_queue.empty():
+                    plotter.run(plot_queue)
+                time.sleep(1)
+            except Exception as e:
+                print(f"PLOTTER ERROR: {e}")
+                time.sleep(1)
     except KeyboardInterrupt:
         pass
     finally:
         if plotter:
             plotter.stop()
+            plotter.close()
 
 def main():
     # Set multiprocessing start method for Windows

@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>8.0</LangVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -34,6 +35,9 @@
   <ItemGroup>
     <Reference Include="GameReaderCommon">
       <HintPath>..\..\..\..\..\Programs\SimHub\GameReaderCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\Programs\SimHub\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SimHub.Plugins">
       <HintPath>..\..\..\..\..\Programs\SimHub\SimHub.Plugins.dll</HintPath>

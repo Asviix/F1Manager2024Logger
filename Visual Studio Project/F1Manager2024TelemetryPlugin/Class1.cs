@@ -1,73 +1,127 @@
-﻿using SimHub.Plugins;
-using GameReaderCommon;
+﻿using GameReaderCommon;
+using SimHub.Plugins;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
-[PluginDescription("F1 Manager 2024 UDP Telemetry Plugin")]
-[PluginAuthor("YourName")]
-[PluginName("F1Manager2024TelemetryPlugin")]
-public class TelemetryPlugin : IPlugin
+namespace F1Manager2024TelemetryPlugin
 {
-    private UdpClient _udpClient;
-    private Thread _listenerThread;
-    private bool _isRunning;
-
-    public void Init(PluginManager pluginManager)
+    [PluginDescription("F1Manager2024 Telemetry Plugin")]
+    [PluginAuthor("Thomas DEFRANCE")]
+    public class TelemetryPlugin : IPlugin, IDataPlugin
     {
-        pluginManager.AddProperty("F1Manager2024", this);
-        StartUdpListener(pluginManager, 4739);
-    }
+        public PluginManager PluginManager { get; set; }
+        public Thread udpListenerThread;
+        public UdpClient udpClient;
+        public bool running = false;
 
-    public void End(PluginManager pluginManager)
-    {
-        _isRunning = false;
-        _udpClient?.Close();
-        _listenerThread?.Join();
-    }
+        public readonly Dictionary<string, object> latestValues = new Dictionary<string, object>();
 
-    private void StartUdpListener(PluginManager pluginManager, int port)
-    {
-        _udpClient = new UdpClient(port);
-        _isRunning = true;
-
-        _listenerThread = new Thread(() =>
+        public void Init(PluginManager pluginManager)
         {
-            IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, port);
-            while (_isRunning)
+            this.PluginManager = pluginManager;
+
+            pluginManager.AddProperty("F1MConnected", GetType(), typeof(bool), "Is F1Manager connected");
+
+            // Add properties for session + weather
+            pluginManager.AddProperty("SessionType", GetType(), typeof(string), "Current session");
+            pluginManager.AddProperty("Weather", GetType(), typeof(string), "Current weather");
+
+            // Add properties for all 22 drivers
+            string[] carNames = new string[]
+            {
+                "Ferrari1","Ferrari2","RedBull1","RedBull2","Mercedes1","Mercedes2",
+                "McLaren1","McLaren2","AstonMartin1","AstonMartin2","Alpine1","Alpine2",
+                "AlphaTauri1","AlphaTauri2","AlfaRomeo1","AlfaRomeo2","Haas1","Haas2",
+                "Williams1","Williams2","MyTeam1","MyTeam2"
+            };
+
+            foreach (var name in carNames)
+            {
+                pluginManager.AddProperty($"{name}_Position", GetType(), typeof(int), "Position");
+            }
+
+            // Start UDP listener
+            StartUdpListener();
+        }
+
+        public void End(PluginManager pluginManager)
+        {
+            running = false;
+            udpClient?.Close();
+            udpListenerThread?.Join();
+        }
+
+        public void DataUpdate(PluginManager pluginManager, ref GameData data)
+        {
+            lock (latestValues)
+            {
+                foreach (var kvp in latestValues)
+                {
+                    pluginManager.SetPropertyValue<TelemetryPlugin>(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        public void StartUdpListener()
+        {
+            running = true;
+            udpListenerThread = new Thread(() =>
             {
                 try
                 {
-                    byte[] bytes = _udpClient.Receive(ref remoteEP);
-                    string message = Encoding.UTF8.GetString(bytes);
+                    udpClient = new UdpClient(20777); // Default port
+                    IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-                    string[] lines = message.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var line in lines)
+                    while (running)
                     {
-                        var parts = line.Split(':');
-                        if (parts.Length == 2)
-                        {
-                            string key = parts[0].Trim();
-                            string valueStr = parts[1].Trim();
-
-                            object value = double.TryParse(valueStr, out double v) ? v : valueStr;
-
-                            // This creates a dynamic property under [F1Manager2024.{key}]
-                            pluginManager.SetPropertyValue($"F1Manager2024.{key}", value);
-                        }
+                        byte[] receivedBytes = udpClient.Receive(ref remoteEndPoint);
+                        string json = Encoding.UTF8.GetString(receivedBytes);
+                        ParseJson(json);
                     }
                 }
                 catch (Exception ex)
                 {
-                    // You can log exceptions to the SimHub log folder if needed
-                    System.Diagnostics.Debug.WriteLine($"[F1Manager2024Plugin] Error: {ex.Message}");
+                    PluginManager?.AddProperty("F1MListenerError", GetType(), typeof(string), "Listener Error");
+                    PluginManager?.SetPropertyValue<TelemetryPlugin>("F1MListenerError", ex.Message);
+                }
+            });
+
+            udpListenerThread.IsBackground = true;
+            udpListenerThread.Start();
+        }
+
+        public void ParseJson(string json)
+        {
+            try
+            {
+                var parsed = JObject.Parse(json);
+
+                lock (latestValues)
+                {
+                    latestValues["F1MConnected"] = true;
+
+                    var cars = parsed["cars"] as JObject;
+                    if (cars != null)
+                    {
+                        foreach (var car in cars)
+                        {
+                            string name = car.Key;
+                            var info = car.Value;
+
+                            latestValues[$"{name}_Position"] = (int?)info["position"] ?? 99;
+                        }
+                    }
                 }
             }
-        });
-
-        _listenerThread.IsBackground = true;
-        _listenerThread.Start();
+            catch
+            {
+                // Ignore malformed packets
+            }
+        }
     }
 }

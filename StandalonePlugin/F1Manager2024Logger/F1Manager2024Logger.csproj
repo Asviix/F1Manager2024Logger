@@ -4,16 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0AC48ED7-723B-401E-B3B2-795CAAB42642}</ProjectGuid>
+    <ProjectGuid>{2FA21EBC-C6C8-406D-8F8F-8E8611A41C66}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>F1Manager2024TelemetryPlugin</RootNamespace>
-    <AssemblyName>F1Manager2024TelemetryPlugin</AssemblyName>
+    <RootNamespace>F1Manager2024Logger</RootNamespace>
+    <AssemblyName>F1Manager2024Logger</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <LangVersion>8.0</LangVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,7 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UDPHandlerUpdater.cs" />
+    <Compile Include="database.cs" />
+    <Compile Include="main.cs" />
+    <Compile Include="memoryReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -12,7 +12,6 @@ class TelemetryPlotter:
         
     def stop(self):
         self.running = False
-        print("\nExiting plotter gracefully...")
 
     def run(self, queue: Queue):
         try:

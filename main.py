@@ -94,6 +94,7 @@ def run_telemetry_exporter(export_queue):
         pass
     finally:
         if exporter:
+            print("Exiting plotter gracefully...")
             exporter.stop()
 
 def run_telemetry_plotter(plot_queue):
@@ -114,8 +115,8 @@ def run_telemetry_plotter(plot_queue):
         pass
     finally:
         if plotter:
+            print("\nExiting plotter gracefully...")
             plotter.stop()
-            plotter.close()
 
 def main():
     # Set multiprocessing start method for Windows

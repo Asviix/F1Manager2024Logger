@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|d:\\f1m\\logging script\\f1manager2024logger\\visual studio project\\f1manager2024telemetryplugin\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|solutionrelative:class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|d:\\f1m\\logging script\\f1manager2024logger\\visual studio project\\f1manager2024telemetryplugin\\udphandlerupdater.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0AC48ED7-723B-401E-B3B2-795CAAB42642}|F1Manager2024TelemetryPlugin.csproj|solutionrelative:udphandlerupdater.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,12 +19,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Class1.cs",
-              "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\Class1.cs",
-              "RelativeDocumentMoniker": "Class1.cs",
-              "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\Class1.cs",
-              "RelativeToolTip": "Class1.cs",
-              "ViewState": "AgIAAFsAAAAAAAAAAAAcwHUAAAAVAAAAAAAAAA==",
+              "Title": "UDPHandlerUpdater.cs",
+              "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\UDPHandlerUpdater.cs",
+              "RelativeDocumentMoniker": "UDPHandlerUpdater.cs",
+              "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger\\Visual Studio Project\\F1Manager2024TelemetryPlugin\\UDPHandlerUpdater.cs",
+              "RelativeToolTip": "UDPHandlerUpdater.cs",
+              "ViewState": "AgIAACsAAAAAAAAAAAAvwD0AAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-07T21:32:07.976Z",
               "EditorCaption": ""

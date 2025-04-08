@@ -10,7 +10,8 @@ using Newtonsoft.Json.Linq;
 
 namespace F1Manager2024TelemetryPlugin
 {
-    [PluginDescription("F1Manager2024 Telemetry Plugin")]
+    [PluginName("F1 Manager 2024 Telemetry Plugin")]
+    [PluginDescription("Extracts data from the UDP Created by the Python Script, and makes it available in SimHub Studio")]
     [PluginAuthor("Thomas DEFRANCE")]
     public class TelemetryPlugin : IPlugin, IDataPlugin
     {

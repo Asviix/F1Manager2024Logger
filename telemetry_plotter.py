@@ -55,12 +55,45 @@ class TelemetryPlotter:
                             }
                             try:
                                 cars_data[car_name] = {
-                                    "position": data[car_name].telemetry.driver.position
+                                    "position": data[car_name].telemetry.driver.position,
+                                    "driverNumber": data[car_name].telemetry.driver.driverNumber,
+                                    "pitstopStatus": data[car_name].telemetry.driver.pitstopStatus,
+                                    "turnNumber": data[car_name].telemetry.driver.status.turnNumber,
+                                    "currentLap": data[car_name].telemetry.driver.status.currentLap,
+                                    "currentLapTime": data[car_name].telemetry.driver.timings.currentLapTime,
+                                    "driverBestLap": data[car_name].telemetry.driver.timings.driverBestLap,
+                                    "lastLapTime": data[car_name].telemetry.driver.timings.lastLapTime,
+                                    "lastS1Time": data[car_name].telemetry.driver.timings.sectors.lastS1Time,
+                                    "lastS2Time": data[car_name].telemetry.driver.timings.sectors.lastS2Time,
+                                    "lastS3Time": data[car_name].telemetry.driver.timings.sectors.lastS3Time,
+                                    "speed": data[car_name].telemetry.driver.car.speed,
+                                    "rpm": data[car_name].telemetry.driver.car.rpm,
+                                    "gear": data[car_name].telemetry.driver.car.gear,
+                                    "charge": data[car_name].telemetry.driver.car.charge,
+                                    "fuel": data[car_name].telemetry.driver.car.fuel,
+                                    "tyreCompound": data[car_name].telemetry.driver.car.tyres.compound,
+                                    "flTemp": data[car_name].telemetry.driver.car.tyres.temperature.flTemp,
+                                    "frTemp": data[car_name].telemetry.driver.car.tyres.temperature.frTemp,
+                                    "rlTemp": data[car_name].telemetry.driver.car.tyres.temperature.rlTemp,
+                                    "rrTemp": data[car_name].telemetry.driver.car.tyres.temperature.rrTemp,
+                                    "flDeg": data[car_name].telemetry.driver.car.tyres.wear.flDeg,
+                                    "frDeg": data[car_name].telemetry.driver.car.tyres.wear.frDeg,
+                                    "rlDeg": data[car_name].telemetry.driver.car.tyres.wear.rlDeg,
+                                    "rrDeg": data[car_name].telemetry.driver.car.tyres.wear.rrDeg,
+                                    "paceMode": data[car_name].telemetry.driver.car.modes.paceMode,
+                                    "fuelMode": data[car_name].telemetry.driver.car.modes.fuelMode,
+                                    "ersMode": data[car_name].telemetry.driver.car.modes.ersMode,
+                                    "drsMode": data[car_name].telemetry.driver.car.modes.drsMode,
+                                    "engineTemp": data[car_name].telemetry.driver.car.components.engine.engineTemp,
+                                    "engineDeg": data[car_name].telemetry.driver.car.components.engine.engineDeg,
+                                    "gearboxDeg": data[car_name].telemetry.driver.car.components.gearbox.gearboxDeg,
+                                    "ersDeg": data[car_name].telemetry.driver.car.components.ers.ersDeg
                                 }
                             except AttributeError:
                                 continue  # Skip if data structure is incomplete
                     if cars_data:  # Only send if we have valid data
-                        message = json.dumps({"cars": cars_data, "session": session_data})
+                        message = json.dumps({"cars": cars_data, "session": session_data}, indent=None, separators=(',', ':'), ensure_ascii=False, default=str)
+                        print(message)
                         self.sock.sendto(message.encode('utf-8'), (self.udp_ip, self.udp_port))
 
                 except Empty:

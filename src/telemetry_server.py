@@ -99,6 +99,8 @@ class Weather:
 class Session:
     timeElapsed: float
     trackName: str
+    sessionType: str
+    sessionTypeShort: str
     bestSessionTime: float
     rubber: float
     weather: Weather
@@ -189,6 +191,7 @@ class TelemetryReceiver:
             try:
                 data = self._read_mmap()
                 if not data:
+                    time.sleep(0.1)
                     continue
 
                 # Handle export queue
@@ -234,6 +237,7 @@ class TelemetryReceiver:
             self.mmf.seek(0)
             length_bytes = self.mmf.read(4)
             if len(length_bytes) != 4:
+                time.sleep(0.1)  # Add delay to reduce CPU usage
                 return None
             
             length = struct.unpack("<I", length_bytes)[0]
@@ -246,6 +250,7 @@ class TelemetryReceiver:
             
             return processed
         except Exception as e:
+            time.sleep(0.1)  # Add delay to reduce CPU usage
             return None
 
     def close(self):

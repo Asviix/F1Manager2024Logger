@@ -36,8 +36,9 @@ class TelemetryPlotter:
         try:
             while self.running:
                 try:
-                    data = queue.get(timeout=1)
+                    data = queue.get(timeout=0.2)  # Increased timeout
                     if not data:
+                        time.sleep(0.05)  # Add a small delay
                         continue
 
                     session_data = {}                 
@@ -49,6 +50,8 @@ class TelemetryPlotter:
                                 "trackName": data[car_name].telemetry.session.trackName,
                                 "bestSessionTime": data[car_name].telemetry.session.bestSessionTime,
                                 "rubberState": data[car_name].telemetry.session.rubber,
+                                "sessionType": data[car_name].telemetry.session.sessionType,
+                                "sessionTypeShort": data[car_name].telemetry.session.sessionTypeShort,
                                 "airTemp": data[car_name].telemetry.session.weather.airTemp,
                                 "trackTemp": data[car_name].telemetry.session.weather.trackTemp,
                                 "weather": data[car_name].telemetry.session.weather.weather,
@@ -93,15 +96,15 @@ class TelemetryPlotter:
                                 continue  # Skip if data structure is incomplete
                     if cars_data:  # Only send if we have valid data
                         message = json.dumps({"cars": cars_data, "session": session_data}, indent=None, separators=(',', ':'), ensure_ascii=False, default=str)
-                        print(message)
                         self.sock.sendto(message.encode('utf-8'), (self.udp_ip, self.udp_port))
 
                 except Empty:
+                    time.sleep(0.05)  # Add a small delay
                     continue
                 except Exception as e:
                     print("Plotter error:", e)
-                    time.sleep(0.1)
-            time.sleep(1)        
+                    time.sleep(0.1)  # Increased delay
+            time.sleep(0.1)  # Add delay before retrying
         finally:
             if hasattr(self, 'sock') and self.sock:
                 self.sock.close()

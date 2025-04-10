@@ -65,7 +65,7 @@ def launch_cheat_engine_table():
                 return True
             return False
         
-        time.sleep(1)
+        time.sleep(3)
         if hide_ce_window():
             print("[Main] Cheat Engine window hidden successfully")
             return True
@@ -86,7 +86,7 @@ def run_telemetry_server(export_queue, plot_queue, enabled):
             sys.exit(1)
             
         while receiver.running:
-            time.sleep(0.01)
+            time.sleep(0.01)  # Reduce CPU usage
             
     except Exception as e:
         print(f"SERVER CRASHED: {e}")
@@ -106,7 +106,7 @@ def run_telemetry_exporter(export_queue):
             try:
                 if not export_queue.empty():
                     exporter.export_from_queue(export_queue)
-                time.sleep(0.01)
+                time.sleep(0.01)  # Reduce CPU usage
             except Exception as e:
                 print(f"EXPORTER ERROR: {e}")
                 time.sleep(1)  # Wait before retrying
@@ -126,7 +126,7 @@ def run_telemetry_plotter(plot_queue):
             try:
                 if not plot_queue.empty():
                     plotter.run(plot_queue)
-                time.sleep(1)
+                time.sleep(0.01)  # Reduce CPU usage
             except Exception as e:
                 print(f"PLOTTER ERROR: {e}")
                 time.sleep(1)
@@ -153,8 +153,8 @@ def main():
     
     # Use Manager for cross-process queues
     with Manager() as manager:
-        plot_queue = manager.Queue(maxsize=500) if config.getboolean("Plotter Settings", "ENABLE_PLOTTER") else None
-        export_queue = manager.Queue(maxsize=100) if config.getboolean("CSV", "LOG_TO_CSV") else None
+        plot_queue = manager.Queue(maxsize=10) if config.getboolean("Plotter Settings", "ENABLE_PLOTTER") else None
+        export_queue = manager.Queue(maxsize=10) if config.getboolean("CSV", "LOG_TO_CSV") else None
         
         process_definitions = [
             {
@@ -195,6 +195,7 @@ def main():
                 if dead:
                     print(f"CRASHED: {[p.pid for p in dead]}")
                     break
+                time.sleep(0.1)  # Add delay to reduce CPU usage
                 
         except KeyboardInterrupt:
             print("\n[Main] Shutdown signal received...")

@@ -33,6 +33,8 @@ namespace F1Manager2024TelemetryPlugin
             pluginManager.AddProperty("trackName", GetType(), typeof(string), "Track Name");
             pluginManager.AddProperty("bestSessionTime", GetType(), typeof(float), "Best Session Time");
             pluginManager.AddProperty("rubberState", GetType(), typeof(float), "Rubber State");
+            pluginManager.AddProperty("sessionType", GetType(), typeof(string), "Session Type");
+            pluginManager.AddProperty("sessionTypeShort", GetType(), typeof(string), "Session Type Short");
             pluginManager.AddProperty("airTemp", GetType(), typeof(float), "Air Temperature");
             pluginManager.AddProperty("trackTemp", GetType(), typeof(float), "Track Temperature");
             pluginManager.AddProperty("weather", GetType(), typeof(string), "Weather");
@@ -230,6 +232,8 @@ namespace F1Manager2024TelemetryPlugin
                         latestValues["trackName"] = (string?)session["trackName"] ?? string.Empty;
                         latestValues["bestSessionTime"] = (float?)session["bestSessionTime"] ?? 0f;
                         latestValues["rubberState"] = (float?)session["rubberState"] ?? 0f;
+                        latestValues["sessionType"] = (string?)session["sessionType"] ?? string.Empty;
+                        latestValues["sessionTypeShort"] = (string?)session["sessionTypeShort"] ?? string.Empty;
                         latestValues["airTemp"] = (float?)session["airTemp"] ?? 0f;
                         latestValues["trackTemp"] = (float?)session["trackTemp"] ?? 0f;
                         latestValues["weather"] = (string?)session["weather"] ?? string.Empty;

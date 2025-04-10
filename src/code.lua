@@ -123,13 +123,44 @@ local trackNameMap = {
     [26] = "Qatar"
 }
 
+local sessionTypeMap = {
+    [0] = "Practice 1",
+    [1] = "Practice 2",
+    [2] = "Practice 3",
+    [3] = "Qualiyfing 1",
+    [4] = "Qualifying 2",
+    [5] = "Qualifying 3",
+    [6] = "Race",
+    [7] = "Sprint",
+    [8] = "Sprint Qualifying 1",
+    [9] = "Sprint Qualifying 2",
+    [10] = "Sprint Qualifying 3"
+}
+
+local sessionTypeShortMap = {
+    [0] = "P1",
+    [1] = "P2",
+    [2] = "P3",
+    [3] = "Q1",
+    [4] = "Q2",
+    [5] = "Q3",
+    [6] = "R",
+    [7] = "S",
+    [8] = "SQ1",
+    [9] = "SQ2",
+    [10] = "SQ3"
+}
+
+--#endregion
 -- CAR STRUCTURE OFFSETS
 local dataStructure = {
     session = {
         timeElapsed = {source = "session", offset = 0x148, type = "float", default = 0}, --DONE
         rubber = {source = "session", offset = 0x278, type = "float", default = 0}, --DONE
         bestSessionTime = {source = "session", offset = 0x768, type = "float", default = 0}, --DONE
-        trackID = {source = "session", offset = 0x228, type = "byte", enum = "trackName", default = "Unknown"} --DONE
+        trackID = {source = "session", offset = 0x228, type = "byte", enum = "trackName", default = "Unknown"}, --DONE
+        sessionType = {source = "session", offset = 0x288, type = "byte", enum = "sessionType", default = "Unknown"},
+        sessionTypeShort = {source = "session", offset = 0x288, type = "byte", enum = "sessionTypeShort", default = "Unknown"}
     },
     driver = {
         driverNumber = {source = "driver", offset = 0x58C, type = "byte", default = 0}, --DONE
@@ -225,11 +256,16 @@ local enumMaps = {
     weather = weatherMap,
     tyreCompound = tyreCompoundMap,
     trackName = trackNameMap,
+    sessionType = sessionTypeMap,
+    sessionTypeShort = sessionTypeShortMap
 }
 
 function collectDriverData(car)
     local carsBase = getAddress(fullPointerPath)
-    if not carsBase or carsBase == 0 then sleep(500) return nil end
+    if not carsBase or carsBase == 0 then
+        sleep(50)  -- Add a delay to reduce CPU usage
+        return nil
+    end
     
     local carBase = carsBase + carscarOffsets[car]
     if not carBase or carBase == 0 then return nil end
@@ -289,7 +325,7 @@ end
 --#region
 
 local loggingTimer = createTimer(nil, false)
-loggingTimer.Interval = 10
+loggingTimer.Interval = 50
 
 function sendData()
     local allData = {}  -- Master table to hold all cars' data
@@ -306,6 +342,8 @@ function sendData()
                         trackName = rawData.session.trackID or "Unknown",
                         bestSessionTime = rawData.session.bestSessionTime or 0,
                         rubber = rawData.session.rubber or 0,
+                        sessionType = rawData.session.sessionType or "Unknown",
+                        sessionTypeShort = rawData.session.sessionTypeShort or "Unknown",
                         weather = {  -- This should match Python structure
                             airTemp = rawData.weather.airTemp or 0,
                             trackTemp = rawData.weather.trackTemp or 0,

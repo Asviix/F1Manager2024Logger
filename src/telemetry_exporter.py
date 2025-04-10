@@ -40,7 +40,7 @@ class TelemetryExporter:
             return
 
         headers = [
-            "timestamp", "trackName", "timeElapsed", "driverNumber",
+            "timestamp", "trackName", "sessionType", "timeElapsed", "driverNumber",
             "pitstopStatus", "currentLap", "turnNumber", "position", "compound",
             "speed", "rpm", "gear", "flTemp", "flDeg", "frTemp", "frDeg",
             "rlTemp", "rlDeg", "rrTemp", "rrDeg", "engineTemp", "engineDeg",
@@ -91,6 +91,7 @@ class TelemetryExporter:
             return [
                 datetime.now().isoformat(),
                 t.session.trackName,
+                t.session.sessionTypeShort,
                 t.session.timeElapsed,
                 t.driver.driverNumber,
                 t.driver.pitstopStatus,
@@ -141,6 +142,7 @@ class TelemetryExporter:
                 try:
                     data = queue.get(timeout=1)
                     if not data:
+                        time.sleep(0.1)  # Add delay to reduce CPU usage
                         continue
 
                     for car_name in self.tracked_cars:
@@ -166,11 +168,11 @@ class TelemetryExporter:
                                 self.last_values[car_name]["lap"] = current_lap
 
                 except Empty:
+                    time.sleep(0.1)  # Add delay to reduce CPU usage
                     continue
                 except Exception as e:
                     print(f"Error processing data: {e}")
-                    continue
-
+                    time.sleep(0.1)  # Increased delay
         except KeyboardInterrupt:
             print("\nExiting exporter gracefully...")
         finally:

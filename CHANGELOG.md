@@ -1,5 +1,16 @@
 # Changelog
 
+## BETA 4/12/2025 - #2
+
+
+### I didn't have time to update the wiki/Readme etc... Will do once I'm back home
+
+### Changed
+- Changed some Logic in the C# Plugin
+
+### Added
+- Added a Settings window in the plugin to select the shared memory file and read from it.
+
 ## BETA 4/12/2025
 
 ### Notes

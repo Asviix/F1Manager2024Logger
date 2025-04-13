@@ -1,3 +1,5 @@
 LoggingTable.CT
 bin/
 wiki/
+.vs/
+.vscode/

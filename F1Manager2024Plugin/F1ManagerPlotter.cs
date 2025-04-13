@@ -27,6 +27,11 @@ namespace F1Manager2024Plugin
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "F1 Manager Plugin Settings";
 
+        private void UpdateValue(string data, object message)
+        {
+            PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
+        }
+
         public void Init(PluginManager pluginManager)
         {
             PluginManager = pluginManager;
@@ -52,8 +57,8 @@ namespace F1Manager2024Plugin
             SimHub.Logging.Current.Info("Starting plugin");
 
             // Register properties for SimHub
-            pluginManager.AddProperty("F1Manager.Status.IsMMFConnected", this.GetType(), typeof(bool));
-            pluginManager.AddProperty("F1Manager.Status.MMFStatus", this.GetType(), typeof(string));
+            pluginManager.AddProperty("F1Manager.Status.IsMMF_Connected", this.GetType(), typeof(bool));
+            pluginManager.AddProperty("F1Manager.Status.MMF_Status", this.GetType(), typeof(string));
 
             // Test Property
             pluginManager.AddProperty("F1Manager.Session.TrackName", GetType(), typeof(string));
@@ -110,8 +115,8 @@ namespace F1Manager2024Plugin
         {
             _ismmfConnected = connected;
             _mmfStatus = message;
-            PluginManager.SetPropertyValue<F1ManagerPlotter>("F1Manager.Status.IsMMFConnected", connected);
-            PluginManager.SetPropertyValue<F1ManagerPlotter>("F1Manager.Status.MMFStatus", message);
+            UpdateValue("F1Manager.Status.IsMMF_Connected", connected);
+            UpdateValue("F1Manager.Status.MMF_Status", message);
         }
 
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
@@ -124,7 +129,7 @@ namespace F1Manager2024Plugin
                     return;
                 }
 
-                PluginManager.SetPropertyValue<F1ManagerPlotter>("F1Manager.Session.TrackName", _lastData.MyTeam1.telemetry.session.trackName);
+                UpdateValue("F1Manager.Session.TrackName", _lastData.MyTeam1.telemetry.session.trackName);
             }
         }
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## BETA 0.2
+
+### Added
+
+- Added the Exporter ([`0bdb5b6`](https://github.com/Asviix/F1Manager2024Logger/commit/0bdb5b6324205278f40041c1ccd8d3a2e0d319e8))
+
 ## BETA 0.1
 
 ### Notes

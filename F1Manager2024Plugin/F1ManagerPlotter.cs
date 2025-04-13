@@ -27,41 +27,44 @@ namespace F1Manager2024Plugin
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "F1 Manager Plugin Settings";
 
-        private void UpdateValue(string data, object message)
-        {
-            PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
-        }
-
         public void Init(PluginManager pluginManager)
         {
-            PluginManager = pluginManager;
-
-            // Load settings FIRST
-            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings()
-            {
-                Path = null
-            });
-
-
-            // THEN create mmfReader with settings
-            _mmfReader = new mmfReader();
-            if (_mmfReader != null)
-            { 
-                _mmfReader.DataReceived += DataReceived; 
-            }
-
-            if (!string.IsNullOrWhiteSpace(Settings.Path))
-            {
-                _mmfReader.StartReading(Settings.Path);
-            }
-            SimHub.Logging.Current.Info("Starting plugin");
+            SimHub.Logging.Current.Info("Starting Plugin");
 
             // Register properties for SimHub
             pluginManager.AddProperty("F1Manager.Status.IsMMF_Connected", this.GetType(), typeof(bool));
             pluginManager.AddProperty("F1Manager.Status.MMF_Status", this.GetType(), typeof(string));
 
+            PluginManager = pluginManager;
+
+            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings()
+            {
+                Path = null
+            });
+
+            _mmfReader = new mmfReader();
+
+            if (!string.IsNullOrWhiteSpace(Settings.Path))
+            {
+                if (FileExistsRecursive(Settings.Path))
+                {
+                    _mmfReader.StartReading(Settings.Path);
+                    _mmfReader.DataReceived += DataReceived;
+                }
+                else
+                {
+                    UpdateStatus(false, "File Not found");
+                    SimHub.Logging.Current.Info($"File not found: {Settings.Path}");
+                }
+            }
+            else
+            {
+                UpdateStatus(false, "Path is not set");
+                SimHub.Logging.Current.Info("Path is not set");
+            }
+
             // Test Property
-            pluginManager.AddProperty("F1Manager.Session.TrackName", GetType(), typeof(string));
+            pluginManager.AddProperty("F1Manager.Session.TrackName", GetType(), typeof(string), "Current Track name.");
 
             // Declare an action which can be called
             this.AddAction(
@@ -105,9 +108,22 @@ namespace F1Manager2024Plugin
 
                 UpdateStatus(true, "Connected");
             }
-            catch (Exception ex)
+            catch
             {
-                UpdateStatus(false, ex.Message);
+                return;
+            }
+        }
+
+        public void DataUpdate(PluginManager pluginManager, ref GameData data)
+        {
+            lock (_dataLock)
+            {
+                if (_lastData == null || (DateTime.UtcNow - _lastDataTime).TotalSeconds > 1)
+                {
+                    return;
+                }
+
+                UpdateValue("F1Manager.Session.TrackName", _lastData.MyTeam1.telemetry.session.trackName);
             }
         }
 
@@ -119,18 +135,9 @@ namespace F1Manager2024Plugin
             UpdateValue("F1Manager.Status.MMF_Status", message);
         }
 
-        public void DataUpdate(PluginManager pluginManager, ref GameData data)
+        private void UpdateValue(string data, object message)
         {
-            lock (_dataLock)
-            {
-                if (_lastData == null || (DateTime.UtcNow - _lastDataTime).TotalSeconds > 1)
-                {
-                    UpdateStatus(false, "No recent data");
-                    return;
-                }
-
-                UpdateValue("F1Manager.Session.TrackName", _lastData.MyTeam1.telemetry.session.trackName);
-            }
+            PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
         }
 
         public void End(PluginManager pluginManager)
@@ -156,8 +163,25 @@ namespace F1Manager2024Plugin
             }
             catch (Exception ex)
             {
-                SimHub.Logging.Current.Error("Failed to create settings control", ex);
+                SimHub.Logging.Current.Info("Failed to create settings control", ex);
                 return new SettingsControl(); // Fallback to empty control
+            }
+        }
+
+        private bool FileExistsRecursive(string filePath)
+        {
+            try
+            {
+                if (System.IO.File.Exists(filePath))
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                SimHub.Logging.Current.Error($"Error checking file existence: {ex.Message}");
+                return false;
             }
         }
     }

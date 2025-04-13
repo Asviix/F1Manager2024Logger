@@ -9,7 +9,6 @@ namespace F1Manager2024Plugin
     public class mmfReader
     {
         public event Action<string> DataReceived;
-        public event Action<string> ErrorOccurred;
 
         private bool _isReading;
         private Task _readingTask;
@@ -20,7 +19,8 @@ namespace F1Manager2024Plugin
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                ErrorOccurred?.Invoke("No file path specified");
+                SimHub.Logging.Current.Info("No file path specified");
+                DataReceived?.Invoke("ERROR: No file path specified");
                 return;
             }
 
@@ -59,22 +59,32 @@ namespace F1Manager2024Plugin
                             DataReceived?.Invoke(json);
                         }
                     }
+
+                    catch (DirectoryNotFoundException)
+                    {
+                        SimHub.Logging.Current.Info($"Directory not found: {_currentFilePath}");
+                        DataReceived?.Invoke("ERROR: Directory not found");
+                        StopReading();
+                    }
+
                     catch (Exception ex) when (
                         ex is FileNotFoundException ||
                         ex is DirectoryNotFoundException)
                     {
-                        ErrorOccurred?.Invoke($"File not found: {_currentFilePath}");
+                        SimHub.Logging.Current.Info($"File not found: {_currentFilePath}");
                         Thread.Sleep(1000);
                     }
+
                     catch (IOException)
                     {
                         Thread.Sleep(1);
                     }
-                    catch (Exception ex)
-                    {
-                        ErrorOccurred?.Invoke($"Read error: {ex.Message}");
-                        Thread.Sleep(100);
-                    }
+
+                catch (Exception ex)
+                {
+                    SimHub.Logging.Current.Error($"Read error: {ex.Message}");
+                    Thread.Sleep(100);
+                }
                 }
             }, _cts.Token);
         }

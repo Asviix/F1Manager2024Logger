@@ -5,13 +5,13 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="0*" />
             </Grid.ColumnDefinitions>
-            <styles:SHSection Title="F1 Manager 2024 Plugin Options" Grid.ColumnSpan="2" ShowSeparator="True">
+            <styles:SHSection Title="OPTIONS" Grid.ColumnSpan="2" ShowSeparator="True">
                 <StackPanel>
                     <styles:SHSubSection Title="Memory Mapped File Configuration">
                         <StackPanel>
                             <Label>Select memory mapped file:</Label>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="SelectedFilePathTextBox" Width="300" Margin="0,0,10,0" IsReadOnly="True" />
+                                <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" />
                                 <styles:SHButtonPrimary Click="BrowseFile_Click">Browse...</styles:SHButtonPrimary>
                             </StackPanel>
                         </StackPanel>

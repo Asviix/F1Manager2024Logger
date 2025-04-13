@@ -39,7 +39,7 @@ namespace F1Manager2024Plugin
             var openFileDialog = new OpenFileDialog
             {
                 Title = "Select Memory Mapped File",
-                Filter = "Data Files All files (*.*)|*.*"
+                Filter = "All files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)

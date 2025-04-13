@@ -1,11 +1,5 @@
 # Changelog
 
-## BETA 0.3
-
-## Added
-
-- Added the `ROADMAP.md` ([`3f65fd0`](https://github.com/Asviix/F1Manager2024Logger/commit/3f65fd09f9e3ec96d89e64d424480b11640bb5e7)) & ([`8527f07`](https://github.com/Asviix/F1Manager2024Logger/commit/8527f07bbda45a34538d1eb117fe09cc5e567f54))
-
 ## BETA 0.2
 
 ### Added

@@ -7,15 +7,41 @@
             </Grid.ColumnDefinitions>
             <styles:SHSection Title="OPTIONS" Grid.ColumnSpan="2" ShowSeparator="True">
                 <StackPanel>
-                    <styles:SHSubSection Title="Memory Mapped File Configuration">
+                    <styles:SHSubSection Title="Memory Mapped File Configuration"></styles:SHSubSection>
                         <StackPanel>
                             <Label>Select memory mapped file:</Label>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" />
-                                <styles:SHButtonPrimary Click="BrowseFile_Click">Browse...</styles:SHButtonPrimary>
+                                <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <styles:SHButtonPrimary Click="BrowseMMF_File">Browse...</styles:SHButtonPrimary>
                             </StackPanel>
                         </StackPanel>
-                    </styles:SHSubSection>
+                    <styles:SHSubSection Title="Exporter Configuration"></styles:SHSubSection>
+                        <StackPanel>
+                            <Label>Exporter Enabled:</Label>
+                            <StackPanel Orientation="Horizontal">
+                                <styles:SHToggleButton x:Name="ExporterEnabledCheckbox" Margin="0,5,20,0" Checked="ExporterChecked" Unchecked="ExporterUnchecked"/>
+                                <TextBlock Text="Enable the exporter to send data to the memory mapped file." Margin="0,5,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Label>Exporter Path:</Label>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="ExporterPathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <styles:SHButtonPrimary Click="BrowseExporter_Folder">Browse...</styles:SHButtonPrimary>
+                            </StackPanel>
+                        </StackPanel>
+                    <styles:SHSubSection Title="Tracked Drivers"></styles:SHSubSection>
+                        <StackPanel>
+                            <Label>Select drivers to track:</Label>
+                            <ComboBox x:Name="DriversComboBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" IsReadOnly="True" StaysOpenOnEdit="True">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,10,0,0" HorizontalAlignment="Left" Click="SaveDriversButton_Click" Width="auto"></styles:SHButtonPrimary>
+                        <Label>Selected Drivers:</Label>
+                        <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
         </Grid>

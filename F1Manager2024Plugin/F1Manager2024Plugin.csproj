@@ -101,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="exporter.cs" />
     <Compile Include="F1ManagerPlotter.cs" />
     <Compile Include="F1Manager2024PluginSettings.cs" />
     <Compile Include="mmfReader.cs" />

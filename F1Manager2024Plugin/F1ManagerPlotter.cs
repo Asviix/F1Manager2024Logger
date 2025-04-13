@@ -3,6 +3,9 @@ using SimHub.Plugins;
 using Newtonsoft.Json;
 using System;
 using System.Windows.Media;
+using System.Drawing.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace F1Manager2024Plugin
 {
@@ -15,6 +18,7 @@ namespace F1Manager2024Plugin
 
         public F1Manager2024PluginSettings Settings;
         public mmfReader _mmfReader;
+        private Exporter _exporter;
         private string _mmfStatus = "Not Connected";
         private bool _ismmfConnected;
 
@@ -28,7 +32,7 @@ namespace F1Manager2024Plugin
         public string LeftMenuTitle => "F1 Manager Plugin Settings";
 
         // Add Drivers Properties
-        string[] carNames = new string[]
+        readonly string[] carNames = new string[]
         {
                 "Ferrari1", "Ferrari2",
                 "McLaren1", "McLaren2",
@@ -59,6 +63,8 @@ namespace F1Manager2024Plugin
             });
 
             _mmfReader = new mmfReader();
+            
+            _exporter = new Exporter(Settings);
 
             if (!string.IsNullOrWhiteSpace(Settings.Path))
             {
@@ -79,7 +85,7 @@ namespace F1Manager2024Plugin
                 SimHub.Logging.Current.Info("Path is not set");
             }
 
-            // Add Session Property
+            #region Add Session Property
             pluginManager.AddProperty("F1Manager.session.timeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
             pluginManager.AddProperty("F1Manager.session.trackName", GetType(), typeof(int), "Track Name.");
             pluginManager.AddProperty("F1Manager.session.bestSessionTime", GetType(), typeof(float), "Best Time in the session.");
@@ -139,6 +145,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_GearboxDeg", GetType(), typeof(float), "Gearbox Wear");
                 pluginManager.AddProperty($"{name}_ERSDeg", GetType(), typeof(float), "ERS Wear");
             }
+            #endregion
 
             // Declare an action which can be called
             this.AddAction(
@@ -179,7 +186,7 @@ namespace F1Manager2024Plugin
                     _lastData = data;
                     _lastDataTime = DateTime.UtcNow;
 
-                    // Update Session Properties
+                    #region Update Session Properties
                     UpdateValue("F1Manager.session.TrackName", _lastData["MyTeam1"]["telemetry"]["session"]["trackName"]);
                     UpdateValue("F1Manager.session.TimeElapsed", _lastData["MyTeam1"]["telemetry"]["session"]["timeElapsed"]);
                     UpdateValue("F1Manager.session.BestSessionTime", _lastData["MyTeam1"]["telemetry"]["session"]["bestSessionTime"]);
@@ -232,7 +239,16 @@ namespace F1Manager2024Plugin
                         UpdateValue($"{car}_EngineDeg", _lastData[car]["telemetry"]["driver"]["car"]["components"]["engine"]["engineDeg"]);
                         UpdateValue($"{car}_GearboxDeg", _lastData[car]["telemetry"]["driver"]["car"]["components"]["gearbox"]["gearboxDeg"]);
                         UpdateValue($"{car}_ERSDeg", _lastData[car]["telemetry"]["driver"]["car"]["components"]["ers"]["ersDeg"]);
+
+                        // Write to CSV if needed
+                        if (Settings.ExporterEnabled || Settings.trackedDrivers.Contains(car))
+                        {
+                            if (shouldWritetoCSV(car))
+                                _exporter.ExportData(_lastData, car);
+                                
+                        }
                     }
+                    #endregion
                 }
 
                 UpdateStatus(true, "Connected");
@@ -308,6 +324,41 @@ namespace F1Manager2024Plugin
             catch (Exception ex)
             {
                 SimHub.Logging.Current.Error($"Error checking file existence: {ex.Message}");
+                return false;
+            }
+        }
+        
+        private class LastRecordedData
+        {
+            public int LastTurnNumber { get; set; } = -1;
+            public int lastLapNumber { get; set; } = -1;
+        }
+
+        private Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
+
+        private bool shouldWritetoCSV(string carName)
+        {
+            try
+            {
+                if (!_lastRecordedData.ContainsKey(carName))
+                {
+                    _lastRecordedData[carName] = new LastRecordedData();
+                    return true;
+                }
+
+                int currentTurn = (int)(_lastData[carName]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? -1);
+                int currentLap = (int)(_lastData[carName]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? -1);
+
+                bool shouldWrite = currentTurn != _lastRecordedData[carName].LastTurnNumber ||
+                                   currentLap != _lastRecordedData[carName].lastLapNumber;
+
+                _lastRecordedData[carName].LastTurnNumber = currentTurn;
+                _lastRecordedData[carName].lastLapNumber = currentLap;
+
+                return shouldWrite;
+            }
+            catch
+            {
                 return false;
             }
         }

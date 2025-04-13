@@ -8,6 +8,8 @@ This phase will focus on implementing basic functions to better suit the user's 
 
 - Ability to select which information to log in the CSV files
 - Adding more data points that can be recorded
+- Ability to open/close the Logging Table when the plugin is started
+- Automatically removing the Shared Memory file on close.
 
 ## M2 - User Interface
 

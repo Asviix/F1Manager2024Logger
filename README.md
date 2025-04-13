@@ -1,4 +1,4 @@
-# F1Manager2024Logger BETA 0.1
+# F1Manager2024Logger BETA 0.2
 
 ## What is F1Manager2024Logger?
 

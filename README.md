@@ -1,4 +1,4 @@
-# F1Manager2024Logger
+# F1Manager2024Logger BETA 0.1
 
 ## What is F1Manager2024Logger?
 
@@ -7,6 +7,10 @@ F1Manager2024 Logger is a SimHub Plugin that makes F1 Manager 2024 Data availabl
 ## WIKI
 
 - The [Wiki](https://github.com/Asviix/F1Manager2024Logger/wiki) will contain additional information.
+
+## CHANGELOG
+
+- Go to the [`CHANGELOG.md`](https://github.com/Asviix/F1Manager2024Logger/blob/main/CHANGELOG.md) to see the latest release
 
 ## Donations
 

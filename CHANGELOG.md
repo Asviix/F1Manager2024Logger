@@ -1,5 +1,23 @@
 # Changelog
 
+## BETA 0.1
+
+### Notes
+
+We're getting ever closer to a full release of the Plugin!
+
+### Changed
+
+- Improved C# Plugin. ([`ef63d34`](https://github.com/Asviix/F1Manager2024Logger/commit/ef63d34aef19a457a653ec2f0b11132abb495dd3))
+- Changed some functions in the C# plugin. ([`3d58fbb`](https://github.com/Asviix/F1Manager2024Logger/commit/3d58fbb2b4731981d852167e87a3b0cef7fb782d))
+- Hid some files for improved project Structure. ([`d5f6f25`](https://github.com/Asviix/F1Manager2024Logger/commit/d5f6f253dfbfbc12e73ee81cfb32cc52e861de8c))
+- Updated Wiki.
+
+### Added
+
+- Added all properties of the session and driver data. ([`26dfede`](https://github.com/Asviix/F1Manager2024Logger/commit/26dfede5834f50b232bbafe1480c76f3b3cffa23))
+- Added Issue template. ([`c903af9`](https://github.com/Asviix/F1Manager2024Logger/commit/c903af917a85dbc0db6019106ed745f27054f399))
+
 ## BETA 4/12/2025 - #2
 
 

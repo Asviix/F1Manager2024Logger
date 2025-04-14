@@ -33,7 +33,7 @@ namespace F1Manager2024Plugin
         private dynamic _lastData;
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
-        public string LeftMenuTitle => "F1 Manager Plugin Settings";
+        public string LeftMenuTitle => "F1M Settings";
 
         // Add Drivers Properties
         readonly string[] carNames = new string[]

@@ -50,6 +50,9 @@ Contributions are welcome! Please follow these steps:
 For help or to report issues:
 - [Open a GitHub Issue](https://github.com/Asviix/F1Manager2024Logger/issues)
 
+For Commonly Asked Questions:
+- [FAQ](https://github.com/Asviix/F1Manager2024Logger/wiki/FAQ)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -200,7 +200,7 @@ namespace F1Manager2024Plugin
                     // Update Drivers Properties
                     foreach (var car in carNames)
                     {
-                        UpdateValue($"{car}_Position", _lastData[car]["telemetry"]["driver"]["position"]);
+                        UpdateValue($"{car}_Position", _lastData[car]["telemetry"]["driver"]["position"] + 1); // Adjust for 0-based index
                         UpdateValue($"{car}_DriverNumber", _lastData[car]["telemetry"]["driver"]["driverNumber"]);
                         UpdateValue($"{car}_PitStopStatus", _lastData[car]["telemetry"]["driver"]["pitstopStatus"]);
                         // Status

@@ -67,7 +67,7 @@ namespace F1Manager2024Plugin
                     ["pitstopStatus"] = data[carName]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "",
                     ["currentLap"] = data[carName]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 0,
                     ["turnNumber"] = data[carName]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 0,
-                    ["position"] = data[carName]?["telemetry"]?["driver"]?["position"] ?? 0,
+                    ["position"] = data[carName]?["telemetry"]?["driver"]?["position"] + 1 ?? 0, //Adjust for 0-based index
 
                     // Tyres
                     ["compound"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["compound"] ?? "",

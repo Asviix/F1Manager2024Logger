@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace F1Manager2024Plugin
 {
-    public class mmfReader
+    public class MmfReader
     {
         public event Action<string> DataReceived;
 

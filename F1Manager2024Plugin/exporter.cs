@@ -7,10 +7,10 @@ namespace F1Manager2024Plugin
 {
     internal class Exporter
     {
-        private string _exportDirectory;
-        private Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
-        private Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
-        private F1Manager2024PluginSettings _settings;
+        private readonly string _exportDirectory;
+        private readonly Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
+        private readonly Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
+        private readonly F1Manager2024PluginSettings _settings;
 
         public Exporter(F1Manager2024PluginSettings settings)
         {

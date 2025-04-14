@@ -1,10 +1,23 @@
 # Changelog
 
+## BETA 0.3
+
+### Changed
+
+- Adjust driver position for 0-based index in telemetry data. ([`f5830cd`](https://github.com/Asviix/F1Manager2024Logger/commit/f5830cd82b083194f1468c9d36c9e6d20a98d5e9))
+- Changed naming style to follow C# Naming conventions. ([``]())
+- Added readonly modifiers to follow C# conventions. ([``]())
+- Refactored and removed some code for better optimization. ([``]())
+
+### Added
+
+- Added the `ROADMAP.md`. ([`3f65fd0`](https://github.com/Asviix/F1Manager2024Logger/commit/3f65fd09f9e3ec96d89e64d424480b11640bb5e7)) & ([`8527f07`](https://github.com/Asviix/F1Manager2024Logger/commit/8527f07bbda45a34538d1eb117fe09cc5e567f54))
+
 ## BETA 0.2
 
 ### Added
 
-- Added the Exporter ([`0bdb5b6`](https://github.com/Asviix/F1Manager2024Logger/commit/0bdb5b6324205278f40041c1ccd8d3a2e0d319e8))
+- Added the Exporter. ([`0bdb5b6`](https://github.com/Asviix/F1Manager2024Logger/commit/0bdb5b6324205278f40041c1ccd8d3a2e0d319e8))
 
 ## BETA 0.1
 

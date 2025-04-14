@@ -159,8 +159,8 @@ local dataStructure = {
         rubber = {source = "session", offset = 0x278, type = "float", default = 0}, --DONE
         bestSessionTime = {source = "session", offset = 0x768, type = "float", default = 0}, --DONE
         trackID = {source = "session", offset = 0x228, type = "byte", enum = "trackName", default = "Unknown"}, --DONE
-        sessionType = {source = "session", offset = 0x288, type = "byte", enum = "sessionType", default = "Unknown"},
-        sessionTypeShort = {source = "session", offset = 0x288, type = "byte", enum = "sessionTypeShort", default = "Unknown"}
+        sessionType = {source = "session", offset = 0x288, type = "byte", enum = "sessionType", default = "Unknown"}, --DONE
+        sessionTypeShort = {source = "session", offset = 0x288, type = "byte", enum = "sessionTypeShort", default = "Unknown"} --DONE
     },
     driver = {
         driverNumber = {source = "driver", offset = 0x58C, type = "byte", default = 0}, --DONE

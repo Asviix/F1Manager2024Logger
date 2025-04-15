@@ -71,16 +71,17 @@ namespace F1Manager2024Plugin
             StartReading(Settings.Path);
 
             #region Init Properties
+
             // Add Session Properties
-            pluginManager.AddProperty("F1Manager.session.timeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
-            pluginManager.AddProperty("F1Manager.session.trackName", GetType(), typeof(int), "Track Name.");
-            pluginManager.AddProperty("F1Manager.session.bestSessionTime", GetType(), typeof(float), "Best Time in the session.");
-            pluginManager.AddProperty("F1Manager.session.rubberState", GetType(), typeof(int), "Rubber on Track.");
-            pluginManager.AddProperty("F1Manager.session.sessionType", GetType(), typeof(string), "Type of the session.");
-            pluginManager.AddProperty("F1Manager.session.sessionTypeShort", GetType(), typeof(string), "Short Type of the session.");
-            pluginManager.AddProperty("F1Manager.session.airTemp", GetType(), typeof(float), "Air Temperature in the session.");
-            pluginManager.AddProperty("F1Manager.session.trackTemp", GetType(), typeof(float), "Track Temperature in the session.");
-            pluginManager.AddProperty("F1Manager.session.weather", GetType(), typeof(string), "Weather in the session.");
+            pluginManager.AddProperty("Session_timeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
+            pluginManager.AddProperty("Session_trackName", GetType(), typeof(int), "Track Name.");
+            pluginManager.AddProperty("Session_bestSessionTime", GetType(), typeof(float), "Best Time in the session.");
+            pluginManager.AddProperty("Session_rubberState", GetType(), typeof(int), "Rubber on Track.");
+            pluginManager.AddProperty("Session_sessionType", GetType(), typeof(string), "Type of the session.");
+            pluginManager.AddProperty("Session_sessionTypeShort", GetType(), typeof(string), "Short Type of the session.");
+            pluginManager.AddProperty("Session_airTemp", GetType(), typeof(float), "Air Temperature in the session.");
+            pluginManager.AddProperty("Session_trackTemp", GetType(), typeof(float), "Track Temperature in the session.");
+            pluginManager.AddProperty("Session_weather", GetType(), typeof(string), "Weather in the session.");
 
             foreach (var name in carNames)
             {
@@ -130,9 +131,6 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_EngineDeg", GetType(), typeof(float), "Engine Wear");
                 pluginManager.AddProperty($"{name}_GearboxDeg", GetType(), typeof(float), "Gearbox Wear");
                 pluginManager.AddProperty($"{name}_ERSDeg", GetType(), typeof(float), "ERS Wear");
-
-                // Test property
-                pluginManager.AddProperty("testproperty", GetType(), typeof(string), "test property");
             }
             #endregion
 
@@ -174,18 +172,22 @@ namespace F1Manager2024Plugin
                 {
                     _lastData = data;
                     _lastDataTime = DateTime.UtcNow;
-
+                    if (_lastData == null)
+                    {
+                        UpdateStatus(false, "No data received");
+                        return;
+                    }
                     #region Update Properties
                     // Update Session Properties
-                    UpdateValue("F1Manager.session.TrackName", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["trackName"] ?? "Unknown");
-                    UpdateValue("F1Manager.session.TimeElapsed", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["timeElapsed"] ?? 0f);
-                    UpdateValue("F1Manager.session.BestSessionTime", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["bestSessionTime"] ?? 0f);
-                    UpdateValue("F1Manager.session.RubberState", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["rubber"] ?? 0);
-                    UpdateValue("F1Manager.session.SessionType", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionType"] ?? "Unknown");
-                    UpdateValue("F1Manager.session.SessionTypeShort", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionTypeShort"] ?? "Unknown");
-                    UpdateValue("F1Manager.session.AirTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["airTemp"] ?? 0f);
-                    UpdateValue("F1Manager.session.TrackTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["trackTemp"] ?? 0f);
-                    UpdateValue("F1Manager.session.Weather", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["weather"] ?? "Unknown");
+                    UpdateValue("Session_TrackName", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["trackName"] ?? "Unknown");
+                    UpdateValue("Session_TimeElapsed", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["timeElapsed"] ?? 0f);
+                    UpdateValue("Session_BestSessionTime", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["bestSessionTime"] ?? 0f);
+                    UpdateValue("Session_RubberState", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["rubber"] ?? 0);
+                    UpdateValue("Session_SessionType", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionType"] ?? "Unknown");
+                    UpdateValue("Session_SessionTypeShort", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionTypeShort"] ?? "Unknown");
+                    UpdateValue("Session_AirTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["airTemp"] ?? 0f);
+                    UpdateValue("Session_TrackTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["trackTemp"] ?? 0f);
+                    UpdateValue("Session_Weather", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["weather"] ?? "Unknown");
 
                     // Update Drivers Properties
                     foreach (var car in carNames)

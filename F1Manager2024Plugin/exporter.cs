@@ -27,7 +27,7 @@ namespace F1Manager2024Plugin
             try
             {
                 // Skip if exporter is disabled or driver not in tracked drivers
-                if (!_settings.ExporterEnabled || !_settings.trackedDrivers.Contains(carName))
+                if (!_settings.ExporterEnabled || !_settings.TrackedDrivers.Contains(carName))
                     return;
 
                 string trackName = data["MyTeam1"]?["telemetry"]?["session"]?["trackName"] ?? "UnknownTrack";

@@ -279,6 +279,12 @@ namespace F1Manager2024Plugin
             }
         }
 
+        public void StopReading()
+        {
+            _mmfReader.DataReceived -= DataReceived;
+            UpdateStatus(false, "Path is not set");
+        }
+
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
             lock (_dataLock)
@@ -294,8 +300,8 @@ namespace F1Manager2024Plugin
         {
             _ismmfConnected = connected;
             _mmfStatus = message;
-            UpdateValue("F1Manager.Status.IsMMF_Connected", connected);
-            UpdateValue("F1Manager.Status.MMF_Status", message);
+            UpdateValue("Status_IsMMF_Connected", connected);
+            UpdateValue("Status_MMF_Status", message);
         }
 
         private void UpdateValue(string data, object message)
@@ -423,10 +429,10 @@ namespace F1Manager2024Plugin
                 return;
 
             // Create property if it doesn't exist
-            if (!PluginManager.GetAllPropertiesNames().Contains($"F1Manager.{carName}.History.Lap{lapNumber}"))
+            if (!PluginManager.GetAllPropertiesNames().Contains($"{carName}.History.Lap{lapNumber}"))
             {
                 PluginManager.AddProperty(
-                    $"F1Manager.{carName}.History.Lap{lapNumber}",
+                    $"{carName}.History.Lap{lapNumber}",
                     this.GetType(),
                     typeof(string),
                     null,

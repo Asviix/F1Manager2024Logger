@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using Microsoft.Win32;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
 
 namespace F1Manager2024Plugin
 {
-    public partial class SettingsControl : UserControl
+    public partial class SettingsControl : System.Windows.Controls.UserControl
     {
         public F1ManagerPlotter Plugin { get; }
 
@@ -71,11 +72,11 @@ namespace F1Manager2024Plugin
                 SelectedFilePathTextBox.Text = plugin.Settings.Path ?? "No file selected";
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
-                if (plugin.Settings.trackedDrivers != null)
+                if (plugin.Settings.TrackedDrivers != null)
                 {
                     foreach (var driver in DriversComboBox.ItemsSource.Cast<DriverSelection>())
                     {
-                        driver.IsSelected = plugin.Settings.trackedDrivers.Contains(driver.Name);
+                        driver.IsSelected = plugin.Settings.TrackedDrivers.Contains(driver.Name);
                     }
                 }
                 var selectedDrivers = DriversComboBox.ItemsSource.Cast<DriverSelection>()
@@ -98,7 +99,7 @@ namespace F1Manager2024Plugin
         {
             if (Plugin == null) return;
 
-            var openFileDialog = new OpenFileDialog()
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog()
             {
                 Title = "Select Memory Mapped File",
                 Filter = "All files (*.*)|*.*"
@@ -161,13 +162,45 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void SaveDriversButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveDriversButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedDrivers = DriversComboBox.ItemsSource.Cast<DriverSelection>()
                 .Where(d => d.IsSelected)
                 .Select(d => d.Name)
                 .ToArray();
-            Plugin.Settings.trackedDrivers = selectedDrivers;
+
+            if (selectedDrivers.Length >= 6)
+            {
+                var result = await SHMessageBox.Show(
+                    "Warning! Selecting more than 6 drivers can take a lot of storage space. Are you sure you want to continue?",
+                    "Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == System.Windows.Forms.DialogResult.Yes)
+                {
+                    Plugin.Settings.TrackedDrivers = selectedDrivers;
+                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+
+                    if (selectedDrivers.Any())
+                    {
+                        DriversTextBox.Text = string.Join(", ", selectedDrivers);
+                    }
+                    else
+                    {
+                        DriversTextBox.Text = "No drivers selected";
+                    }
+
+                    await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            Plugin.Settings.TrackedDrivers = selectedDrivers;
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
 
             if (selectedDrivers.Any())
@@ -179,12 +212,7 @@ namespace F1Manager2024Plugin
                 DriversTextBox.Text = "No drivers selected";
             }
 
-            if (selectedDrivers.Length >= 6)
-            {
-                SHMessageBox.Show("Storager usage can quickly become high if a lot of drivers are selected!", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-
-            SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
 
         }
 
@@ -193,6 +221,40 @@ namespace F1Manager2024Plugin
             Plugin.ClearAllHistory();
 
             SHMessageBox.Show("All historical data has been deleted!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void ResetToDefault_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await SHMessageBox.Show(
+                "Are you sure you want to reset all settings to default?",
+                "Reset Settings",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == System.Windows.Forms.DialogResult.Yes)
+            {
+                var defaults = F1Manager2024PluginSettings.GetDefaults();
+                Plugin.Settings.Path = defaults.Path;
+                Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
+                Plugin.Settings.ExporterPath = defaults.ExporterPath;
+                Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
+
+                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+
+                SelectedFilePathTextBox.Text = "No file selected";
+                ExporterEnabledCheckbox.IsChecked = false;
+                ExporterPathTextBox.Text = "No folder selected";
+
+                foreach (var driver in DriversComboBox.ItemsSource.Cast<DriverSelection>())
+                {
+                    driver.IsSelected = defaults.TrackedDrivers.Contains(driver.Name);
+                }
+                DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
+
+                Plugin.StopReading();
+
+                await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

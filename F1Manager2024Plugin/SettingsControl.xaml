@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="F1Manager2024Plugin.SettingsControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converter="http://metro.mahapps.com/winfx/xaml/iconpacks" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material" xmlns:local="clr-namespace:F1Manager2024Plugin" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins" xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" mc:Ignorable="d">
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converter="http://metro.mahapps.com/winfx/xaml/iconpacks" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material" xmlns:local="clr-namespace:F1Manager2024Plugin" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins" xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" xmlns:dd="urn:gong-wpf-dragdrop" x:Class="F1Manager2024Plugin.SettingsControl" mc:Ignorable="d">
     <ScrollViewer>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -7,47 +7,55 @@
             </Grid.ColumnDefinitions>
             <styles:SHSection Title="OPTIONS" Grid.ColumnSpan="2" ShowSeparator="True">
                 <StackPanel>
-                    <styles:SHSubSection Title="Memory Mapped File Configuration"></styles:SHSubSection>
-                        <StackPanel>
-                            <Label>Select memory mapped file:</Label>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
-                                <styles:SHButtonPrimary Click="BrowseMMF_File">Browse...</styles:SHButtonPrimary>
-                            </StackPanel>
+                    <styles:SHSubSection Title="Memory Mapped File Configuration" HorizontalAlignment="Center" Margin="0,0,0,-20"/>
+                    <styles:SHSectionSeparator/>
+                    <StackPanel>
+                        <Label Content="Select memory mapped file:"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                            <styles:SHButtonPrimary Click="BrowseMMF_File" Content="Browse..."/>
                         </StackPanel>
-                    <styles:SHSubSection Title="Exporter Configuration"></styles:SHSubSection>
-                        <StackPanel>
-                            <Label>Exporter Enabled:</Label>
-                            <StackPanel Orientation="Horizontal">
-                                <styles:SHToggleButton x:Name="ExporterEnabledCheckbox" Margin="0,5,20,0" Checked="ExporterChecked" Unchecked="ExporterUnchecked"/>
-                                <TextBlock Text="Enable the exporter to send data to the memory mapped file." Margin="0,5,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <Label>Exporter Path:</Label>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="ExporterPathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
-                                <styles:SHButtonPrimary Click="BrowseExporter_Folder">Browse...</styles:SHButtonPrimary>
-                            </StackPanel>
+                    </StackPanel>
+                    <styles:SHSubSection Title="Exporter Configuration" HorizontalAlignment="Center" Margin="0,0,0,-20"/>
+                    <styles:SHSectionSeparator/>
+                    <StackPanel>
+                        <Label Content="Exporter Enabled:"/>
+                        <StackPanel Orientation="Horizontal">
+                            <styles:SHToggleButton x:Name="ExporterEnabledCheckbox" Margin="0,5,20,0" Checked="ExporterChecked" Unchecked="ExporterUnchecked"/>
+                            <TextBlock Text="Enable the exporter to send data to the memory mapped file." Margin="0,5,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
-                    <styles:SHSubSection Title="Tracked Drivers"></styles:SHSubSection>
-                        <StackPanel>
-                            <Label>Select drivers to track:</Label>
-                            <ComboBox x:Name="DriversComboBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" IsReadOnly="True" StaysOpenOnEdit="True">
+                        <Label Content="Exporter Path:"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="ExporterPathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                            <styles:SHButtonPrimary Click="BrowseExporter_Folder" Content="Browse..."/>
+                        </StackPanel>
+                    </StackPanel>
+                    <styles:SHSubSection Title="Tracked Drivers" HorizontalAlignment="Center" Margin="0,0,0,-20"/>
+                    <styles:SHSectionSeparator/>
+                    <StackPanel>
+                        <Label Content="Select drivers to track:"/>
+                        <ComboBox x:Name="DriversComboBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" IsReadOnly="True" StaysOpenOnEdit="True">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,10,0,0" HorizontalAlignment="Left" Click="SaveDriversButton_Click" Width="auto"></styles:SHButtonPrimary>
-                            <Label>Selected Drivers:</Label>
-                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
-                        </StackPanel>
-                    <styles:SHSubSection Title="Historical Data Reset"> </styles:SHSubSection>
-                        <StackPanel>
-                            <Label>Here you can reset the historical data if something happens to break</Label>
-                            <Label>This will delete all historical data!</Label>
-                        <styles:SHButtonSecondary x:Name="HistoricalDataDelete" Content="Delete all Historical Data" Margin="0,10,0,0" HorizontalAlignment="Left" Click="HistoricalDataDelete_Click"  Width="auto"></styles:SHButtonSecondary>
+                        </ComboBox>
+                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,10,0,0" HorizontalAlignment="Left" Click="SaveDriversButton_Click" Width="auto"/>
+                        <Label Content="Selected Drivers:"/>
+                        <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
                     </StackPanel>
+                    <styles:SHSubSection Title="Historical Data Reset" HorizontalAlignment="Center" Margin="0,0,0,-20"/>
+                    <styles:SHSectionSeparator/>
+                    <StackPanel>
+                        <Label Content="Here you can reset the historical data if something happens to break"/>
+                        <Label Content="This will delete all historical data!"/>
+                        <styles:SHButtonSecondary x:Name="HistoricalDataDelete" Content="Delete all Historical Data" Margin="0,10,0,0" HorizontalAlignment="Left" Click="HistoricalDataDelete_Click"  Width="auto"/>
+                    </StackPanel>
+                    <styles:SHSubSection Title="Reset Settings to Default" HorizontalAlignment="Center" Margin="0,0,0,-20"/>
+                    <styles:SHSectionSeparator/>
+                    <Label Content="Warning! This is permanent!"/>
+                    <styles:SHButtonPrimary x:Name="ResetToDefault_Button" Content="Reset to Default" Width="auto" HorizontalAlignment="Left" Margin="0,10,0,0" Click="ResetToDefault_Button_Click"/>
                 </StackPanel>
             </styles:SHSection>
         </Grid>

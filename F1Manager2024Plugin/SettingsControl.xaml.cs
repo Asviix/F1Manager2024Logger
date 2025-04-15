@@ -118,6 +118,7 @@ namespace F1Manager2024Plugin
                 {
                     Plugin.Settings.Path = openFileDialog.FileName;
                     Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+                    Plugin.StartReading(Plugin.Settings.Path);
                 }
             }
         }
@@ -185,6 +186,13 @@ namespace F1Manager2024Plugin
 
             SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
 
+        }
+
+        private void HistoricalDataDelete_Click(object sender, RoutedEventArgs e)
+        {
+            Plugin.ClearAllHistory();
+
+            SHMessageBox.Show("All historical data has been deleted!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

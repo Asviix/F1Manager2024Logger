@@ -38,9 +38,15 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                             </ComboBox>
-                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,10,0,0" HorizontalAlignment="Left" Click="SaveDriversButton_Click" Width="auto"></styles:SHButtonPrimary>
-                        <Label>Selected Drivers:</Label>
-                        <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
+                            <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,10,0,0" HorizontalAlignment="Left" Click="SaveDriversButton_Click" Width="auto"></styles:SHButtonPrimary>
+                            <Label>Selected Drivers:</Label>
+                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
+                        </StackPanel>
+                    <styles:SHSubSection Title="Historical Data Reset"> </styles:SHSubSection>
+                        <StackPanel>
+                            <Label>Here you can reset the historical data if something happens to break</Label>
+                            <Label>This will delete all historical data!</Label>
+                        <styles:SHButtonSecondary x:Name="HistoricalDataDelete" Content="Delete all Historical Data" Margin="0,10,0,0" HorizontalAlignment="Left" Click="HistoricalDataDelete_Click"  Width="auto"></styles:SHButtonSecondary>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>

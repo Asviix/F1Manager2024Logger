@@ -108,13 +108,17 @@ namespace F1Manager2024Plugin
             {
                 SelectedFilePathTextBox.Text = openFileDialog.FileName;
 
+                if (openFileDialog.FileName.Contains("F1Manager_Telemetry") == false)
+                {
+                    SHMessageBox.Show("Please select the correct file: F1Manager_Telemetry", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 if (Plugin.Settings != null)
                 {
                     Plugin.Settings.Path = openFileDialog.FileName;
                     Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                 }
-
-                Plugin._mmfReader?.StartReading(openFileDialog.FileName);
             }
         }
 

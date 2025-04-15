@@ -66,28 +66,9 @@ namespace F1Manager2024Plugin
                 Path = null
             });
 
-            _mmfReader = new MmfReader();
-            
             _exporter = new Exporter(Settings);
 
-            if (!string.IsNullOrWhiteSpace(Settings.Path))
-            {
-                if (FileExistsRecursive(Settings.Path))
-                {
-                    _mmfReader.StartReading(Settings.Path);
-                    _mmfReader.DataReceived += DataReceived;
-                }
-                else
-                {
-                    UpdateStatus(false, "File Not found");
-                    SimHub.Logging.Current.Info($"File not found: {Settings.Path}");
-                }
-            }
-            else
-            {
-                UpdateStatus(false, "Path is not set");
-                SimHub.Logging.Current.Info("Path is not set");
-            }
+            StartReading(Settings.Path);
 
             #region Init Properties
             // Add Session Properties
@@ -265,6 +246,28 @@ namespace F1Manager2024Plugin
             catch
             {
                 return;
+            }
+        }
+
+        public void StartReading(string filePath)
+        {
+            _mmfReader = new MmfReader();
+
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                if (FileExistsRecursive(filePath))
+                {
+                    _mmfReader.StartReading(filePath);
+                    _mmfReader.DataReceived += DataReceived;
+                }
+                else
+                {
+                    UpdateStatus(false, "File Not found");
+                }
+            }
+            else
+            {
+                UpdateStatus(false, "Path is not set");
             }
         }
 

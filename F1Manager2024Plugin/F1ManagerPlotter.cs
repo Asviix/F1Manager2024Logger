@@ -214,7 +214,7 @@ namespace F1Manager2024Plugin
                         UpdateValue($"{car}_PitStopStatus", _lastData?[car]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "Unknown");
                         // Status
                         UpdateValue($"{car}_TurnNumber", _lastData?[car]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 0);
-                        UpdateValue($"{car}_CurrentLap", _lastData?[car]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 0);
+                        UpdateValue($"{car}_CurrentLap", (_lastData?[car]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 0) + 1); // Adjust for Index
                         // Timings
                         UpdateValue($"{car}_CurrentLapTime", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["currentLapTime"] ?? 0f);
                         UpdateValue($"{car}_DriverBestLap", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["driverBestLap"] ?? 0f);

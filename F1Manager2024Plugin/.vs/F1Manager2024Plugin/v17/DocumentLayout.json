@@ -7,24 +7,24 @@
       "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:settingscontrol.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\mmfreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:mmfreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\f1managerplotter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:f1managerplotter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|d:\\f1m\\logging script\\f1manager2024logger-main\\f1manager2024plugin\\f1manager2024pluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:f1manager2024pluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\settingscontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:settingscontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|d:\\f1m\\logging script\\f1manager2024logger-main\\f1manager2024plugin\\f1managerplotter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:f1managerplotter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\mmfreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:mmfreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\exporter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:exporter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\f1manager2024pluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|F1Manager2024Plugin.csproj|solutionrelative:f1manager2024pluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,14 +38,15 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "SettingsControl.xaml",
               "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\SettingsControl.xaml",
               "RelativeDocumentMoniker": "SettingsControl.xaml",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\SettingsControl.xaml",
               "RelativeToolTip": "SettingsControl.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-04-12T14:22:03.119Z"
+              "WhenOpened": "2025-04-12T14:22:03.119Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -55,7 +56,7 @@
               "RelativeDocumentMoniker": "SettingsControl.xaml.cs",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\SettingsControl.xaml.cs",
               "RelativeToolTip": "SettingsControl.xaml.cs",
-              "ViewState": "AgIAAFQAAAAAAAAAAAAqwGQAAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAFYAAAAAAAAAAADgv3IAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-12T13:40:46.937Z",
               "EditorCaption": ""
@@ -68,45 +69,46 @@
               "RelativeDocumentMoniker": "F1ManagerPlotter.cs",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\F1ManagerPlotter.cs",
               "RelativeToolTip": "F1ManagerPlotter.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAAEcAAAAAAAAAAADgv0AAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-12T13:38:54.217Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "MmfReader.cs",
               "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\MmfReader.cs",
               "RelativeDocumentMoniker": "MmfReader.cs",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\MmfReader.cs",
               "RelativeToolTip": "MmfReader.cs",
-              "ViewState": "AgIAACgAAAAAAAAAAAAgwEEAAABLAAAAAAAAAA==",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwB0AAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-12T13:46:42.456Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "exporter.cs",
               "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\exporter.cs",
               "RelativeDocumentMoniker": "exporter.cs",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\exporter.cs",
               "RelativeToolTip": "exporter.cs",
-              "ViewState": "AgIAADEAAAAAAAAAAAAawDoAAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAAG4AAAAAAAAAAAAkwIcAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-13T18:04:00.536Z"
+              "WhenOpened": "2025-04-13T18:04:00.536Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "F1Manager2024PluginSettings.cs",
               "DocumentMoniker": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\F1Manager2024PluginSettings.cs",
               "RelativeDocumentMoniker": "F1Manager2024PluginSettings.cs",
               "ToolTip": "D:\\F1M\\Logging Script\\F1Manager2024Logger-main\\F1Manager2024Plugin\\F1Manager2024PluginSettings.cs",
               "RelativeToolTip": "F1Manager2024PluginSettings.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAA4AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-12T13:40:17.578Z",
               "EditorCaption": ""

@@ -65,7 +65,7 @@ namespace F1Manager2024Plugin
             {
                 Path = null
             });
-
+            
             _exporter = new Exporter(Settings);
 
             StartReading(Settings.Path);
@@ -192,7 +192,13 @@ namespace F1Manager2024Plugin
                     // Update Drivers Properties
                     foreach (var car in carNames)
                     {
-                        UpdateValue($"{car}_Position", (_lastData?[car]?["telemetry"]?["driver"]?["position"] ?? -1) + 1); // Adjust for 0-based index
+                        // Update historical data
+                        if (LapOrTurnChanged(car))
+                        {
+                            UpdateHistoricalData(car, data[car]);
+                        }
+
+                        UpdateValue($"{car}_Position", (_lastData?[car]?["telemetry"]?["driver"]?["position"] ?? 0) + 1); // Adjust for 0-based index
                         UpdateValue($"{car}_DriverNumber", _lastData?[car]?["telemetry"]?["driver"]?["driverNumber"] ?? 0);
                         UpdateValue($"{car}_PitStopStatus", _lastData?[car]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "Unknown");
                         // Status
@@ -333,7 +339,7 @@ namespace F1Manager2024Plugin
             public int LastLapNumber { get; set; } = -1;
         }
 
-        private Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
+        private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
 
         private bool LapOrTurnChanged(string carName)
         {
@@ -360,6 +366,117 @@ namespace F1Manager2024Plugin
             {
                 return false;
             }
+        }
+
+        private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>>();
+
+        private readonly object _historyLock = new object();
+        private const int MaxLapsToStore = 70; // Adjust as needed
+
+        private void UpdateHistoricalData(string carName, dynamic currentData)
+        {
+            if (currentData == null) return;
+
+            // Check for session reset
+            float currentTime = (float)(currentData?["telemetry"]?["session"]?["timeElapsed"] ?? 0f);
+            if (currentTime < 3f)
+            {
+                ClearAllHistory();
+            }
+
+            int currentLap = (int)(currentData?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 1);
+            int currentTurn = (int)(currentData?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 1);
+
+            if (currentLap < 1 || currentTurn < 1) return; // Skip invalid data
+
+            lock (_historyLock)
+            {
+                // Initialize data structure if needed
+                if (!_carHistory.ContainsKey(carName))
+                {
+                    _carHistory[carName] = new Dictionary<int, Dictionary<int, dynamic>>();
+                }
+
+                if (!_carHistory[carName].ContainsKey(currentLap))
+                {
+                    _carHistory[carName][currentLap] = new Dictionary<int, dynamic>();
+
+                    // Clean up old laps if we've reached max
+                    if (_carHistory[carName].Count > MaxLapsToStore)
+                    {
+                        int oldestLap = _carHistory[carName].Keys.Min();
+                        _carHistory[carName].Remove(oldestLap);
+                    }
+                }
+
+                // Store turn data
+                _carHistory[carName][currentLap][currentTurn] = currentData;
+
+                // Update JSON properties
+                UpdateLapProperty(carName, currentLap);
+            }
+        }
+
+        private void UpdateLapProperty(string carName, int lapNumber)
+        {
+            if (!_carHistory.ContainsKey(carName) || !_carHistory[carName].ContainsKey(lapNumber))
+                return;
+
+            // Create property if it doesn't exist
+            if (!PluginManager.GetAllPropertiesNames().Contains($"F1Manager.{carName}.History.Lap{lapNumber}"))
+            {
+                PluginManager.AddProperty(
+                    $"F1Manager.{carName}.History.Lap{lapNumber}",
+                    this.GetType(),
+                    typeof(string),
+                    null,
+                    hidden: true
+                );
+            }
+
+            // Serialize the complete lap data
+            var lapData = new
+            {
+                LapNumber = lapNumber,
+                Turns = _carHistory[carName][lapNumber]
+                    .OrderBy(t => t.Key)
+                    .ToDictionary(t => t.Key, t => t.Value)
+            };
+
+            PluginManager.SetPropertyValue(
+                $"F1Manager.{carName}.History.Lap{lapNumber}",
+                this.GetType(),
+                JsonConvert.SerializeObject(lapData, Formatting.None)
+            );
+        }
+
+        public void ClearAllHistory()
+        {
+            lock (_historyLock)
+            {
+                foreach (var car in _carHistory.Keys)
+                {
+                    // Reset current lap
+                    PluginManager.SetPropertyValue(
+                        $"F1Manager.{car}.History.CurrentLap",
+                        this.GetType(),
+                        null
+                    );
+
+                    // Reset all properties
+                    for (int i = 1; i <= MaxLapsToStore; i++)
+                    {
+                        PluginManager.SetPropertyValue(
+                            $"F1Manager.{car}.History.Lap{i}",
+                            this.GetType(),
+                            null
+                        );
+                    }
+                }
+
+                _carHistory.Clear();
+            }
+            SimHub.Logging.Current.Info("Cleared all historical data due to session reset");
         }
 
         public void End(PluginManager pluginManager)

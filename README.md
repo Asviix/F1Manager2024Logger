@@ -48,7 +48,7 @@ Contributions are welcome! Please follow these steps:
 ## Support
 
 For help or to report issues:
-- [Open a GitHub Issue](https://github.com/Asviix/F1Manager2024Logger/issues)
+- [Open a GitHub Issue](https://github.com/Asviix/F1Manager2024Logger/issues) or Join the [Discord Server](https://discord.gg/gTMQJUNDxk)
 
 For Commonly Asked Questions:
 - [FAQ](https://github.com/Asviix/F1Manager2024Logger/wiki/FAQ)

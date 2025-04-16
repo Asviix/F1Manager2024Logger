@@ -1,4 +1,4 @@
-# F1Manager2024Logger BETA 0.2
+# F1Manager2024Logger BETA 0.3.1
 
 [![GitHub license](https://img.shields.io/github/license/Asviix/F1Manager2024Logger)](https://github.com/Asviix/F1Manager2024Logger/blob/main/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Asviix/F1Manager2024Logger)](https://github.com/Asviix/F1Manager2024Logger/issues)

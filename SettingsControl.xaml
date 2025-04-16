@@ -11,20 +11,24 @@
     xmlns:dd="urn:gong-wpf-dragdrop"
     x:Class="F1Manager2024Plugin.SettingsControl"
     mc:Ignorable="d">
-    <ScrollViewer>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="0*" />
             </Grid.ColumnDefinitions>
-            <styles:SHTabControl Height="auto" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer>
+            <styles:SHTabControl Height="auto" VerticalAlignment="Top" Grid.Row="0">
                 <!-- Tab 1: Memory Mapped File Configuration -->
                 <styles:SHTabItem Header="Memory Mapped File">
                     <StackPanel Margin="0,20,0,0">
                         <StackPanel>
                             <Label Content="Select memory mapped file:" FontSize="16" Margin="0,0,0,5"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="SelectedFilePathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <TextBox x:Name="SelectedFilePathTextBox" MinWidth="400" Width="auto" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
                                 <styles:SHButtonPrimary Click="BrowseMMF_File" Content="Browse..."/>
                             </StackPanel>
                         </StackPanel>
@@ -42,7 +46,7 @@
                             </StackPanel>
                             <Label Content="Exporter Path:" FontSize="16"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="ExporterPathTextBox" Width="600" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <TextBox x:Name="ExporterPathTextBox" MinWidth="400" Width="auto" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
                                 <styles:SHButtonPrimary Click="BrowseExporter_Folder" Content="Browse..."/>
                             </StackPanel>
                         </StackPanel>
@@ -54,16 +58,27 @@
                     <StackPanel Margin="0,20,0,0">
                         <StackPanel>
                             <Label Content="Select drivers to track:" FontSize="16"/>
-                            <ListBox x:Name="DriversListBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600">
-                                <ListBox.ItemTemplate>
+                            <ItemsControl x:Name="DriversListBox" Margin="0,5,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2"/>
+                                        <StackPanel Margin="0,5,0,0">
+                                            <TextBlock Text="{Binding TeamName}" FontWeight="Bold" Margin="0,0,0,2"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox Content="{Binding Driver1.Name}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
+                                                <CheckBox Content="{Binding Driver2.Name}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
+                                            </StackPanel>
+                                        </StackPanel>
                                     </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
                             <Label Content="Selected Drivers:" FontSize="16"/>
-                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
+                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
                         </StackPanel>
                     </StackPanel>
                 </styles:SHTabItem>
@@ -87,37 +102,37 @@
                     </StackPanel>
                 </styles:SHTabItem>
             </styles:SHTabControl>
-            <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10">
-               <StackPanel>
+        </ScrollViewer>
+        <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.Row="1">
+                <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="For support, join our Discord: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                         <TextBlock
-                            x:Name="DiscordTextBost"
-                            MouseLeftButtonDown="OpenHelpLinks"
-                            MouseEnter="HighlightHelpLinks"
-                            MouseLeave="RemoveHightlightHelpLinks"
-                            Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                                    x:Name="DiscordTextBost"
+                                    MouseLeftButtonDown="OpenHelpLinks"
+                                    MouseEnter="HighlightHelpLinks"
+                                    MouseLeave="RemoveHighlightHelpLinks"
+                                    Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Visit the GitHub wiki: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                         <TextBlock
-                            x:Name="GitHubTextBot"
-                            MouseLeftButtonDown="OpenHelpLinks"
-                            MouseEnter="HighlightHelpLinks"
-                            MouseLeave="RemoveHightlightHelpLinks"
-                            Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                                    x:Name="GitHubTextBot"
+                                    MouseLeftButtonDown="OpenHelpLinks"
+                                    MouseEnter="HighlightHelpLinks"
+                                    MouseLeave="RemoveHighlightHelpLinks"
+                                    Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Download the lastest release at: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                         <TextBlock 
-                            x:Name="OvertakeTextBox"
-                            MouseLeftButtonDown="OpenHelpLinks"
-                            MouseEnter="HighlightHelpLinks"
-                            MouseLeave="RemoveHightlightHelpLinks"
-                            Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                                    x:Name="OvertakeTextBox"
+                                    MouseLeftButtonDown="OpenHelpLinks"
+                                    MouseEnter="HighlightHelpLinks"
+                                    MouseLeave="RemoveHighlightHelpLinks"
+                                    Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
-            </styles:SHSubSection>
-        </Grid>
-    </ScrollViewer>
+        </styles:SHSubSection>
+    </Grid>
 </UserControl>

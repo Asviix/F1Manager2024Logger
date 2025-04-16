@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseToSimHub|AnyCPU'">
+    <OutputPath>bin\ReleaseToSimHub\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AvalonDock">
       <HintPath>$(SIMHUB_INSTALL_PATH)\AvalonDock.dll</HintPath>

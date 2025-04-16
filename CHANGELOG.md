@@ -1,5 +1,15 @@
 # Changelog
 
+## BETA 0.3.1
+
+### Changed
+
+- Changed GitHub Repo's Organization for easier reading. ([`b4f6ba`](https://github.com/Asviix/F1Manager2024Logger/commit/b4f6ba52eb9f243d603b775cc28d6f9288f293c8))
+- Fixed Fatal Error when opening settings. ([``])()
+
+### Added
+- Added a link to the discord and the wiki to the settings page. ([`b4f6ba`](https://github.com/Asviix/F1Manager2024Logger/commit/b4f6ba52eb9f243d603b775cc28d6f9288f293c8))
+
 ## BETA 0.3
 
 ### Changed

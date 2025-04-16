@@ -58,7 +58,7 @@ namespace F1Manager2024Plugin
                 new DriverSelection { Name = "MyTeam2", IsSelected = true }  // Default selected
             };
 
-            DriversComboBox.ItemsSource = drivers;
+            DriversListBox.ItemsSource = drivers;
         }
 
         // Main constructor with plugin parameter
@@ -74,12 +74,12 @@ namespace F1Manager2024Plugin
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
                 if (plugin.Settings.TrackedDrivers != null)
                 {
-                    foreach (var driver in DriversComboBox.ItemsSource.Cast<DriverSelection>())
+                    foreach (var driver in DriversListBox.ItemsSource.Cast<DriverSelection>())
                     {
                         driver.IsSelected = plugin.Settings.TrackedDrivers.Contains(driver.Name);
                     }
                 }
-                var selectedDrivers = DriversComboBox.ItemsSource.Cast<DriverSelection>()
+                var selectedDrivers = DriversListBox.ItemsSource.Cast<DriverSelection>()
                     .Where(d => d.IsSelected)
                     .Select(d => d.Name)
                     .ToList();
@@ -164,7 +164,7 @@ namespace F1Manager2024Plugin
 
         private async void SaveDriversButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDrivers = DriversComboBox.ItemsSource.Cast<DriverSelection>()
+            var selectedDrivers = DriversListBox.ItemsSource.Cast<DriverSelection>()
                 .Where(d => d.IsSelected)
                 .Select(d => d.Name)
                 .ToArray();
@@ -245,7 +245,7 @@ namespace F1Manager2024Plugin
                 ExporterEnabledCheckbox.IsChecked = false;
                 ExporterPathTextBox.Text = "No folder selected";
 
-                foreach (var driver in DriversComboBox.ItemsSource.Cast<DriverSelection>())
+                foreach (var driver in DriversListBox.ItemsSource.Cast<DriverSelection>())
                 {
                     driver.IsSelected = defaults.TrackedDrivers.Contains(driver.Name);
                 }

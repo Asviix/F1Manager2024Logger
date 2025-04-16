@@ -50,40 +50,33 @@
                                 <styles:SHButtonPrimary Click="BrowseExporter_Folder" Content="Browse..."/>
                             </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </styles:SHTabItem>
-
-                <!-- Tab 3: Tracked Drivers -->
-                <styles:SHTabItem Header="Tracked Drivers">
-                    <StackPanel Margin="0,20,0,0">
-                        <StackPanel>
-                            <Label Content="Select drivers to track:" FontSize="16"/>
-                            <ItemsControl x:Name="DriversListBox" Margin="0,5,0,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Vertical"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,5,0,0">
-                                            <TextBlock Text="{Binding TeamName}" FontWeight="Bold" Margin="0,0,0,2"/>
-                                            <StackPanel Orientation="Horizontal">
-                                                <CheckBox Content="{Binding Driver1.Name}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
-                                                <CheckBox Content="{Binding Driver2.Name}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
-                                            </StackPanel>
+                        <styles:SHSectionSeparator></styles:SHSectionSeparator>
+                        <Label Content="Select drivers to track:" FontSize="16"/>
+                        <ItemsControl x:Name="DriversListBox" Margin="0,5,0,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,5,0,0">
+                                        <TextBlock Text="{Binding TeamName}" FontWeight="Bold" Margin="0,0,0,2" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox Content="{Binding Driver1.Name}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
+                                            <CheckBox Content="{Binding Driver2.Name}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
                                         </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
-                            <Label Content="Selected Drivers:" FontSize="16"/>
-                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
-                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
+                        <Label Content="Selected Drivers:" FontSize="16"/>
+                        <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
                     </StackPanel>
                 </styles:SHTabItem>
 
-                <!-- Tab 4: Historical Data Reset -->
+                <!-- Tab 3: Historical Data Reset -->
                 <styles:SHTabItem Header="Historical Data Reset">
                     <StackPanel Margin="0,20,0,0">
                         <StackPanel>
@@ -94,7 +87,7 @@
                     </StackPanel>
                 </styles:SHTabItem>
 
-                <!-- Tab 5: Reset Settings to Default -->
+                <!-- Tab 4: Reset Settings to Default -->
                 <styles:SHTabItem Header="Reset Settings">
                     <StackPanel Margin="0,20,0,0">
                         <Label Content="Warning! This is permanent!" HorizontalContentAlignment="Center" FontSize="18" Foreground="#FFDC2929" FontWeight="Bold"/>
@@ -103,6 +96,7 @@
                 </styles:SHTabItem>
             </styles:SHTabControl>
         </ScrollViewer>
+        <!-- Help Footer -->
         <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.Row="1">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">

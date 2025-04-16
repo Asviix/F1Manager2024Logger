@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using log4net.Plugin;
 using Microsoft.Win32;
 using SimHub.Plugins;
@@ -270,6 +271,45 @@ namespace F1Manager2024Plugin
                 Plugin.StopReading();
 
                 await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void OpenHelpLinks(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is System.Windows.Controls.TextBlock textBlock && !string.IsNullOrWhiteSpace(textBlock.Text))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = textBlock.Text,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    SHMessageBox.Show($"Failed to open the URL: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void HighlightHelpLinks(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is System.Windows.Controls.TextBlock textBlock)
+            {
+                textBlock.TextDecorations.Add(System.Windows.TextDecorations.Underline);
+                textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(48, 85, 168));
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Hand;
+            }
+        }
+
+        private void RemoveHightlightHelpLinks(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is System.Windows.Controls.TextBlock textBlock)
+            {
+                textBlock.TextDecorations.Clear();
+                textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 102, 204));
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Arrow;
             }
         }
     }

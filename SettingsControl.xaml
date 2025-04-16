@@ -17,7 +17,7 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="0*" />
             </Grid.ColumnDefinitions>
-            <styles:SHTabControl>
+            <styles:SHTabControl Height="auto" VerticalAlignment="Top">
                 <!-- Tab 1: Memory Mapped File Configuration -->
                 <styles:SHTabItem Header="Memory Mapped File">
                     <StackPanel Margin="0,20,0,0">
@@ -53,19 +53,19 @@
                 <styles:SHTabItem Header="Tracked Drivers">
                     <StackPanel Margin="0,20,0,0">
                         <StackPanel>
-                           <Label Content="Select drivers to track:" FontSize="16"/>
-                           <ListBox x:Name="DriversListBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600">
-                               <ListBox.ItemTemplate>
-                                   <DataTemplate>
-                                       <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2"/>
-                                   </DataTemplate>
-                               </ListBox.ItemTemplate>
-                           </ListBox>
-                           <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
-                           <Label Content="Selected Drivers:" FontSize="16"/>
-                           <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
-                       </StackPanel>
-                   </StackPanel>
+                            <Label Content="Select drivers to track:" FontSize="16"/>
+                            <ListBox x:Name="DriversListBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
+                            <Label Content="Selected Drivers:" FontSize="16"/>
+                            <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" Width="600" VerticalAlignment="Center" IsReadOnly="True"/>
+                        </StackPanel>
+                    </StackPanel>
                 </styles:SHTabItem>
 
                 <!-- Tab 4: Historical Data Reset -->
@@ -87,6 +87,37 @@
                     </StackPanel>
                 </styles:SHTabItem>
             </styles:SHTabControl>
+            <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10">
+               <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="For support, join our Discord: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                        <TextBlock
+                            x:Name="DiscordTextBost"
+                            MouseLeftButtonDown="OpenHelpLinks"
+                            MouseEnter="HighlightHelpLinks"
+                            MouseLeave="RemoveHightlightHelpLinks"
+                            Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Visit the GitHub wiki: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                        <TextBlock
+                            x:Name="GitHubTextBot"
+                            MouseLeftButtonDown="OpenHelpLinks"
+                            MouseEnter="HighlightHelpLinks"
+                            MouseLeave="RemoveHightlightHelpLinks"
+                            Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Download the lastest release at: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                        <TextBlock 
+                            x:Name="OvertakeTextBox"
+                            MouseLeftButtonDown="OpenHelpLinks"
+                            MouseEnter="HighlightHelpLinks"
+                            MouseLeave="RemoveHightlightHelpLinks"
+                            Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </styles:SHSubSection>
         </Grid>
     </ScrollViewer>
 </UserControl>

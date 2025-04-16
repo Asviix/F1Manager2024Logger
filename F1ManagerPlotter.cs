@@ -161,15 +161,16 @@ namespace F1Manager2024Plugin
         {
             try
             {
-                if (json.StartsWith("ERROR:"))
-                {
-                    UpdateStatus(false, json.Substring(6));
-                    return;
-                }
-
-                var data = JsonConvert.DeserializeObject<dynamic>(json);
                 lock (_dataLock)
                 {
+
+                    var data = JsonConvert.DeserializeObject<dynamic>(json);
+                    if (json.StartsWith("ERROR:"))
+                    {
+                        UpdateStatus(false, json.Substring(6));
+                        return;
+                    }
+
                     _lastData = data;
                     _lastDataTime = DateTime.UtcNow;
                     if (_lastData == null)

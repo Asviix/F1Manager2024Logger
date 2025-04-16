@@ -10,6 +10,8 @@ using System.Collections.Concurrent;
 using System.Security.Policy;
 using System.Windows.Markup;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
+using System.IO.Packaging;
+using System.IO;
 
 namespace F1Manager2024Plugin
 {
@@ -25,12 +27,14 @@ namespace F1Manager2024Plugin
         private Exporter _exporter;
         private string _mmfStatus = "Not Connected";
         private bool _ismmfConnected;
-
         private bool IsmmfConnected => _ismmfConnected;
         private string MmfStatus => _mmfStatus;
         private DateTime _lastDataTime = DateTime.Now;
         private readonly object _dataLock = new object();
         private dynamic _lastData;
+        private string _lastValidJson = "{}";
+        private DateTime _lastValidDataTime = DateTime.MinValue;
+        private readonly object _jsonLock = new object();
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "F1 Manager Plugin";
@@ -159,18 +163,21 @@ namespace F1Manager2024Plugin
 
         private void DataReceived(string json)
         {
-            try
+            lock (_dataLock)
             {
-                lock (_dataLock)
+                try
                 {
-
-                    var data = JsonConvert.DeserializeObject<dynamic>(json);
                     if (json.StartsWith("ERROR:"))
                     {
                         UpdateStatus(false, json.Substring(6));
                         return;
                     }
 
+                    _lastValidJson = json;
+                    _lastValidDataTime = DateTime.UtcNow;
+
+
+                    var data = JsonConvert.DeserializeObject<dynamic>(json);
                     _lastData = data;
                     _lastDataTime = DateTime.UtcNow;
                     if (_lastData == null)
@@ -178,84 +185,41 @@ namespace F1Manager2024Plugin
                         UpdateStatus(false, "No data received");
                         return;
                     }
-                    #region Update Properties
-                    // Update Session Properties
-                    UpdateValue("TrackName", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["trackName"] ?? "Unknown");
-                    UpdateValue("TimeElapsed", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["timeElapsed"] ?? 0f);
-                    UpdateValue("BestSessionTime", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["bestSessionTime"] ?? 0f);
-                    UpdateValue("RubberState", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["rubber"] ?? 0);
-                    UpdateValue("SessionType", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionType"] ?? "Unknown");
-                    UpdateValue("SessionTypeShort", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionTypeShort"] ?? "Unknown");
-                    UpdateValue("AirTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["airTemp"] ?? 0f);
-                    UpdateValue("TrackTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["trackTemp"] ?? 0f);
-                    UpdateValue("Weather", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["weather"] ?? "Unknown");
 
-                    // Update Drivers Properties
-                    foreach (var car in carNames)
+                    UpdateProperties(_lastData, data);
+                }
+                catch (JsonException ex) { 
+                    ExportErrorData(json, ex); 
+                    if ((DateTime.UtcNow - _lastValidDataTime).TotalSeconds < 5)
                     {
-                        // Update historical data
-                        if (LapOrTurnChanged(car))
+                        try
                         {
-                            UpdateHistoricalData(car, data[car]);
+                            lock (_jsonLock)
+                            {
+                                var fallbackData = JsonConvert.DeserializeObject<dynamic>(_lastValidJson);
+                                UpdateProperties(_lastValidJson, fallbackData);
+                            }
                         }
-
-                        UpdateValue($"{car}_Position", (_lastData?[car]?["telemetry"]?["driver"]?["position"] ?? 0) + 1); // Adjust for 0-based index
-                        UpdateValue($"{car}_DriverNumber", _lastData?[car]?["telemetry"]?["driver"]?["driverNumber"] ?? 0);
-                        UpdateValue($"{car}_PitStopStatus", _lastData?[car]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "Unknown");
-                        // Status
-                        UpdateValue($"{car}_TurnNumber", _lastData?[car]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 0);
-                        UpdateValue($"{car}_CurrentLap", (_lastData?[car]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 0) + 1); // Adjust for Index
-                        // Timings
-                        UpdateValue($"{car}_CurrentLapTime", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["currentLapTime"] ?? 0f);
-                        UpdateValue($"{car}_DriverBestLap", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["driverBestLap"] ?? 0f);
-                        UpdateValue($"{car}_LastLapTime", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["lastLapTime"] ?? 0f);
-                        UpdateValue($"{car}_LastS1Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS1Time"] ?? 0f);
-                        UpdateValue($"{car}_LastS2Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS2Time"] ?? 0f);
-                        UpdateValue($"{car}_LastS3Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS3Time"] ?? 0f);
-                        // Car telemetry
-                        UpdateValue($"{car}_Speed", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["speed"] ?? 0);
-                        UpdateValue($"{car}_Rpm", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["rpm"] ?? 0);
-                        UpdateValue($"{car}_Gear", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["gear"] ?? 0);
-                        UpdateValue($"{car}_Charge", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["charge"] ?? 0f);
-                        UpdateValue($"{car}_Fuel", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["fuel"] ?? 0f);
-                        // Tyres
-                        UpdateValue($"{car}_TyreCompound", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["compound"] ?? "Unknown");
-                        UpdateValue($"{car}_flTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["flTemp"] ?? 0f);
-                        UpdateValue($"{car}_frTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["frTemp"] ?? 0f);
-                        UpdateValue($"{car}_rlTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rlTemp"] ?? 0f);
-                        UpdateValue($"{car}_rrTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rrTemp"] ?? 0f);
-                        UpdateValue($"{car}_flDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["flDeg"] ?? 0f);
-                        UpdateValue($"{car}_frDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["frDeg"] ?? 0f);
-                        UpdateValue($"{car}_rlDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rlDeg"] ?? 0f);
-                        UpdateValue($"{car}_rrDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rrDeg"] ?? 0f);
-                        // Modes
-                        UpdateValue($"{car}_PaceMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["paceMode"] ?? "Unknown");
-                        UpdateValue($"{car}_FuelMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["fuelMode"] ?? "Unknown");
-                        UpdateValue($"{car}_ERSMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["ersMode"] ?? "Unknown");
-                        UpdateValue($"{car}_DRSMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["drsMode"] ?? "Unknown");
-                        // Components
-                        UpdateValue($"{car}_EngineTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineTemp"] ?? 0f);
-                        UpdateValue($"{car}_EngineDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineDeg"] ?? 0f);
-                        UpdateValue($"{car}_GearboxDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["gearbox"]?["gearboxDeg"] ?? 0f);
-                        UpdateValue($"{car}_ERSDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["ers"]?["ersDeg"] ?? 0f);
-
-                        // Write to CSV if needed
-                        if (Settings.ExporterEnabled || Settings.TrackedDrivers.Contains(car))
+                        catch
                         {
-                            if (LapOrTurnChanged(car))
-                                _exporter.ExportData(_lastData, car);
-                                
+                            UpdateStatus(false, "Fallback data corrupted.");
                         }
                     }
-                    #endregion
+                    else
+                    {
+                        UpdateStatus(false, "No recent valid data.");
+                    }
+
+                    ExportErrorData(json, ex);
                 }
 
-                UpdateStatus(true, "Connected");
+                catch (Exception ex) { 
+                    ExportErrorData(json, ex); 
+                }
             }
-            catch
-            {
-                return;
-            }
+
+            UpdateStatus(true, "Connected");
+
         }
 
         public void StartReading(string filePath)
@@ -303,6 +267,78 @@ namespace F1Manager2024Plugin
             _mmfStatus = message;
             UpdateValue("Status_IsMMF_Connected", connected);
             UpdateValue("Status_MMF_Status", message);
+        }
+
+        private void UpdateProperties(dynamic _lastData, dynamic data)
+        {
+            // Update Session Properties
+            UpdateValue("TrackName", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["trackName"] ?? "Unknown");
+            UpdateValue("TimeElapsed", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["timeElapsed"] ?? 0f);
+            UpdateValue("BestSessionTime", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["bestSessionTime"] ?? 0f);
+            UpdateValue("RubberState", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["rubber"] ?? 0);
+            UpdateValue("SessionType", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionType"] ?? "Unknown");
+            UpdateValue("SessionTypeShort", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["sessionTypeShort"] ?? "Unknown");
+            UpdateValue("AirTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["airTemp"] ?? 0f);
+            UpdateValue("TrackTemp", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["trackTemp"] ?? 0f);
+            UpdateValue("Weather", _lastData?["Ferrari1"]?["telemetry"]?["session"]?["weather"]?["weather"] ?? "Unknown");
+
+            // Update Drivers Properties
+            foreach (var car in carNames)
+            {
+                // Update historical data
+                if (LapOrTurnChanged(car))
+                {
+                    UpdateHistoricalData(car, data[car]);
+                }
+
+                UpdateValue($"{car}_Position", (_lastData?[car]?["telemetry"]?["driver"]?["position"] ?? 0) + 1); // Adjust for 0-based index
+                UpdateValue($"{car}_DriverNumber", _lastData?[car]?["telemetry"]?["driver"]?["driverNumber"] ?? 0);
+                UpdateValue($"{car}_PitStopStatus", _lastData?[car]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "Unknown");
+                // Status
+                UpdateValue($"{car}_TurnNumber", _lastData?[car]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 0);
+                UpdateValue($"{car}_CurrentLap", (_lastData?[car]?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 0) + 1); // Adjust for Index
+                // Timings
+                UpdateValue($"{car}_CurrentLapTime", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["currentLapTime"] ?? 0f);
+                UpdateValue($"{car}_DriverBestLap", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["driverBestLap"] ?? 0f);
+                UpdateValue($"{car}_LastLapTime", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["lastLapTime"] ?? 0f);
+                UpdateValue($"{car}_LastS1Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS1Time"] ?? 0f);
+                UpdateValue($"{car}_LastS2Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS2Time"] ?? 0f);
+                UpdateValue($"{car}_LastS3Time", _lastData?[car]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS3Time"] ?? 0f);
+                // Car telemetry
+                UpdateValue($"{car}_Speed", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["speed"] ?? 0);
+                UpdateValue($"{car}_Rpm", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["rpm"] ?? 0);
+                UpdateValue($"{car}_Gear", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["gear"] ?? 0);
+                UpdateValue($"{car}_Charge", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["charge"] ?? 0f);
+                UpdateValue($"{car}_Fuel", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["fuel"] ?? 0f);
+                // Tyres
+                UpdateValue($"{car}_TyreCompound", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["compound"] ?? "Unknown");
+                UpdateValue($"{car}_flTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["flTemp"] ?? 0f);
+                UpdateValue($"{car}_frTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["frTemp"] ?? 0f);
+                UpdateValue($"{car}_rlTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rlTemp"] ?? 0f);
+                UpdateValue($"{car}_rrTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rrTemp"] ?? 0f);
+                UpdateValue($"{car}_flDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["flDeg"] ?? 0f);
+                UpdateValue($"{car}_frDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["frDeg"] ?? 0f);
+                UpdateValue($"{car}_rlDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rlDeg"] ?? 0f);
+                UpdateValue($"{car}_rrDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rrDeg"] ?? 0f);
+                // Modes
+                UpdateValue($"{car}_PaceMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["paceMode"] ?? "Unknown");
+                UpdateValue($"{car}_FuelMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["fuelMode"] ?? "Unknown");
+                UpdateValue($"{car}_ERSMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["ersMode"] ?? "Unknown");
+                UpdateValue($"{car}_DRSMode", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["modes"]?["drsMode"] ?? "Unknown");
+                // Components
+                UpdateValue($"{car}_EngineTemp", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineTemp"] ?? 0f);
+                UpdateValue($"{car}_EngineDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineDeg"] ?? 0f);
+                UpdateValue($"{car}_GearboxDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["gearbox"]?["gearboxDeg"] ?? 0f);
+                UpdateValue($"{car}_ERSDeg", _lastData?[car]?["telemetry"]?["driver"]?["car"]?["components"]?["ers"]?["ersDeg"] ?? 0f);
+
+                // Write to CSV if needed
+                if (Settings.ExporterEnabled || Settings.TrackedDrivers.Contains(car))
+                {
+                    if (LapOrTurnChanged(car))
+                        _exporter.ExportData(_lastData, car);
+
+                }
+            }
         }
 
         private void UpdateValue(string data, object message)
@@ -493,6 +529,26 @@ namespace F1Manager2024Plugin
 
             // Save settings
             this.SaveCommonSettings("GeneralSettings", Settings);
+        }
+
+        private void ExportErrorData(string json, Exception ex)
+        {
+            try
+            {
+                string errorDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "F1ManagerErrors");
+                Directory.CreateDirectory(errorDir);
+
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmssfff");
+                string errorFile = Path.Combine(errorDir, $"error_{timestamp}.json");
+
+                File.WriteAllText(errorFile, $"// Exception: {ex.Message}\n{json}");
+
+                SimHub.Logging.Current.Info($"Saved error data to: {errorFile}");
+            }
+            catch (Exception exportEx)
+            {
+                SimHub.Logging.Current.Error("Failed to export error data", exportEx);
+            }
         }
     }
 }

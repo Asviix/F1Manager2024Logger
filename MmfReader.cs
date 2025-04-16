@@ -48,7 +48,7 @@ namespace F1Manager2024Plugin
                         using (var reader = new BinaryReader(fs))
                         {
                             int length = reader.ReadInt32();
-                            if (length <= 0 || length > 65532)
+                            if (length <= 0 || length > 1024*1024)
                             {
                                 Thread.Sleep(1);
                                 continue;

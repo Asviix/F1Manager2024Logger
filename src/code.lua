@@ -11,7 +11,7 @@
 
 local fullPointerPath = "[[[[[[F1Manager24.exe+798F570]+150]+3E8]+130]+0]+28]+0"
 local SHARED_MEM_NAME = "F1Manager_Telemetry"
-local SHARED_MEM_SIZE = 65536  -- 64KB buffer (adjust as needed)
+local SHARED_MEM_SIZE = 1024*1024  -- 1MB buffer (adjust as needed)
 -- CAR STRUCTURE OFFSETS
 
 -- ENUM MAPPINGS

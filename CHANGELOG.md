@@ -5,7 +5,7 @@
 ### Changed
 
 - Changed GitHub Repo's Organization for easier reading. ([`b4f6ba`](https://github.com/Asviix/F1Manager2024Logger/commit/b4f6ba52eb9f243d603b775cc28d6f9288f293c8))
-- Fixed Fatal Error when opening settings. ([``])()
+- Fixed Fatal Error when opening settings. ([`964f99`])(https://github.com/Asviix/F1Manager2024Logger/commit/964f9932013e632fa1df52f9417b7eba5859cd37)
 
 ### Added
 - Added a link to the discord and the wiki to the settings page. ([`b4f6ba`](https://github.com/Asviix/F1Manager2024Logger/commit/b4f6ba52eb9f243d603b775cc28d6f9288f293c8))

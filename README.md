@@ -15,6 +15,7 @@ F1Manager2024 Logger is a SimHub Plugin that makes F1 Manager 2024 Data availabl
   - Tire wear and performance
   - Fuel consumption
   - Weather conditions
+  - Historical Data
 - 🏎️ Driver performance tracking
 - 💾 Export data to CSV for further analysis
 

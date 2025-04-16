@@ -14,8 +14,8 @@ using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
 namespace F1Manager2024Plugin
 {
     [PluginDescription("F1 Manager 2024 Telemetry Plotter")]
-    [PluginAuthor("Plots telemetry from F1 Manager 2024 via memory-mapped file")]
-    [PluginName("Thomas DEFRANCE")]
+    [PluginName("Plots telemetry from F1 Manager 2024 via memory-mapped file")]
+    [PluginAuthor("Thomas DEFRANCE")]
     public class F1ManagerPlotter : IPlugin, IDataPlugin, IWPFSettingsV2
     {
         public PluginManager PluginManager { get; set; }

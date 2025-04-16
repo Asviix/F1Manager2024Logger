@@ -32,9 +32,6 @@ namespace F1Manager2024Plugin
         private DateTime _lastDataTime = DateTime.Now;
         private readonly object _dataLock = new object();
         private dynamic _lastData;
-        private string _lastValidJson = "{}";
-        private DateTime _lastValidDataTime = DateTime.MinValue;
-        private readonly object _jsonLock = new object();
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "F1 Manager Plugin";
@@ -173,9 +170,6 @@ namespace F1Manager2024Plugin
                         return;
                     }
 
-                    _lastValidJson = json;
-                    _lastValidDataTime = DateTime.UtcNow;
-
 
                     var data = JsonConvert.DeserializeObject<dynamic>(json);
                     _lastData = data;
@@ -189,27 +183,6 @@ namespace F1Manager2024Plugin
                     UpdateProperties(_lastData, data);
                 }
                 catch (JsonException ex) { 
-                    ExportErrorData(json, ex); 
-                    if ((DateTime.UtcNow - _lastValidDataTime).TotalSeconds < 5)
-                    {
-                        try
-                        {
-                            lock (_jsonLock)
-                            {
-                                var fallbackData = JsonConvert.DeserializeObject<dynamic>(_lastValidJson);
-                                UpdateProperties(_lastValidJson, fallbackData);
-                            }
-                        }
-                        catch
-                        {
-                            UpdateStatus(false, "Fallback data corrupted.");
-                        }
-                    }
-                    else
-                    {
-                        UpdateStatus(false, "No recent valid data.");
-                    }
-
                     ExportErrorData(json, ex);
                 }
 
@@ -220,6 +193,32 @@ namespace F1Manager2024Plugin
 
             UpdateStatus(true, "Connected");
 
+        }
+
+        // Helper Functions
+        class LastRecordedData
+        {
+            public int LastTurnNumber { get; set; } = -1;
+            public int LastLapNumber { get; set; } = -1;
+        }
+
+        private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
+
+        private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>>();
+
+        private readonly object _historyLock = new object();
+        private const int MaxLapsToStore = 70; // Adjust as needed
+        public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
+        {
+            try
+            {
+                return new SettingsControl(this);
+            }
+            catch (Exception ex)
+            {
+                SimHub.Logging.Current.Info("Failed to create settings control", ex);
+                return new SettingsControl(); // Fallback to empty control
+            }
         }
 
         public void StartReading(string filePath)
@@ -252,13 +251,7 @@ namespace F1Manager2024Plugin
 
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            lock (_dataLock)
-            {
-                if (_lastData == null || (DateTime.UtcNow - _lastDataTime).TotalSeconds > 1)
-                {
-                    return;
-                }
-            }
+            return;
         }
 
         private void UpdateStatus(bool connected, string message)
@@ -346,19 +339,6 @@ namespace F1Manager2024Plugin
             PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
         }
 
-        public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
-        {
-            try
-            {
-                return new SettingsControl(this);
-            }
-            catch (Exception ex)
-            {
-                SimHub.Logging.Current.Info("Failed to create settings control", ex);
-                return new SettingsControl(); // Fallback to empty control
-            }
-        }
-
         private bool FileExistsRecursive(string filePath)
         {
             try
@@ -375,14 +355,6 @@ namespace F1Manager2024Plugin
                 return false;
             }
         }
-
-        private class LastRecordedData
-        {
-            public int LastTurnNumber { get; set; } = -1;
-            public int LastLapNumber { get; set; } = -1;
-        }
-
-        private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
 
         private bool LapOrTurnChanged(string carName)
         {
@@ -410,11 +382,6 @@ namespace F1Manager2024Plugin
                 return false;
             }
         }
-
-        private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, dynamic>>>();
-
-        private readonly object _historyLock = new object();
-        private const int MaxLapsToStore = 70; // Adjust as needed
 
         private void UpdateHistoricalData(string carName, dynamic currentData)
         {

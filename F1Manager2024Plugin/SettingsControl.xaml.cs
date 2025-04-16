@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using log4net.Plugin;
 using Microsoft.Win32;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
@@ -196,6 +197,21 @@ namespace F1Manager2024Plugin
                 }
                 else
                 {
+                    if (Plugin.Settings.TrackedDrivers != null)
+                    {
+                        foreach (var driver in DriversListBox.ItemsSource.Cast<DriverSelection>())
+                        {
+                            driver.IsSelected = Plugin.Settings.TrackedDrivers.Contains(driver.Name);
+                        }
+                    }
+                    if (Plugin.Settings.TrackedDrivers.Any())
+                    {
+                        DriversTextBox.Text = string.Join(", ", Plugin.Settings.TrackedDrivers);
+                    }
+                    else
+                    {
+                        DriversTextBox.Text = "No drivers selected";
+                    }
                     return;
                 }
             }

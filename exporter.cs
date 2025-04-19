@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,10 +26,8 @@ namespace F1Manager2024Plugin
         {
             try
             {
-                // Skip if exporter is disabled or driver not in tracked drivers
-                if (!_settings.ExporterEnabled || !_settings.TrackedDrivers.Contains(carName))
-                    return;
-
+                string trackName = F1ManagerPlotter.GetTrackName(car.Driver.Session.trackId);
+                string sessionType = F1ManagerPlotter.GetSessionType(car.Driver.Session.sessionType);
                 string trackName = data["MyTeam1"]?["telemetry"]?["session"]?["trackName"] ?? "UnknownTrack";
                 string sessionType = data["MyTeam1"]?["telemetry"]?["session"]?["sessionType"] ?? "UnknownSession";
 

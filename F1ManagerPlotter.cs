@@ -1,4 +1,4 @@
-﻿using GameReaderCommon;
+using GameReaderCommon;
 using SimHub.Plugins;
 using Newtonsoft.Json;
 using System;
@@ -198,8 +198,8 @@ namespace F1Manager2024Plugin
         // Helper Functions
         class LastRecordedData
         {
-            public int LastTurnNumber { get; set; } = -1;
-            public int LastLapNumber { get; set; } = -1;
+            public int LastTurnNumber { get; set; }
+            public int LastLapNumber { get; set; }
         }
 
         private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
@@ -282,6 +282,11 @@ namespace F1Manager2024Plugin
                 if (LapOrTurnChanged(car))
                 {
                     UpdateHistoricalData(car, data[car]);
+
+                    if (Settings.ExporterEnabled && Settings.TrackedDrivers.Contains(name))
+                    {
+                        _exporter.ExportData(name, car);
+                    }
                 }
 
                 UpdateValue($"{car}_Position", (_lastData?[car]?["telemetry"]?["driver"]?["position"] ?? 0) + 1); // Adjust for 0-based index
@@ -394,8 +399,8 @@ namespace F1Manager2024Plugin
                 ClearAllHistory();
             }
 
-            int currentLap = (int)(currentData?["telemetry"]?["driver"]?["status"]?["currentLap"] ?? 1);
-            int currentTurn = (int)(currentData?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 1);
+            int currentLap = car.currentLap + 1; // Don't forget to index
+            int currentTurn = car.Driver.turnNumber;
 
             if (currentLap < 1 || currentTurn < 1) return; // Skip invalid data
 

@@ -7,6 +7,8 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
+using System.Windows.Forms;
+using System.Linq.Expressions;
 
 namespace F1Manager2024Plugin
 {
@@ -25,8 +27,6 @@ namespace F1Manager2024Plugin
         {
             InitializeComponent();
             InitializeDriverSelection();
-            // Initialize with empty state
-            SelectedFilePathTextBox.Text = "No file selected";
         }
         public class TeamDrivers
         {
@@ -83,7 +83,7 @@ namespace F1Manager2024Plugin
 
                 new TeamDrivers { TeamName = "MyTeam",
                 Driver1 = new DriverSelection { Name = "MyTeam1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "MyTeam1", IsSelected = false } },
+                Driver2 = new DriverSelection { Name = "MyTeam2", IsSelected = false } },
             };
 
             DriversListBox.ItemsSource = teams;
@@ -97,7 +97,6 @@ namespace F1Manager2024Plugin
             // Initialize UI with current settings
             if (plugin.Settings != null)
             {
-                SelectedFilePathTextBox.Text = plugin.Settings.Path ?? "No file selected";
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
 
@@ -125,42 +124,12 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void BrowseMMF_File(object sender, RoutedEventArgs e)
-        {
-            if (Plugin == null) return;
-
-            var openFileDialog = new OpenFileDialog()
-            {
-                Title = "Select Memory Mapped File",
-                Filter = "All files (*.*)|*.*"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SelectedFilePathTextBox.Text = openFileDialog.FileName;
-
-                if (openFileDialog.FileName.Contains("F1Manager_Telemetry") == false)
-                {
-                    SHMessageBox.Show("Please select the correct file: F1Manager_Telemetry", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                if (Plugin.Settings != null)
-                {
-                    Plugin.Settings.Path = openFileDialog.FileName;
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-                    Plugin.StartReading(Plugin.Settings.Path);
-                }
-            }
-        }
-
         private void ExporterChecked(object sender, RoutedEventArgs e)
         {
             if (Plugin == null) return;
             if (Plugin.Settings != null)
             {
                 Plugin.Settings.ExporterEnabled = true;
-                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             }
         }
 
@@ -170,7 +139,6 @@ namespace F1Manager2024Plugin
             if (Plugin.Settings != null)
             {
                 Plugin.Settings.ExporterEnabled = false;
-                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             }
         }
 
@@ -187,12 +155,11 @@ namespace F1Manager2024Plugin
                 if (Plugin.Settings != null)
                 {
                     Plugin.Settings.ExporterPath = folderBrowserDialog.SelectedPath;
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                 }
             }
         }
 
-        private async void SaveDriversButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveExporter_Settings(object sender, RoutedEventArgs e)
         {
             var selectedDrivers = new List<string>();
 
@@ -212,9 +179,6 @@ namespace F1Manager2024Plugin
 
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    Plugin.Settings.TrackedDrivers = selectedDrivers.ToArray();
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-
                     if (selectedDrivers.Any())
                     {
                         DriversTextBox.Text = string.Join(", ", selectedDrivers);
@@ -223,9 +187,6 @@ namespace F1Manager2024Plugin
                     {
                         DriversTextBox.Text = "No drivers selected";
                     }
-
-                    await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
                 }
                 else
                 {
@@ -244,12 +205,14 @@ namespace F1Manager2024Plugin
                     {
                         DriversTextBox.Text = "No drivers selected";
                     }
+                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                     return;
                 }
             }
 
             Plugin.Settings.TrackedDrivers = selectedDrivers.ToArray();
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
 
             if (selectedDrivers.Any())
             {
@@ -260,7 +223,7 @@ namespace F1Manager2024Plugin
                 DriversTextBox.Text = "No drivers selected";
             }
 
-            await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
 
         }
 
@@ -282,14 +245,13 @@ namespace F1Manager2024Plugin
             if (result == System.Windows.Forms.DialogResult.Yes)
             {
                 var defaults = F1Manager2024PluginSettings.GetDefaults();
-                Plugin.Settings.Path = defaults.Path;
                 Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
                 Plugin.Settings.ExporterPath = defaults.ExporterPath;
                 Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
 
                 Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+                Plugin.ReloadSettings(Plugin.Settings);
 
-                SelectedFilePathTextBox.Text = "No file selected";
                 ExporterEnabledCheckbox.IsChecked = false;
                 ExporterPathTextBox.Text = "No folder selected";
 
@@ -299,8 +261,6 @@ namespace F1Manager2024Plugin
                     team.Driver2.IsSelected = defaults.TrackedDrivers.Contains(team.Driver2.Name);
                 }
                 DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
-
-                Plugin.StopReading();
 
                 await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             }

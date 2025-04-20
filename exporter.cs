@@ -1,37 +1,26 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime;
+using SimHub.Plugins;
 
 namespace F1Manager2024Plugin
 {
-    internal class Exporter
+    public class Exporter
     {
-        private readonly string _exportDirectory;
         private readonly Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
         private readonly Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
-        private readonly F1Manager2024PluginSettings _settings;
 
-        public Exporter(F1Manager2024PluginSettings settings)
+        public void ExportData(string carName, CarTelemetry car, F1Manager2024PluginSettings Settings)
         {
-            _settings = settings;
-            _exportDirectory = _settings.ExporterPath ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                "F1ManagerTelemetry");
-
-            Directory.CreateDirectory(_exportDirectory);
-        }
-
-        public void ExportData(dynamic data, string carName)
-        {
+            if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
             {
                 string trackName = F1ManagerPlotter.GetTrackName(car.Driver.Session.trackId);
                 string sessionType = F1ManagerPlotter.GetSessionType(car.Driver.Session.sessionType);
-                string trackName = data["MyTeam1"]?["telemetry"]?["session"]?["trackName"] ?? "UnknownTrack";
-                string sessionType = data["MyTeam1"]?["telemetry"]?["session"]?["sessionType"] ?? "UnknownSession";
 
-                string basePath = _settings.ExporterPath ?? Path.Combine(
+                string basePath = Settings.ExporterPath ?? Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "F1ManagerTelemetry");
 
@@ -56,63 +45,63 @@ namespace F1Manager2024Plugin
                 {
                     // Session data
                     ["timestamp"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
-                    ["trackName"] = data["MyTeam1"]?["telemetry"]?["session"]?["trackName"] ?? "",
-                    ["sessionType"] = data["MyTeam1"]?["telemetry"]?["session"]?["sessionType"] ?? "",
-                    ["timeElapsed"] = data["MyTeam1"]?["telemetry"]?["session"]?["timeElapsed"] ?? 0,
+                    ["trackName"] = F1ManagerPlotter.GetTrackName(car.Driver.Session.trackId) ?? "",
+                    ["sessionType"] = F1ManagerPlotter.GetSessionType(car.Driver.Session.sessionType) ?? "",
+                    ["timeElapsed"] = car.Driver.Session.timeElapsed,
 
                     // Driver info
-                    ["driverNumber"] = data[carName]?["telemetry"]?["driver"]?["driverNumber"] ?? 0,
-                    ["pitstopStatus"] = data[carName]?["telemetry"]?["driver"]?["pitstopStatus"] ?? "",
-                    ["currentLap"] = data[carName]?["telemetry"]?["driver"]?["status"]?["currentLap"] + 1 ?? 0, // Adjust for index
-                    ["turnNumber"] = data[carName]?["telemetry"]?["driver"]?["status"]?["turnNumber"] ?? 0,
-                    ["position"] = data[carName]?["telemetry"]?["driver"]?["position"] + 1 ?? 0, // Adjust for 0-based index
+                    ["driverNumber"] = car.Driver.driverNumber,
+                    ["pitstopStatus"] = F1ManagerPlotter.GetPitStopStatus(car.pitStopStatus) ?? "",
+                    ["currentLap"] = car.currentLap + 1, // Adjust for index
+                    ["turnNumber"] = car.Driver.turnNumber,
+                    ["position"] = car.Driver.position + 1, // Adjust for 0-based index
 
                     // Tyres
-                    ["compound"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["compound"] ?? "",
-                    ["flTemp"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["flTemp"] ?? 0,
-                    ["flDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["flDeg"] ?? 0,
-                    ["frTemp"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["frTemp"] ?? 0,
-                    ["frDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["frDeg"] ?? 0,
-                    ["rlTemp"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rlTemp"] ?? 0,
-                    ["rlDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rlDeg"] ?? 0,
-                    ["rrTemp"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["temperature"]?["rrTemp"] ?? 0,
-                    ["rrDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["tyres"]?["wear"]?["rrDeg"] ?? 0,
+                    ["compound"] = F1ManagerPlotter.GetTireCompound(car.tireCompound) ?? "",
+                    ["flTemp"] = car.flTemp,
+                    ["flDeg"] = car.flWear,
+                    ["frTemp"] = car.frTemp,
+                    ["frDeg"] = car.frWear,
+                    ["rlTemp"] = car.rlTemp,
+                    ["rlDeg"] = car.rlWear,
+                    ["rrTemp"] = car.rrTemp,
+                    ["rrDeg"] = car.rrWear,
 
                     // Car telemetry
-                    ["speed"] = data[carName]?["telemetry"]?["driver"]?["car"]?["speed"] ?? 0,
-                    ["rpm"] = data[carName]?["telemetry"]?["driver"]?["car"]?["rpm"] ?? 0,
-                    ["gear"] = data[carName]?["telemetry"]?["driver"]?["car"]?["gear"] ?? 0,
+                    ["speed"] = car.Driver.speed,
+                    ["rpm"] = car.Driver.rpm,
+                    ["gear"] = car.Driver.gear,
 
                     // Components
-                    ["engineTemp"] = data[carName]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineTemp"] ?? 0,
-                    ["engineDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["components"]?["engine"]?["engineDeg"] ?? 0,
-                    ["gearboxDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["components"]?["gearbox"]?["gearboxDeg"] ?? 0,
-                    ["ersDeg"] = data[carName]?["telemetry"]?["driver"]?["car"]?["components"]?["ers"]?["ersDeg"] ?? 0,
+                    ["engineTemp"] = car.engineTemp,
+                    ["engineDeg"] = car.engineWear,
+                    ["gearboxDeg"] = car.gearboxWear,
+                    ["ersDeg"] = car.ersWear,
 
                     // Energy
-                    ["charge"] = data[carName]?["telemetry"]?["driver"]?["car"]?["charge"] ?? 0,
-                    ["fuel"] = data[carName]?["telemetry"]?["driver"]?["car"]?["fuel"] ?? 0,
+                    ["charge"] = car.charge,
+                    ["fuel"] = car.fuel,
 
                     // Modes
-                    ["paceMode"] = data[carName]?["telemetry"]?["driver"]?["car"]?["modes"]?["paceMode"] ?? "",
-                    ["fuelMode"] = data[carName]?["telemetry"]?["driver"]?["car"]?["modes"]?["fuelMode"] ?? "",
-                    ["ersMode"] = data[carName]?["telemetry"]?["driver"]?["car"]?["modes"]?["ersMode"] ?? "",
-                    ["drsMode"] = data[carName]?["telemetry"]?["driver"]?["car"]?["modes"]?["drsMode"] ?? "",
+                    ["paceMode"] = F1ManagerPlotter.GetPaceMode(car.paceMode) ?? "",
+                    ["fuelMode"] = F1ManagerPlotter.GetFuelMode(car.fuelMode) ?? "",
+                    ["ersMode"] = F1ManagerPlotter.GetERSMode(car.ersMode) ?? "",
+                    ["drsMode"] = F1ManagerPlotter.GetDRSMode(car.Driver.drsMode) ?? "",
 
                     // Timings
-                    ["currentLapTime"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["currentLapTime"] ?? 0,
-                    ["driverBestLap"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["driverBestLap"] ?? 0,
-                    ["lastLapTime"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["lastLapTime"] ?? 0,
-                    ["lastS1Time"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS1Time"] ?? 0,
-                    ["lastS2Time"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS2Time"] ?? 0,
-                    ["lastS3Time"] = data[carName]?["telemetry"]?["driver"]?["timings"]?["sectors"]?["lastS3Time"] ?? 0,
+                    ["currentLapTime"] = car.Driver.currentLapTime,
+                    ["driverBestLap"] = car.Driver.driverBestLap,
+                    ["lastLapTime"] = car.Driver.lastLapTime,
+                    ["lastS1Time"] = car.Driver.lastS1Time,
+                    ["lastS2Time"] = car.Driver.lastS2Time,
+                    ["lastS3Time"] = car.Driver.lastS3Time,
 
                     // Session info
-                    ["bestSessionTime"] = data["MyTeam1"]?["telemetry"]?["session"]?["bestSessionTime"] ?? 0,
-                    ["rubber"] = data["MyTeam1"]?["telemetry"]?["session"]?["rubber"] ?? 0,
-                    ["airTemp"] = data["MyTeam1"]?["telemetry"]?["session"]?["weather"]?["airTemp"] ?? 0,
-                    ["trackTemp"] = data["MyTeam1"]?["telemetry"]?["session"]?["weather"]?["trackTemp"] ?? 0,
-                    ["weather"] = data["MyTeam1"]?["telemetry"]?["session"]?["weather"]?["weather"] ?? ""
+                    ["bestSessionTime"] = car.Driver.Session.bestSessionTime,
+                    ["rubber"] = car.Driver.Session.rubber,
+                    ["airTemp"] = car.Driver.Session.Weather.airTemp,
+                    ["trackTemp"] = car.Driver.Session.Weather.trackTemp,
+                    ["weather"] = F1ManagerPlotter.GetWeather(car.Driver.Session.Weather.weather) ?? ""
                 };
 
                 // Write to CSV

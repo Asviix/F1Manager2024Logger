@@ -5,7 +5,6 @@ obj/
 bin/
 /CustomDialog.xaml
 /CustomDialog.xaml.cs
-/sdkmenuicon.png
 
 # Prerequisites
 *.d

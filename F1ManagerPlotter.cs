@@ -14,6 +14,7 @@ using System.IO.Packaging;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using WoteverCommon;
 
 namespace F1Manager2024Plugin
 {
@@ -27,11 +28,8 @@ namespace F1Manager2024Plugin
         public F1Manager2024PluginSettings Settings;
         public MmfReader _mmfReader;
         public Exporter _exporter;
-        private string _mmfStatus = "Not Connected";
-        private bool _ismmfConnected;
-        private bool IsmmfConnected => _ismmfConnected;
-        private string MmfStatus => _mmfStatus;
-        private DateTime _lastDataTime = DateTime.Now;
+        private DateTime _lastDataTime;
+        private float _lastTimeElapsed;
         private readonly object _dataLock = new object();
         private Telemetry _lastData;
 
@@ -75,6 +73,7 @@ namespace F1Manager2024Plugin
 
             #region Init Properties
             // Add Session Properties
+            pluginManager.AddProperty("TimeSpeed", GetType(), typeof(float), "Time Fast-Forward Multiplicator.");
             pluginManager.AddProperty("TimeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
             pluginManager.AddProperty("TrackName", GetType(), typeof(int), "Track Name.");
             pluginManager.AddProperty("BestSessionTime", GetType(), typeof(float), "Best Time in the session.");
@@ -166,9 +165,8 @@ namespace F1Manager2024Plugin
                 try
                 {
                     _lastData = telemetry;
-                    _lastDataTime = DateTime.UtcNow;
 
-                    UpdateProperties(_lastData);
+                    UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
                     UpdateStatus(true, "Connected");
                 }
                 catch (Exception)
@@ -206,18 +204,24 @@ namespace F1Manager2024Plugin
 
         private void UpdateStatus(bool connected, string message)
         {
-            _ismmfConnected = connected;
-            _mmfStatus = message;
             UpdateValue("Status_IsMemoryMap_Connected", connected);
             UpdateValue("Status_MemoryMap_Status", message);
         }
 
-        private void UpdateProperties(Telemetry telemetry)
+        private void UpdateProperties(Telemetry telemetry, DateTime lastDataTime, float lastTimeElapsed)
         {
             if (telemetry.Car == null || telemetry.Car.Length < 22) return;
 
-            // Update Session Properties
+            // Compute Time Fast-Forward Property
             var session = telemetry.Car[0].Driver.Session;
+            if (DateTime.UtcNow - lastDataTime > TimeSpan.FromSeconds(1))
+            {
+                UpdateValue("TimeSpeed", (session.timeElapsed - lastTimeElapsed));
+                _lastDataTime = DateTime.UtcNow;
+                _lastTimeElapsed = session.timeElapsed;
+            }
+
+            // Update Session Properties
             UpdateValue("TrackName", GetTrackName(session.trackId));
             UpdateValue("TimeElapsed", session.timeElapsed);
             UpdateValue("BestSessionTime", session.bestSessionTime);

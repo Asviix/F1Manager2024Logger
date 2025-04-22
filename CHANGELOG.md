@@ -1,3 +1,30 @@
+## BETA 0.4 - Whatcha Looking at' ?
+
+### Note
+
+The new Beta 0.4 is now available, and with comes a brand new feature, called "CameraFocus"!
+This will allow users to see the telemetry of the car they are currently looking at, perfect for building the perfect dashboard!
+
+This update also scraps Cheat Engine Entirely, relying only on a Custom-Written C# Plugin!
+
+I've also added a lot of data points relating to the drivers, their names and team name.
+
+You can refer to the list below or the updated Wiki to know what's been added.
+
+### Changed
+- Changed Reading Method for Cheat Engine to standalone Console app. ([`7f09a3b`](https://github.com/Asviix/F1Manager2024Logger/commit/7f09a3bc94112b1ffc027fa390ffad8388df4056))
+- Fixed Issue with CSV Reader, appending the first data two times. ([`af845a8`](https://github.com/Asviix/F1Manager2024Logger/commit/af845a8b940629b1fbb2dfc2e91da702c3e60ed0))
+- Added Back the Icon into the Repo, in case users want to build it themselves. ([`ecf823d`](https://github.com/Asviix/F1Manager2024Logger/commit/ecf823d8acfd1759b178f38ecd5332cbf1fd009c))
+- Changed Exporter Display settings to show actual Driver and Team Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Changed the Settings page. ([`2069b54`](https://github.com/Asviix/F1Manager2024Logger/commit/2069b54555aad33fe71ecb5df4d5eeb141041618))
+
+### Added
+- Added Computed Time Speed Property. ([`d54c8ea`](https://github.com/Asviix/F1Manager2024Logger/commit/d54c8ea0903dd86935f36baa197f98722125b82d))
+- Added Driver First Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Driver Last Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Driver Team Name. (Can Input the name of your custom team when needed.) ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Property to know whichever car the camera is currently focused on. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+
 # Changelog
 
 ## BETA 0.3.1
@@ -16,14 +43,14 @@
 
 - Adjust driver position for 0-based index in telemetry data. ([`f5830cd`](https://github.com/Asviix/F1Manager2024Logger/commit/f5830cd82b083194f1468c9d36c9e6d20a98d5e9))
 - Changed naming style to follow C# Naming conventions. ([`c132d47`](https://github.com/Asviix/F1Manager2024Logger/commit/c132d47a9bd4678be4dc660ea4ae5718e62c2686))
-- Added readonly modifiers to follow C# conventions. ([`c132d47`](https://github.com/Asviix/F1Manager2024Logger/commit/c132d47a9bd4678be4dc660ea4ae5718e62c2686))
+- Added read only modifiers to follow C# conventions. ([`c132d47`](https://github.com/Asviix/F1Manager2024Logger/commit/c132d47a9bd4678be4dc660ea4ae5718e62c2686))
 - Refactored and removed some code for better optimization. ([`c132d47`](https://github.com/Asviix/F1Manager2024Logger/commit/c132d47a9bd4678be4dc660ea4ae5718e62c2686))
 - Fixed Updating the MMF File Path not start reading the data. ([`0585697`](https://github.com/Asviix/F1Manager2024Logger/commit/0585697306b974c5066716d275dd91bbf5f6c0b5))
 - Fixed Lap Number not being accurate to the current lap the driver is in. ([`9d4e1e3`](https://github.com/Asviix/F1Manager2024Logger/commit/9d4e1e323e6062165429fed947f84ffbd237b309))
 - Changed Session Data Name so that it's more in-line with other data points. ([`73b16f7`](https://github.com/Asviix/F1Manager2024Logger/commit/73b16f7962d7b30e7003215c5e0e9d875951b059))
 - Changed All Data Name for easier reading. ([`2f671a0`](https://github.com/Asviix/F1Manager2024Logger/commit/2f671a04514c6625c11f2f31d2fcad8e9ccb57c5))
 - Changed Historical Data Name for easier reading. ([`2f671a0`](https://github.com/Asviix/F1Manager2024Logger/commit/2f671a04514c6625c11f2f31d2fcad8e9ccb57c5))
-- Changed UI for better readbility. ([`1fa7858`](https://github.com/Asviix/F1Manager2024Logger/commit/1fa78583226115a4e1dc9c6c39e356a193a5d97b))
+- Changed UI for better readability. ([`1fa7858`](https://github.com/Asviix/F1Manager2024Logger/commit/1fa78583226115a4e1dc9c6c39e356a193a5d97b))
 - Updated how the MMF Reading Startup is handled. ([`0585697`](https://github.com/Asviix/F1Manager2024Logger/commit/0585697306b974c5066716d275dd91bbf5f6c0b5))
 - Changed UI to add warnings. ([`1fa7858`](https://github.com/Asviix/F1Manager2024Logger/commit/1fa78583226115a4e1dc9c6c39e356a193a5d97b))
 - Fixed Plugin Name and Plugin Author Being Switched around. ([`4338b7`](https://github.com/Asviix/F1Manager2024Logger/commit/4338b7fcd2b1c4bef96db89f9fc443fa748eacd6))

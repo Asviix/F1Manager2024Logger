@@ -7,99 +7,123 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
+using System.Windows.Forms;
+using System.Linq.Expressions;
+using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
 
 namespace F1Manager2024Plugin
 {
     public partial class SettingsControl : System.Windows.Controls.UserControl
     {
-        public F1ManagerPlotter Plugin { get; }
+        public F1ManagerPlotter Plugin { get; set; }
 
         public class DriverSelection
         {
             public string Name { get; set; }
+            public string DisplayName { get; set; }
             public bool IsSelected { get; set; }
         }
 
         // Default constructor required for XAML
-        public SettingsControl()
-        {
-            InitializeComponent();
-            InitializeDriverSelection();
-            // Initialize with empty state
-            SelectedFilePathTextBox.Text = "No file selected";
-        }
+        public SettingsControl() => InitializeComponent();
+
         public class TeamDrivers
         {
             public string TeamName { get; set; }
+            public string BeautifiedTeamName { get; set; }
             public DriverSelection Driver1 { get; set; }
             public DriverSelection Driver2 { get; set; }
         }
 
         private void InitializeDriverSelection()
         {
-
+            var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
             // Initialize with all drivers from your carNames array
             var teams = new List<TeamDrivers>
             {
-                new TeamDrivers { TeamName = "Ferrari",
-                Driver1 = new DriverSelection { Name = "Ferrari1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Ferrari2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari", 
+                Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "McLaren",
-                Driver1 = new DriverSelection { Name = "McLaren1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "McLaren2", IsSelected = false } },
+                new TeamDrivers { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
+                Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "McLaren2", DisplayName = GetDisplayName("McLaren2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Red Bull",
-                Driver1 = new DriverSelection { Name = "RedBull1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "RedBull2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
+                Driver1 = new DriverSelection { Name = "RedBull1", DisplayName = GetDisplayName("RedBull1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "RedBull2", DisplayName = GetDisplayName("RedBull2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Mercedes",
-                Driver1 = new DriverSelection { Name = "Mercedes1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Mercedes2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
+                Driver1 = new DriverSelection { Name = "Mercedes1", DisplayName = GetDisplayName("Mercedes1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Mercedes2", DisplayName = GetDisplayName("Mercedes2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Alpine",
-                Driver1 = new DriverSelection { Name = "Alpine1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Alpine2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
+                Driver1 = new DriverSelection { Name = "Alpine1", DisplayName = GetDisplayName("Alpine1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Alpine2", DisplayName = GetDisplayName("Alpine2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Williams",
-                Driver1 = new DriverSelection { Name = "Williams1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Williams2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
+                Driver1 = new DriverSelection { Name = "Williams1", DisplayName = GetDisplayName("Williams1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Williams2", DisplayName = GetDisplayName("Williams2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "HAAS",
-                Driver1 = new DriverSelection { Name = "Haas1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Haas2", IsSelected = false } },
+                new TeamDrivers { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
+                Driver1 = new DriverSelection { Name = "Haas1", DisplayName = GetDisplayName("Haas1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Haas2", DisplayName = GetDisplayName("Haas2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Racing Bulls",
-                Driver1 = new DriverSelection { Name = "RacingBulls1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "RacingBulls2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
+                Driver1 = new DriverSelection { Name = "RacingBulls1", DisplayName = GetDisplayName("RacingBulls1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "RacingBulls2", DisplayName = GetDisplayName("RacingBulls2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Kick Sauber",
-                Driver1 = new DriverSelection { Name = "KickSauber1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "KickSauber2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
+                Driver1 = new DriverSelection { Name = "KickSauber1", DisplayName = GetDisplayName("KickSauber1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "KickSauber2", DisplayName = GetDisplayName("KickSauber2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Aston Martin",
-                Driver1 = new DriverSelection { Name = "AstonMartin1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "AstonMartin2", IsSelected = false } },
-
-                new TeamDrivers { TeamName = "MyTeam",
-                Driver1 = new DriverSelection { Name = "MyTeam1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "MyTeam1", IsSelected = false } },
+                new TeamDrivers { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
+                Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
             };
 
-            DriversListBox.ItemsSource = teams;
+            if (Plugin.Settings.CustomTeamName.Length > 0)
+            {
+                teams.Add(
+                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = Plugin.Settings.CustomTeamName,
+                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
+                );
+            }
+            else
+            {
+                teams.Add(
+                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = "MyTeam",
+                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
+                );
+            }
+
+                DriversListBox.ItemsSource = teams;
+        }
+
+        private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
+        {
+            return driverNames.TryGetValue(internalName, out var name) ? $"{name.First} {name.Last}" : internalName;
         }
 
         // Main constructor with plugin parameter
         public SettingsControl(F1ManagerPlotter plugin) : this()
         {
+            InitializeUI(plugin);
+        }
+
+        public void InitializeUI(F1ManagerPlotter plugin)
+        {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            InitializeDriverSelection();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
             {
-                SelectedFilePathTextBox.Text = plugin.Settings.Path ?? "No file selected";
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
+                CustomTeamInput.Text = plugin.Settings.CustomTeamName ?? "MyTeam";
 
                 if (plugin.Settings.TrackedDrivers != null)
                 {
@@ -114,43 +138,21 @@ namespace F1Manager2024Plugin
                     var selectedDrivers = new List<string>();
                     foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
                     {
-                        if (team.Driver1.IsSelected) selectedDrivers.Add(team.Driver1.Name);
-                        if (team.Driver2.IsSelected) selectedDrivers.Add(team.Driver2.Name);
+                        if (team.Driver1.IsSelected) selectedDrivers.Add(team.Driver1.DisplayName);
+                        if (team.Driver2.IsSelected) selectedDrivers.Add(team.Driver2.DisplayName);
                     }
 
                     DriversTextBox.Text = selectedDrivers.Any()
                         ? string.Join(", ", selectedDrivers)
                         : "No drivers selected";
                 }
-            }
-        }
 
-        private void BrowseMMF_File(object sender, RoutedEventArgs e)
-        {
-            if (Plugin == null) return;
-
-            var openFileDialog = new OpenFileDialog()
-            {
-                Title = "Select Memory Mapped File",
-                Filter = "All files (*.*)|*.*"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SelectedFilePathTextBox.Text = openFileDialog.FileName;
-
-                if (openFileDialog.FileName.Contains("F1Manager_Telemetry") == false)
+                if (plugin.Settings.CustomTeamName != null)
                 {
-                    SHMessageBox.Show("Please select the correct file: F1Manager_Telemetry", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    CustomTeamInput.Text = plugin.Settings.CustomTeamName;
                 }
 
-                if (Plugin.Settings != null)
-                {
-                    Plugin.Settings.Path = openFileDialog.FileName;
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-                    Plugin.StartReading(Plugin.Settings.Path);
-                }
+
             }
         }
 
@@ -160,7 +162,6 @@ namespace F1Manager2024Plugin
             if (Plugin.Settings != null)
             {
                 Plugin.Settings.ExporterEnabled = true;
-                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             }
         }
 
@@ -170,7 +171,6 @@ namespace F1Manager2024Plugin
             if (Plugin.Settings != null)
             {
                 Plugin.Settings.ExporterEnabled = false;
-                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             }
         }
 
@@ -187,12 +187,11 @@ namespace F1Manager2024Plugin
                 if (Plugin.Settings != null)
                 {
                     Plugin.Settings.ExporterPath = folderBrowserDialog.SelectedPath;
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                 }
             }
         }
 
-        private async void SaveDriversButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveExporter_Settings(object sender, RoutedEventArgs e)
         {
             var selectedDrivers = new List<string>();
 
@@ -212,9 +211,6 @@ namespace F1Manager2024Plugin
 
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    Plugin.Settings.TrackedDrivers = selectedDrivers.ToArray();
-                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-
                     if (selectedDrivers.Any())
                     {
                         DriversTextBox.Text = string.Join(", ", selectedDrivers);
@@ -223,9 +219,6 @@ namespace F1Manager2024Plugin
                     {
                         DriversTextBox.Text = "No drivers selected";
                     }
-
-                    await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
                 }
                 else
                 {
@@ -244,12 +237,14 @@ namespace F1Manager2024Plugin
                     {
                         DriversTextBox.Text = "No drivers selected";
                     }
+                    Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                     return;
                 }
             }
 
             Plugin.Settings.TrackedDrivers = selectedDrivers.ToArray();
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
 
             if (selectedDrivers.Any())
             {
@@ -260,7 +255,8 @@ namespace F1Manager2024Plugin
                 DriversTextBox.Text = "No drivers selected";
             }
 
-            await SHMessageBox.Show("Drivers saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            InitializeUI(Plugin);
 
         }
 
@@ -282,14 +278,13 @@ namespace F1Manager2024Plugin
             if (result == System.Windows.Forms.DialogResult.Yes)
             {
                 var defaults = F1Manager2024PluginSettings.GetDefaults();
-                Plugin.Settings.Path = defaults.Path;
                 Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
                 Plugin.Settings.ExporterPath = defaults.ExporterPath;
                 Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
 
                 Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+                Plugin.ReloadSettings(Plugin.Settings);
 
-                SelectedFilePathTextBox.Text = "No file selected";
                 ExporterEnabledCheckbox.IsChecked = false;
                 ExporterPathTextBox.Text = "No folder selected";
 
@@ -300,10 +295,10 @@ namespace F1Manager2024Plugin
                 }
                 DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
 
-                Plugin.StopReading();
-
                 await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+
+            InitializeUI(Plugin);
         }
 
         private void OpenHelpLinks(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -343,6 +338,22 @@ namespace F1Manager2024Plugin
                 textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 102, 204));
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Arrow;
             }
+        }
+
+        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (CustomTeamInput.Text.Length == 0)
+            {
+                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+
+            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
+            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
+
+            InitializeUI(Plugin);
         }
     }
 }

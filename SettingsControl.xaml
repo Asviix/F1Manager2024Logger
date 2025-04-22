@@ -22,22 +22,11 @@
         </Grid.RowDefinitions>
         <ScrollViewer>
             <styles:SHTabControl Height="auto" VerticalAlignment="Top" Grid.Row="0">
-                <!-- Tab 1: Memory Mapped File Configuration -->
-                <styles:SHTabItem Header="Memory Mapped File">
-                    <StackPanel Margin="0,20,0,0">
-                        <StackPanel>
-                            <Label Content="Select memory mapped file:" FontSize="16" Margin="0,0,0,5"/>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="SelectedFilePathTextBox" MinWidth="400" Width="auto" Margin="0,0,10,0" IsReadOnly="True" VerticalAlignment="Center"/>
-                                <styles:SHButtonPrimary Click="BrowseMMF_File" Content="Browse..."/>
-                            </StackPanel>
-                        </StackPanel>
-                    </StackPanel>
-                </styles:SHTabItem>
 
-                <!-- Tab 2: Exporter Configuration -->
+                <!-- Tab 1: Exporter Configuration -->
                 <styles:SHTabItem Header="Exporter Configuration">
                     <StackPanel Margin="0,20,0,0">
+                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveExporter_Settings" Width="auto" FontSize="16"/>
                         <StackPanel>
                             <Label Content="Exporter Enabled:" FontSize="16" Margin="0,0,0,5"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
@@ -61,22 +50,31 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,5,0,0">
-                                        <TextBlock Text="{Binding TeamName}" FontWeight="Bold" Margin="0,0,0,2" />
+                                        <TextBlock Text="{Binding BeautifiedTeamName}" FontWeight="Bold" Margin="0,0,0,2" />
                                         <StackPanel Orientation="Horizontal">
-                                            <CheckBox Content="{Binding Driver1.Name}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
-                                            <CheckBox Content="{Binding Driver2.Name}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
+                                            <CheckBox Content="{Binding Driver1.DisplayName}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
+                                            <CheckBox Content="{Binding Driver2.DisplayName}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Selection" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveDriversButton_Click" Width="auto" FontSize="16"/>
                         <Label Content="Selected Drivers:" FontSize="16"/>
                         <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
                     </StackPanel>
                 </styles:SHTabItem>
+                <!-- Tab 3: Custom Settings -->
+                <styles:SHTabItem Header="Custom Settings">
+                    <StackPanel Margin="0,20,0,0">
+                        <StackPanel>
+                            <Label FontSize="16">Enter the Name of your custom team here:</Label>
+                            <TextBox Name="CustomTeamInput" FontSize="16"></TextBox>
+                            <styles:SHButtonPrimary x:Name="SaveCustomSettings" Content="Save Settings" Margin="0,10,0,0" HorizontalAlignment="Center" Click="SaveCustomSettings_Click"  Width="auto" FontSize="18"/>
+                        </StackPanel>
+                    </StackPanel>
+                </styles:SHTabItem>
 
-                <!-- Tab 3: Historical Data Reset -->
+                <!-- Tab 2: Historical Data Reset -->
                 <styles:SHTabItem Header="Historical Data Reset">
                     <StackPanel Margin="0,20,0,0">
                         <StackPanel>
@@ -87,7 +85,7 @@
                     </StackPanel>
                 </styles:SHTabItem>
 
-                <!-- Tab 4: Reset Settings to Default -->
+                <!-- Tab 3: Reset Settings to Default -->
                 <styles:SHTabItem Header="Reset Settings">
                     <StackPanel Margin="0,20,0,0">
                         <Label Content="Warning! This is permanent!" HorizontalContentAlignment="Center" FontSize="18" Foreground="#FFDC2929" FontWeight="Bold"/>
@@ -96,7 +94,7 @@
                 </styles:SHTabItem>
             </styles:SHTabControl>
         </ScrollViewer>
-        <!-- Help Footer -->
+        <!-- Bottom Footer -->
         <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.Row="1">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">

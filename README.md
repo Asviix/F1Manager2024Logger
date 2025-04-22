@@ -23,7 +23,6 @@ F1Manager2024 Logger is a SimHub Plugin that makes F1 Manager 2024 Data availabl
 
 ### Prerequisites
 - F1 Manager 2024 installed
-- Cheat Engine
 - Windows 10/11 (64-bit)
 
 ### Installation Steps

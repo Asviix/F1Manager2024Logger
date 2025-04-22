@@ -15,7 +15,7 @@ namespace F1Manager2024Plugin
 {
     public partial class SettingsControl : System.Windows.Controls.UserControl
     {
-        public F1ManagerPlotter Plugin { get; set;  }
+        public F1ManagerPlotter Plugin { get; set; }
 
         public class DriverSelection
         {
@@ -113,7 +113,7 @@ namespace F1Manager2024Plugin
             InitializeUI(plugin);
         }
 
-        private void InitializeUI(F1ManagerPlotter plugin)
+        public void InitializeUI(F1ManagerPlotter plugin)
         {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
@@ -256,6 +256,7 @@ namespace F1Manager2024Plugin
             }
 
             await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            InitializeUI(Plugin);
 
         }
 
@@ -296,6 +297,8 @@ namespace F1Manager2024Plugin
 
                 await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+
+            InitializeUI(Plugin);
         }
 
         private void OpenHelpLinks(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -350,7 +353,7 @@ namespace F1Manager2024Plugin
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             Plugin.ReloadSettings(Plugin.Settings);
 
-            InitializeDriverSelection();
+            InitializeUI(Plugin);
         }
     }
 }

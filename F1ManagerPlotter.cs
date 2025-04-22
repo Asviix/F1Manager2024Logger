@@ -77,7 +77,7 @@ namespace F1Manager2024Plugin
 
             #region Init Properties
             // Add Game Properties
-            pluginManager.AddProperty("CameraFocusedOn", GetType(), typeof(int), "The Car ID the camera is focus on.");
+            pluginManager.AddProperty("CameraFocusedOn", GetType(), typeof(string), "The Car name the camera is focus on.");
 
             // Add Session Properties
             pluginManager.AddProperty("TimeSpeed", GetType(), typeof(float), "Time Fast-Forward Multiplicator.");
@@ -913,7 +913,7 @@ namespace F1Manager2024Plugin
         {
             // Check for session reset
             float currentTime = (float)(telemetry.Session.timeElapsed);
-            if ((string) PluginManager.GetPropertyValue("DEBUG_Game_Status") != "Game in Session")
+            if (telemetry.carFloatValue != ExpectedCarValue)
             {
                 ClearAllHistory();
             }
@@ -1041,18 +1041,11 @@ namespace F1Manager2024Plugin
             {
                 foreach (var car in _carHistory.Keys)
                 {
-                    // Reset current lap
-                    PluginManager.SetPropertyValue(
-                        $"F1Manager.{car}.History.CurrentLap",
-                        this.GetType(),
-                        null
-                    );
-
                     // Reset all properties
                     for (int i = 1; i <= MaxLapsToStore; i++)
                     {
                         PluginManager.SetPropertyValue(
-                            $"F1Manager.{car}.History.Lap{i}",
+                            $"{car}.History.Lap{i}",
                             this.GetType(),
                             null
                         );

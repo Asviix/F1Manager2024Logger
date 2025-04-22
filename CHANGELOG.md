@@ -1,8 +1,29 @@
-## [Unreleased]
-## BETA 0.4
+## BETA 0.4 - Whatcha Looking at' ?
+
+### Note
+
+The new Beta 0.4 is now available, and with comes a brand new feature, called "CameraFocus"!
+This will allow users to see the telemetry of the car they are currently looking at, perfect for building the perfect dashboard!
+
+This update also scraps Cheat Engine Entirely, relying only on a Custom-Written C# Plugin!
+
+I've also added a lot of data points relating to the drivers, their names and team name.
+
+You can refer to the list below or the updated Wiki to know what's been added.
 
 ### Changed
-- Changed Reading Method for Cheat Engine to standalone Console app. ([``]())
+- Changed Reading Method for Cheat Engine to standalone Console app. ([`7f09a3b`](https://github.com/Asviix/F1Manager2024Logger/commit/7f09a3bc94112b1ffc027fa390ffad8388df4056))
+- Fixed Issue with CSV Reader, appending the first data two times. ([`af845a8`](https://github.com/Asviix/F1Manager2024Logger/commit/af845a8b940629b1fbb2dfc2e91da702c3e60ed0))
+- Added Back the Icon into the Repo, in case users want to build it themselves. ([`ecf823d`](https://github.com/Asviix/F1Manager2024Logger/commit/ecf823d8acfd1759b178f38ecd5332cbf1fd009c))
+- Changed Exporter Display settings to show actual Driver and Team Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Changed the Settings page. ([`2069b54`](https://github.com/Asviix/F1Manager2024Logger/commit/2069b54555aad33fe71ecb5df4d5eeb141041618))
+
+### Added
+- Added Computed Time Speed Property. ([`d54c8ea`](https://github.com/Asviix/F1Manager2024Logger/commit/d54c8ea0903dd86935f36baa197f98722125b82d))
+- Added Driver First Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Driver Last Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Driver Team Name. (Can Input the name of your custom team when needed.) ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
+- Added Property to know whichever car the camera is currently focused on. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
 
 # Changelog
 

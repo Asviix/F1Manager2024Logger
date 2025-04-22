@@ -7,7 +7,7 @@ namespace F1Manager2024Plugin
         public bool ExporterEnabled { get; set; } = false;
         public string ExporterPath { get; set; } = null;
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
-        public string CustomTeamName { get; set; } = "Custom Team";
+        public string CustomTeamName { get; set; } = "MyTeam";
 
         public static F1Manager2024PluginSettings GetDefaults()
         {
@@ -15,15 +15,9 @@ namespace F1Manager2024Plugin
             {
                 ExporterEnabled = false,
                 ExporterPath = null,
-                TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" }
+                TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
+                CustomTeamName = "MyTeam"
             };
-        }
-
-        public void UpdateSettings(bool exporterEnabled, string exporterPath, string[] trackedDrivers)
-        {
-            ExporterEnabled = exporterEnabled;
-            ExporterPath = exporterPath;
-            TrackedDrivers = trackedDrivers;
         }
     }
 }

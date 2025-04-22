@@ -9,12 +9,13 @@ using SimHub.Plugins;
 using SimHub.Plugins.Styles;
 using System.Windows.Forms;
 using System.Linq.Expressions;
+using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
 
 namespace F1Manager2024Plugin
 {
     public partial class SettingsControl : System.Windows.Controls.UserControl
     {
-        public F1ManagerPlotter Plugin { get; }
+        public F1ManagerPlotter Plugin { get; set;  }
 
         public class DriverSelection
         {
@@ -79,13 +80,26 @@ namespace F1Manager2024Plugin
                 new TeamDrivers { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
                 Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
-
-                new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = Plugin.Settings.CustomTeamName ?? "Custom Team",
-                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
-                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false } },
             };
 
-            DriversListBox.ItemsSource = teams;
+            if (Plugin.Settings.CustomTeamName.Length > 0)
+            {
+                teams.Add(
+                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = Plugin.Settings.CustomTeamName,
+                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
+                );
+            }
+            else
+            {
+                teams.Add(
+                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = "MyTeam",
+                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
+                );
+            }
+
+                DriversListBox.ItemsSource = teams;
         }
 
         private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
@@ -96,8 +110,12 @@ namespace F1Manager2024Plugin
         // Main constructor with plugin parameter
         public SettingsControl(F1ManagerPlotter plugin) : this()
         {
-            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            InitializeUI(plugin);
+        }
 
+        private void InitializeUI(F1ManagerPlotter plugin)
+        {
+            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
 
             // Initialize UI with current settings
@@ -105,6 +123,7 @@ namespace F1Manager2024Plugin
             {
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
+                CustomTeamInput.Text = plugin.Settings.CustomTeamName ?? "MyTeam";
 
                 if (plugin.Settings.TrackedDrivers != null)
                 {
@@ -127,6 +146,13 @@ namespace F1Manager2024Plugin
                         ? string.Join(", ", selectedDrivers)
                         : "No drivers selected";
                 }
+
+                if (plugin.Settings.CustomTeamName != null)
+                {
+                    CustomTeamInput.Text = plugin.Settings.CustomTeamName;
+                }
+
+
             }
         }
 
@@ -311,11 +337,20 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
+        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
         {
+            if (CustomTeamInput.Text.Length == 0)
+            {
+                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+
+            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             Plugin.ReloadSettings(Plugin.Settings);
+
+            InitializeDriverSelection();
         }
     }
 }

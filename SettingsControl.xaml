@@ -26,6 +26,7 @@
                 <!-- Tab 1: Exporter Configuration -->
                 <styles:SHTabItem Header="Exporter Configuration">
                     <StackPanel Margin="0,20,0,0">
+                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveExporter_Settings" Width="auto" FontSize="16"/>
                         <StackPanel>
                             <Label Content="Exporter Enabled:" FontSize="16" Margin="0,0,0,5"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
@@ -58,7 +59,6 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveExporter_Settings" Width="auto" FontSize="16"/>
                         <Label Content="Selected Drivers:" FontSize="16"/>
                         <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
                     </StackPanel>

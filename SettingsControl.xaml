@@ -49,10 +49,10 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,5,0,0">
-                                        <TextBlock Text="{Binding TeamName}" FontWeight="Bold" Margin="0,0,0,2" />
+                                        <TextBlock Text="{Binding BeautifiedTeamName}" FontWeight="Bold" Margin="0,0,0,2" />
                                         <StackPanel Orientation="Horizontal">
-                                            <CheckBox Content="{Binding Driver1.Name}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
-                                            <CheckBox Content="{Binding Driver2.Name}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
+                                            <CheckBox Content="{Binding Driver1.DisplayName}" IsChecked="{Binding Driver1.IsSelected}" Margin="2,0,10,0"/>
+                                            <CheckBox Content="{Binding Driver2.DisplayName}" IsChecked="{Binding Driver2.IsSelected}" Margin="2"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
@@ -61,6 +61,16 @@
                         <styles:SHButtonPrimary x:Name="SaveDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Click="SaveExporter_Settings" Width="auto" FontSize="16"/>
                         <Label Content="Selected Drivers:" FontSize="16"/>
                         <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
+                    </StackPanel>
+                </styles:SHTabItem>
+                <!-- Tab 3: Custom Settings -->
+                <styles:SHTabItem Header="Custom Settings">
+                    <StackPanel Margin="0,20,0,0">
+                        <StackPanel>
+                            <Label FontSize="16">Enter the Name of your custom team here:</Label>
+                            <TextBox Name="CustomTeamInput" FontSize="16"></TextBox>
+                            <styles:SHButtonPrimary x:Name="SaveCustomSettings" Content="Save Settings" Margin="0,10,0,0" HorizontalAlignment="Center" Click="SaveCustomSettings_Click"  Width="auto" FontSize="18"/>
+                        </StackPanel>
                     </StackPanel>
                 </styles:SHTabItem>
 

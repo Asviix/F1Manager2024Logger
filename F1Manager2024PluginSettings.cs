@@ -7,6 +7,7 @@ namespace F1Manager2024Plugin
         public bool ExporterEnabled { get; set; } = false;
         public string ExporterPath { get; set; } = null;
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
+        public string CustomTeamName { get; set; } = "Custom Team";
 
         public static F1Manager2024PluginSettings GetDefaults()
         {

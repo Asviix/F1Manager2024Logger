@@ -19,80 +19,86 @@ namespace F1Manager2024Plugin
         public class DriverSelection
         {
             public string Name { get; set; }
+            public string DisplayName { get; set; }
             public bool IsSelected { get; set; }
         }
 
         // Default constructor required for XAML
-        public SettingsControl()
-        {
-            InitializeComponent();
-            InitializeDriverSelection();
-        }
+        public SettingsControl() => InitializeComponent();
+
         public class TeamDrivers
         {
             public string TeamName { get; set; }
+            public string BeautifiedTeamName { get; set; }
             public DriverSelection Driver1 { get; set; }
             public DriverSelection Driver2 { get; set; }
         }
 
         private void InitializeDriverSelection()
         {
-
+            var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
             // Initialize with all drivers from your carNames array
             var teams = new List<TeamDrivers>
             {
-                new TeamDrivers { TeamName = "Ferrari",
-                Driver1 = new DriverSelection { Name = "Ferrari1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Ferrari2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari", 
+                Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "McLaren",
-                Driver1 = new DriverSelection { Name = "McLaren1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "McLaren2", IsSelected = false } },
+                new TeamDrivers { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
+                Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "McLaren2", DisplayName = GetDisplayName("McLaren2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Red Bull",
-                Driver1 = new DriverSelection { Name = "RedBull1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "RedBull2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
+                Driver1 = new DriverSelection { Name = "RedBull1", DisplayName = GetDisplayName("RedBull1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "RedBull2", DisplayName = GetDisplayName("RedBull2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Mercedes",
-                Driver1 = new DriverSelection { Name = "Mercedes1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Mercedes2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
+                Driver1 = new DriverSelection { Name = "Mercedes1", DisplayName = GetDisplayName("Mercedes1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Mercedes2", DisplayName = GetDisplayName("Mercedes2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Alpine",
-                Driver1 = new DriverSelection { Name = "Alpine1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Alpine2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
+                Driver1 = new DriverSelection { Name = "Alpine1", DisplayName = GetDisplayName("Alpine1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Alpine2", DisplayName = GetDisplayName("Alpine2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Williams",
-                Driver1 = new DriverSelection { Name = "Williams1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Williams2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
+                Driver1 = new DriverSelection { Name = "Williams1", DisplayName = GetDisplayName("Williams1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Williams2", DisplayName = GetDisplayName("Williams2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "HAAS",
-                Driver1 = new DriverSelection { Name = "Haas1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Haas2", IsSelected = false } },
+                new TeamDrivers { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
+                Driver1 = new DriverSelection { Name = "Haas1", DisplayName = GetDisplayName("Haas1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "Haas2", DisplayName = GetDisplayName("Haas2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Racing Bulls",
-                Driver1 = new DriverSelection { Name = "RacingBulls1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "RacingBulls2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
+                Driver1 = new DriverSelection { Name = "RacingBulls1", DisplayName = GetDisplayName("RacingBulls1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "RacingBulls2", DisplayName = GetDisplayName("RacingBulls2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Kick Sauber",
-                Driver1 = new DriverSelection { Name = "KickSauber1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "KickSauber2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
+                Driver1 = new DriverSelection { Name = "KickSauber1", DisplayName = GetDisplayName("KickSauber1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "KickSauber2", DisplayName = GetDisplayName("KickSauber2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Aston Martin",
-                Driver1 = new DriverSelection { Name = "AstonMartin1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "AstonMartin2", IsSelected = false } },
+                new TeamDrivers { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
+                Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "MyTeam",
-                Driver1 = new DriverSelection { Name = "MyTeam1", IsSelected = false },
-                Driver2 = new DriverSelection { Name = "MyTeam2", IsSelected = false } },
+                new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = Plugin.Settings.CustomTeamName ?? "Custom Team",
+                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false } },
             };
 
             DriversListBox.ItemsSource = teams;
+        }
+
+        private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
+        {
+            return driverNames.TryGetValue(internalName, out var name) ? $"{name.First} {name.Last}" : internalName;
         }
 
         // Main constructor with plugin parameter
         public SettingsControl(F1ManagerPlotter plugin) : this()
         {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+
+            InitializeDriverSelection();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
@@ -113,8 +119,8 @@ namespace F1Manager2024Plugin
                     var selectedDrivers = new List<string>();
                     foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
                     {
-                        if (team.Driver1.IsSelected) selectedDrivers.Add(team.Driver1.Name);
-                        if (team.Driver2.IsSelected) selectedDrivers.Add(team.Driver2.Name);
+                        if (team.Driver1.IsSelected) selectedDrivers.Add(team.Driver1.DisplayName);
+                        if (team.Driver2.IsSelected) selectedDrivers.Add(team.Driver2.DisplayName);
                     }
 
                     DriversTextBox.Text = selectedDrivers.Any()
@@ -303,6 +309,13 @@ namespace F1Manager2024Plugin
                 textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 102, 204));
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Arrow;
             }
+        }
+
+        private void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
+        {
+            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
+            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
         }
     }
 }

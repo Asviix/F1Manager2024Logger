@@ -98,6 +98,9 @@ namespace F1Manager2024Plugin
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Telemetry
     {
+        public SessionTelemetry Session;
+        public int cameraFocus;
+        public float carFloatValue;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 22)]
         public CarTelemetry[] Car;
     }
@@ -105,6 +108,7 @@ namespace F1Manager2024Plugin
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CarTelemetry
     {
+        public int driverPos;
         public int currentLap;
         public int tireCompound;
         public int pitStopStatus;
@@ -131,7 +135,9 @@ namespace F1Manager2024Plugin
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct DriverTelemetry
     {
+        public int teamId;
         public int driverNumber;
+        public int driverId;
         public int turnNumber;
         public int speed;
         public int rpm;
@@ -144,7 +150,6 @@ namespace F1Manager2024Plugin
         public float lastS1Time;
         public float lastS2Time;
         public float lastS3Time;
-        public SessionTelemetry Session;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

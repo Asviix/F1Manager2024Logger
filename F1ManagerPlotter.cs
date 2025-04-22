@@ -172,7 +172,7 @@ namespace F1Manager2024Plugin
         {
             lock (_dataLock)
             {
-                if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(false, "Connected.", $"Expected \"8021.86\", got \"{telemetry.carFloatValue}\""); return; }
+                if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(false, "Connected.", "Game not in Session."); return; }
                 try
                 {
                     _lastData = telemetry;
@@ -913,7 +913,7 @@ namespace F1Manager2024Plugin
         {
             // Check for session reset
             float currentTime = (float)(telemetry.Session.timeElapsed);
-            if (currentTime < 3f)
+            if ((string) PluginManager.GetPropertyValue("DEBUG_Game_Status") != "Game in Session")
             {
                 ClearAllHistory();
             }

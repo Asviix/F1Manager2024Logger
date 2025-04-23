@@ -16,6 +16,7 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using WoteverCommon;
 using System.Windows.Forms;
+using MahApps.Metro.Controls;
 
 namespace F1Manager2024Plugin
 {
@@ -91,6 +92,29 @@ namespace F1Manager2024Plugin
             pluginManager.AddProperty("TrackTemp", GetType(), typeof(float), "Track Temperature in the session.");
             pluginManager.AddProperty("Weather", GetType(), typeof(string), "Weather in the session.");
 
+            pluginManager.AddProperty("P1_Car", GetType(), typeof(string), "Name of the Car Currently in P1.");
+            pluginManager.AddProperty("P2_Car", GetType(), typeof(string), "Name of the Car Currently in P2.");
+            pluginManager.AddProperty("P3_Car", GetType(), typeof(string), "Name of the Car Currently in P3.");
+            pluginManager.AddProperty("P4_Car", GetType(), typeof(string), "Name of the Car Currently in P4.");
+            pluginManager.AddProperty("P5_Car", GetType(), typeof(string), "Name of the Car Currently in P5.");
+            pluginManager.AddProperty("P6_Car", GetType(), typeof(string), "Name of the Car Currently in P6.");
+            pluginManager.AddProperty("P7_Car", GetType(), typeof(string), "Name of the Car Currently in P7.");
+            pluginManager.AddProperty("P8_Car", GetType(), typeof(string), "Name of the Car Currently in P8.");
+            pluginManager.AddProperty("P9_Car", GetType(), typeof(string), "Name of the Car Currently in P9.");
+            pluginManager.AddProperty("P10_Car", GetType(), typeof(string), "Name of the Car Currently in P10.");
+            pluginManager.AddProperty("P11_Car", GetType(), typeof(string), "Name of the Car Currently in P11.");
+            pluginManager.AddProperty("P12_Car", GetType(), typeof(string), "Name of the Car Currently in P12.");
+            pluginManager.AddProperty("P13_Car", GetType(), typeof(string), "Name of the Car Currently in P13.");
+            pluginManager.AddProperty("P14_Car", GetType(), typeof(string), "Name of the Car Currently in P14.");
+            pluginManager.AddProperty("P15_Car", GetType(), typeof(string), "Name of the Car Currently in P15.");
+            pluginManager.AddProperty("P16_Car", GetType(), typeof(string), "Name of the Car Currently in P16.");
+            pluginManager.AddProperty("P17_Car", GetType(), typeof(string), "Name of the Car Currently in P17.");
+            pluginManager.AddProperty("P18_Car", GetType(), typeof(string), "Name of the Car Currently in P18.");
+            pluginManager.AddProperty("P19_Car", GetType(), typeof(string), "Name of the Car Currently in P19.");
+            pluginManager.AddProperty("P20_Car", GetType(), typeof(string), "Name of the Car Currently in P20.");
+            pluginManager.AddProperty("P20_Car", GetType(), typeof(string), "Name of the Car Currently in P21.");
+            pluginManager.AddProperty("P21_Car", GetType(), typeof(string), "Name of the Car Currently in P22.");
+
             foreach (var name in carNames)
             {
                 // Position and basic info
@@ -120,7 +144,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_Charge", GetType(), typeof(float), "ERS Charge");
                 pluginManager.AddProperty($"{name}_Fuel", GetType(), typeof(float), "Fuel");
 
-                // Tyres
+                // Tires
                 pluginManager.AddProperty($"{name}_TireCompound", GetType(), typeof(string), "Tire Compound");
                 pluginManager.AddProperty($"{name}_flTemp", GetType(), typeof(float), "Front Left Temp");
                 pluginManager.AddProperty($"{name}_frTemp", GetType(), typeof(float), "Front Right Temp");
@@ -142,6 +166,10 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_EngineDeg", GetType(), typeof(float), "Engine Wear");
                 pluginManager.AddProperty($"{name}_GearboxDeg", GetType(), typeof(float), "Gearbox Wear");
                 pluginManager.AddProperty($"{name}_ERSDeg", GetType(), typeof(float), "ERS Wear");
+
+                // Opponents Data
+                pluginManager.AddProperty($"{name}_NameOfCarBehind", GetType(), typeof(string), "The name of the car behind that driver.");
+                pluginManager.AddProperty($"{name}_NameOfCarAhead", GetType(), typeof(string), "The name of the car ahead that driver.");
             }
             #endregion
 
@@ -279,6 +307,27 @@ namespace F1Manager2024Plugin
                     _exporter.ExportData(name, telemetry, i, Settings);
                 }
 
+                int targetPositionBehind = car.Driver.position + 2;
+                int targetPositionAhead = car.Driver.position;
+                string carBehindName = "Driver is last.";
+                string carAheadName = "Driver is first.";
+
+                for (int j = 0; j < telemetry.Car.Length; j++)
+                {
+                    if (telemetry.Car[j].Driver.position + 1 == targetPositionBehind)
+                    {
+                        carBehindName = carNames[j];
+                    }
+
+                    if (telemetry.Car[j].Driver.position + 1 == targetPositionAhead)
+                    {
+                        carAheadName = carNames[j];
+                    }
+                }
+
+                // Update Session Standings
+                UpdateValue($"P{car.Driver.position + 1}_Car", name);
+
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", GetPitStopStatus(car.pitStopStatus));
@@ -321,8 +370,13 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_EngineDeg", car.engineWear);
                 UpdateValue($"{name}_GearboxDeg", car.gearboxWear);
                 UpdateValue($"{name}_ERSDeg", car.ersWear);
+
+                // Opponents Data
+                UpdateValue($"{name}_NameOfCarBehind", carBehindName);
+                UpdateValue($"{name}_NameOfCarAhead", carAheadName);
             }
         }
+        
 
         public static string GetTrackName(int trackId)
         {

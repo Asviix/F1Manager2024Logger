@@ -150,6 +150,8 @@ namespace F1Manager2024Plugin
         public float lastS1Time;
         public float lastS2Time;
         public float lastS3Time;
+        public float distanceTravelled;
+        public float GapToLeader;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

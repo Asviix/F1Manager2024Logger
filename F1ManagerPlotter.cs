@@ -87,9 +87,9 @@ namespace F1Manager2024Plugin
             pluginManager.AddProperty("TimeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
             pluginManager.AddProperty("LapsRemaining", GetType(), typeof(float), "Laps Remaining in the race.");
             pluginManager.AddProperty("TimeRemaining", GetType(), typeof(float), "Time Remaining in the session.");
-            pluginManager.AddProperty("TrackName", GetType(), typeof(int), "Track Name.");
+            pluginManager.AddProperty("TrackName", GetType(), typeof(string), "Track Name.");
             pluginManager.AddProperty("BestSessionTime", GetType(), typeof(float), "Best Time in the session.");
-            pluginManager.AddProperty("RubberState", GetType(), typeof(int), "Rubber on Track.");
+            pluginManager.AddProperty("RubberState", GetType(), typeof(float), "Rubber on Track.");
             pluginManager.AddProperty("SessionType", GetType(), typeof(string), "Type of the session.");
             pluginManager.AddProperty("SessionTypeShort", GetType(), typeof(string), "Short Type of the session.");
             pluginManager.AddProperty("AirTemp", GetType(), typeof(float), "Air Temperature in the session.");
@@ -116,8 +116,8 @@ namespace F1Manager2024Plugin
             pluginManager.AddProperty("P18_Car", GetType(), typeof(string), "Name of the Car Currently in P18.");
             pluginManager.AddProperty("P19_Car", GetType(), typeof(string), "Name of the Car Currently in P19.");
             pluginManager.AddProperty("P20_Car", GetType(), typeof(string), "Name of the Car Currently in P20.");
-            pluginManager.AddProperty("P20_Car", GetType(), typeof(string), "Name of the Car Currently in P21.");
-            pluginManager.AddProperty("P21_Car", GetType(), typeof(string), "Name of the Car Currently in P22.");
+            pluginManager.AddProperty("P21_Car", GetType(), typeof(string), "Name of the Car Currently in P21.");
+            pluginManager.AddProperty("P22_Car", GetType(), typeof(string), "Name of the Car Currently in P22.");
 
             foreach (var name in carNames)
             {
@@ -132,7 +132,7 @@ namespace F1Manager2024Plugin
                 // Status
                 pluginManager.AddProperty($"{name}_TurnNumber", GetType(), typeof(int), "Turn Number");
                 pluginManager.AddProperty($"{name}_CurrentLap", GetType(), typeof(int), "Current Lap");
-                pluginManager.AddProperty($"{name}_DistanceTravelled", GetType(), typeof(int), "Number of meters travelled in the current lap.");
+                pluginManager.AddProperty($"{name}_DistanceTravelled", GetType(), typeof(float), "Number of meters travelled in the current lap.");
 
                 // Timings
                 pluginManager.AddProperty($"{name}_CurrentLapTime", GetType(), typeof(float), "Current Lap Time");
@@ -269,7 +269,7 @@ namespace F1Manager2024Plugin
         }
 
         private readonly object _historyLock = new object();
-        private const int MaxLapsToStore = 70; // Adjust as needed
+        private const int MaxLapsToStore = 100; // Adjust as needed
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
         {
             try

@@ -152,14 +152,21 @@ namespace F1Manager2024Plugin
                 // Tires
                 pluginManager.AddProperty($"{name}_TireCompound", GetType(), typeof(string), "Tire Compound");
                 pluginManager.AddProperty($"{name}_flTemp", GetType(), typeof(float), "Front Left Temp");
+                pluginManager.AddProperty($"{name}_flSurfaceTemp", GetType(), typeof(float), "Front Left Surface Temp");
+                pluginManager.AddProperty($"{name}_flBrakeTemp", GetType(), typeof(float), "Front Left Brake Temp");
                 pluginManager.AddProperty($"{name}_frTemp", GetType(), typeof(float), "Front Right Temp");
+                pluginManager.AddProperty($"{name}_frSurfaceTemp", GetType(), typeof(float), "Front Right Surface Temp");
+                pluginManager.AddProperty($"{name}_frBrakeTemp", GetType(), typeof(float), "Front Right Brake Temp");
                 pluginManager.AddProperty($"{name}_rlTemp", GetType(), typeof(float), "Rear Left Temp");
+                pluginManager.AddProperty($"{name}_rlSurfaceTemp", GetType(), typeof(float), "Rear Left Surface Temp");
+                pluginManager.AddProperty($"{name}_rlBrakeTemp", GetType(), typeof(float), "Rear Left Brake Temp");
                 pluginManager.AddProperty($"{name}_rrTemp", GetType(), typeof(float), "Rear Right Temp");
+                pluginManager.AddProperty($"{name}_rrSurfaceTemp", GetType(), typeof(float), "Rear Right Surface Temp");
+                pluginManager.AddProperty($"{name}_rrBrakeTemp", GetType(), typeof(float), "Rear Right Brake Temp");
                 pluginManager.AddProperty($"{name}_flDeg", GetType(), typeof(float), "Front Left Wear");
                 pluginManager.AddProperty($"{name}_frDeg", GetType(), typeof(float), "Front Right Wear");
                 pluginManager.AddProperty($"{name}_rlDeg", GetType(), typeof(float), "Rear Left Wear");
                 pluginManager.AddProperty($"{name}_rrDeg", GetType(), typeof(float), "Rear Right Wear");
-                pluginManager.AddProperty($"{name}_brakeTemp", GetType(), typeof(float), "Brake Temperature");
 
                 // Modes
                 pluginManager.AddProperty($"{name}_PaceMode", GetType(), typeof(string), "Pace Mode");
@@ -368,15 +375,22 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Fuel", car.fuel);
                 // Tyres
                 UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound));
+                UpdateValue($"{name}_flSurfaceTemp", car.flSurfaceTemp);
                 UpdateValue($"{name}_flTemp", car.flTemp);
+                UpdateValue($"{name}_flBrakeTemp", car.flBrakeTemp);
+                UpdateValue($"{name}_frSurfaceTemp", car.frSurfaceTemp);
                 UpdateValue($"{name}_frTemp", car.frTemp);
+                UpdateValue($"{name}_frBrakeTemp", car.frBrakeTemp);
+                UpdateValue($"{name}_rlSurfaceTemp", car.rlSurfaceTemp);
                 UpdateValue($"{name}_rlTemp", car.rlTemp);
+                UpdateValue($"{name}_rlBrakeTemp", car.rlBrakeTemp);
+                UpdateValue($"{name}_rrSurfaceTemp", car.rrSurfaceTemp);
                 UpdateValue($"{name}_rrTemp", car.rrTemp);
+                UpdateValue($"{name}_rrBrakeTemp", car.rrBrakeTemp);
                 UpdateValue($"{name}_flDeg", car.flWear);
                 UpdateValue($"{name}_frDeg", car.frWear);
                 UpdateValue($"{name}_rlDeg", car.rlWear);
                 UpdateValue($"{name}_rrDeg", car.rrWear);
-                UpdateValue($"{name}_brakeTemp", car.brakeTemperature);
                 // Modes
                 UpdateValue($"{name}_PaceMode", TelemetryHelpers.GetPaceMode(car.paceMode));
                 UpdateValue($"{name}_FuelMode", TelemetryHelpers.GetFuelMode(car.fuelMode));
@@ -539,15 +553,18 @@ namespace F1Manager2024Plugin
                             Charge = t.Value.Car[i].charge,
                             Fuel = t.Value.Car[i].fuel,
                             TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
+                            FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,
                             FLTemp = t.Value.Car[i].flTemp,
+                            FLBrakeTemp = t.Value.Car[i].flBrakeTemp,
+                            FRSurfaceTemp = t.Value.Car[i].frSurfaceTemp,
                             FRTemp = t.Value.Car[i].frTemp,
+                            FRBrakeTemp = t.Value.Car[i].frBrakeTemp,
+                            RLSurfaceTemp = t.Value.Car[i].rlSurfaceTemp,
                             RLTemp = t.Value.Car[i].rlTemp,
+                            RLBrakeTemp = t.Value.Car[i].rlBrakeTemp,
+                            RRSurfaceTemp = t.Value.Car[i].rrSurfaceTemp,
                             RRTemp = t.Value.Car[i].rrTemp,
-                            FLWear = t.Value.Car[i].flWear,
-                            FRWear = t.Value.Car[i].frWear,
-                            RLWear = t.Value.Car[i].rlWear,
-                            RRWear = t.Value.Car[i].rrWear,
-                            BrakeTemp = t.Value.Car[i].brakeTemperature,
+                            RRBrakeTemp = t.Value.Car[i].rrBrakeTemp,
                             PaceMode = TelemetryHelpers.GetPaceMode(t.Value.Car[i].paceMode),
                             FuelMode = TelemetryHelpers.GetFuelMode(t.Value.Car[i].fuelMode),
                             ERSMode = TelemetryHelpers.GetERSMode(t.Value.Car[i].ersMode),

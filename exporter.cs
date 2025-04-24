@@ -96,15 +96,22 @@ namespace F1Manager2024Plugin
 
                     // Tyres
                     ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["flSurfaceTemp"] = telemetry.Car[i].flSurfaceTemp,
                     ["flTemp"] = telemetry.Car[i].flTemp,
-                    ["flDeg"] = telemetry.Car[i].flWear,
+                    ["flBrakeTemp"] = telemetry.Car[i].flBrakeTemp,
+                    ["frSurfaceTemp"] = telemetry.Car[i].frSurfaceTemp,
                     ["frTemp"] = telemetry.Car[i].frTemp,
-                    ["frDeg"] = telemetry.Car[i].frWear,
+                    ["frBrakeTemp"] = telemetry.Car[i].frBrakeTemp,
+                    ["rlSurfaceTemp"] = telemetry.Car[i].rlSurfaceTemp,
                     ["rlTemp"] = telemetry.Car[i].rlTemp,
-                    ["rlDeg"] = telemetry.Car[i].rlWear,
+                    ["rlBrakeTemp"] = telemetry.Car[i].rlBrakeTemp,
+                    ["rrSurfaceTemp"] = telemetry.Car[i].rrSurfaceTemp,
                     ["rrTemp"] = telemetry.Car[i].rrTemp,
+                    ["rrBrakeTemp"] = telemetry.Car[i].rrBrakeTemp,
+                    ["flDeg"] = telemetry.Car[i].flWear,
+                    ["frDeg"] = telemetry.Car[i].frWear,
+                    ["rlDeg"] = telemetry.Car[i].rlWear,
                     ["rrDeg"] = telemetry.Car[i].rrWear,
-                    ["brakeTemp"] = telemetry.Car[i].brakeTemperature,
 
                     // Car telemetry
                     ["speed"] = telemetry.Car[i].Driver.speed,

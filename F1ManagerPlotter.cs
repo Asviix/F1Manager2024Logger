@@ -129,6 +129,7 @@ namespace F1Manager2024Plugin
                 // Status
                 pluginManager.AddProperty($"{name}_TurnNumber", GetType(), typeof(int), "Turn Number");
                 pluginManager.AddProperty($"{name}_CurrentLap", GetType(), typeof(int), "Current Lap");
+                pluginManager.AddProperty($"{name}_DistanceTravelled", GetType(), typeof(int), "Number of meters travelled in the current lap.");
 
                 // Timings
                 pluginManager.AddProperty($"{name}_CurrentLapTime", GetType(), typeof(float), "Current Lap Time");
@@ -319,7 +320,7 @@ namespace F1Manager2024Plugin
                 // Update historical data
                 if (LapOrTurnChanged(name, car))
                 {
-                    UpdateHistoricalData(name, telemetry, i);
+                    UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
                     _exporter.ExportData(name, telemetry, i, Settings);
                 }
@@ -339,6 +340,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
                 UpdateValue($"{name}_CurrentLap", (car.currentLap) + 1); // Adjust for Index
+                UpdateValue($"{name}_DistanceTravelled", car.Driver.distanceTravelled);
                 // Timings
                 UpdateValue($"{name}_CurrentLapTime", car.Driver.currentLapTime);
                 UpdateValue($"{name}_DriverBestLap", car.Driver.driverBestLap);
@@ -378,7 +380,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_NameOfCarAhead", carAheadName);
                 UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
                 UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
-                UpdateValue($"{name}_GapToLeader", car.Driver.GapToLeader);
+                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
             }
         }
 
@@ -418,7 +420,7 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void UpdateHistoricalData(string carName, Telemetry telemetry, int i)
+        private void UpdateHistoricalData(string carName, Telemetry telemetry, int i, int CarsOnGrid)
         {
             // Check for session reset
             if (telemetry.carFloatValue != ExpectedCarValue)
@@ -455,11 +457,11 @@ namespace F1Manager2024Plugin
                 _carHistory[carName][currentLap][currentTurn] = telemetry;
 
                 // Update JSON properties
-                UpdateLapProperty(carName, currentLap, i);
+                UpdateLapProperty(telemetry, carName, currentLap, i, CarsOnGrid);
             }
         }
 
-        private void UpdateLapProperty(string carName, int lapNumber, int i)
+        private void UpdateLapProperty(Telemetry telemetry, string carName, int lapNumber, int i, int CarsOnGrid)
         {
             if (!_carHistory.ContainsKey(carName) || !_carHistory[carName].ContainsKey(lapNumber))
                 return;
@@ -478,6 +480,8 @@ namespace F1Manager2024Plugin
             }
 
             // Serialize the complete lap data
+            int position = _carHistory[carName][lapNumber][lapNumber].Car[i].Driver.position;
+
             var lapData = new
             {
                 LapNumber = lapNumber,
@@ -504,6 +508,7 @@ namespace F1Manager2024Plugin
                             TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
                             PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus),
                             TurnNumber = t.Value.Car[i].Driver.turnNumber,
+                            DistanceTravelled = t.Value.Car[i].Driver.distanceTravelled,
                             CurrentLap = t.Value.Car[i].currentLap,
                             CurrentLapTime = t.Value.Car[i].Driver.currentLapTime,
                             DriverBestLap = t.Value.Car[i].Driver.driverBestLap,
@@ -532,7 +537,12 @@ namespace F1Manager2024Plugin
                             EngineTemp = t.Value.Car[i].engineTemp,
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,
-                            ERSWear = t.Value.Car[i].ersWear
+                            ERSWear = t.Value.Car[i].ersWear,
+                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(telemetry, position, i, carNames, CarsOnGrid),
+                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(telemetry, position, i, carNames, CarsOnGrid),
+                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, position, i, carNames, CarsOnGrid),
+                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, position, i, carNames, CarsOnGrid),
+                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, position, i, carNames, CarsOnGrid)
                         }
                     )
             };

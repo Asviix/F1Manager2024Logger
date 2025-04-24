@@ -10,6 +10,7 @@ using SimHub.Plugins.Styles;
 using System.Windows.Forms;
 using System.Linq.Expressions;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
+using log4net.Plugin;
 
 namespace F1Manager2024Plugin
 {
@@ -151,8 +152,6 @@ namespace F1Manager2024Plugin
                 {
                     CustomTeamInput.Text = plugin.Settings.CustomTeamName;
                 }
-
-
             }
         }
 
@@ -277,23 +276,7 @@ namespace F1Manager2024Plugin
 
             if (result == System.Windows.Forms.DialogResult.Yes)
             {
-                var defaults = F1Manager2024PluginSettings.GetDefaults();
-                Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
-                Plugin.Settings.ExporterPath = defaults.ExporterPath;
-                Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
-
-                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-                Plugin.ReloadSettings(Plugin.Settings);
-
-                ExporterEnabledCheckbox.IsChecked = false;
-                ExporterPathTextBox.Text = "No folder selected";
-
-                foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
-                {
-                    team.Driver1.IsSelected = defaults.TrackedDrivers.Contains(team.Driver1.Name);
-                    team.Driver2.IsSelected = defaults.TrackedDrivers.Contains(team.Driver2.Name);
-                }
-                DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
+                ResetSettingsToDefault();
 
                 await SHMessageBox.Show("Settings have been reset to default!\nYou might want to restart the plugin to make sure the settings have been reset.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -354,6 +337,43 @@ namespace F1Manager2024Plugin
             Plugin.ReloadSettings(Plugin.Settings);
 
             InitializeUI(Plugin);
+        }
+
+        private async void CheckNewVersion(object sender, RoutedEventArgs e)
+        {
+            if (Plugin.Settings.SavedVersion != Plugin.Settings.RequiredVersion)
+            {
+                ResetSettingsToDefault();
+
+                await SHMessageBox.Show("New Version detected, settings have been reset to default.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            InitializeUI(Plugin);
+        }
+
+        private void ResetSettingsToDefault()
+        {
+            var defaults = F1Manager2024PluginSettings.GetDefaults();
+            Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
+            Plugin.Settings.ExporterPath = defaults.ExporterPath;
+            Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
+            Plugin.Settings.CustomTeamName = defaults.CustomTeamName;
+            Plugin.Settings.SavedVersion = defaults.SavedVersion;
+
+            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
+
+            ExporterEnabledCheckbox.IsChecked = false;
+            ExporterPathTextBox.Text = "No folder selected";
+
+            foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
+            {
+                team.Driver1.IsSelected = defaults.TrackedDrivers.Contains(team.Driver1.Name);
+                team.Driver2.IsSelected = defaults.TrackedDrivers.Contains(team.Driver2.Name);
+            }
+            DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
+
+            CustomTeamInput.Text = "MyTeam";
         }
     }
 }

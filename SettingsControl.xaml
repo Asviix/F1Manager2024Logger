@@ -10,7 +10,7 @@
     xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins"
     xmlns:dd="urn:gong-wpf-dragdrop"
     x:Class="F1Manager2024Plugin.SettingsControl"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Loaded="CheckNewVersion">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />

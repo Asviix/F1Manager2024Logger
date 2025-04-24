@@ -123,6 +123,7 @@ namespace F1Manager2024Plugin
         public float frWear;
         public float rlWear;
         public float rrWear;
+        public float brakeTemperature;
         public float engineTemp;
         public float engineWear;
         public float gearboxWear;

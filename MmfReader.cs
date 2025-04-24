@@ -137,6 +137,8 @@ namespace F1Manager2024Plugin
         public float gearboxWear;
         public float ersWear;
         public float charge;
+        public float energyHarvested;
+        public float energySpent;
         public float fuel;
         public DriverTelemetry Driver;
     }

@@ -147,6 +147,8 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_Rpm", GetType(), typeof(int), "RPM");
                 pluginManager.AddProperty($"{name}_Gear", GetType(), typeof(int), "Gear");
                 pluginManager.AddProperty($"{name}_Charge", GetType(), typeof(float), "ERS Charge");
+                pluginManager.AddProperty($"{name}_EnergyHarvested", GetType(), typeof(float), "ERS Energy Harvested.");
+                pluginManager.AddProperty($"{name}_EnergyDeployed", GetType(), typeof(float), "ERS Energy Deployed.");
                 pluginManager.AddProperty($"{name}_Fuel", GetType(), typeof(float), "Fuel");
 
                 // Tires
@@ -373,6 +375,8 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Rpm", car.Driver.rpm);
                 UpdateValue($"{name}_Gear", car.Driver.gear);
                 UpdateValue($"{name}_Charge", car.charge);
+                UpdateValue($"{name}_EnergyHarvested", car.energyHarvested);
+                UpdateValue($"{name}_EnergyDeployed", car.energySpent);
                 UpdateValue($"{name}_Fuel", car.fuel);
                 // Tyres
                 UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound));
@@ -552,6 +556,8 @@ namespace F1Manager2024Plugin
                             RPM = t.Value.Car[i].Driver.rpm,
                             Gear = t.Value.Car[i].Driver.gear,
                             Charge = t.Value.Car[i].charge,
+                            EnergyHarvested = t.Value.Car[i].energyHarvested,
+                            EnergySpent = t.Value.Car[i].energySpent,
                             Fuel = t.Value.Car[i].fuel,
                             TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
                             FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,

@@ -126,6 +126,8 @@ namespace F1Manager2024Plugin
 
                     // Energy
                     ["charge"] = telemetry.Car[i].charge,
+                    ["energyHarvested"] = telemetry.Car[i].energyHarvested,
+                    ["energySpent"] = telemetry.Car[i].energySpent,
                     ["fuel"] = telemetry.Car[i].fuel,
 
                     // Modes

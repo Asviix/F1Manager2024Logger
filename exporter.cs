@@ -103,6 +103,7 @@ namespace F1Manager2024Plugin
                     ["rlDeg"] = telemetry.Car[i].rlWear,
                     ["rrTemp"] = telemetry.Car[i].rrTemp,
                     ["rrDeg"] = telemetry.Car[i].rrWear,
+                    ["brakeTemp"] = telemetry.Car[i].brakeTemperature,
 
                     // Car telemetry
                     ["speed"] = telemetry.Car[i].Driver.speed,

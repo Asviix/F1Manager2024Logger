@@ -57,6 +57,7 @@ namespace F1Manager2024Plugin
                 "MyTeam1", "MyTeam2"
         };
 
+        // Initialize the Plugin.
         public void Init(PluginManager pluginManager)
         {
             SimHub.Logging.Current.Info("Starting Plugin");
@@ -158,6 +159,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_frDeg", GetType(), typeof(float), "Front Right Wear");
                 pluginManager.AddProperty($"{name}_rlDeg", GetType(), typeof(float), "Rear Left Wear");
                 pluginManager.AddProperty($"{name}_rrDeg", GetType(), typeof(float), "Rear Right Wear");
+                pluginManager.AddProperty($"{name}_brakeTemp", GetType(), typeof(float), "Brake Temperature");
 
                 // Modes
                 pluginManager.AddProperty($"{name}_PaceMode", GetType(), typeof(string), "Pace Mode");
@@ -223,17 +225,21 @@ namespace F1Manager2024Plugin
             }
         }
 
-        // Helper Functions
+        // Helper Methods
+        // Last Recorded Data used by the LapOrTurnChanged Method.
         class LastRecordedData
         {
             public int LastTurnNumber { get; set; }
             public int LastLapNumber { get; set; }
         }
 
+        // Dictionary for the Last Recorded Data.
         private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
 
+        // Dictionary for the Car Historical Data.
         private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>>();
 
+        // GetDriversNames used by the SettingsControl to initialize the driver's list.
         public Dictionary<string, (string FirstName, string LastName)> GetDriversNames()
         {
             var result = new Dictionary<string, (string, string)>();
@@ -267,6 +273,7 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Update the status of the Debug Properties in SimHub.
         private void UpdateStatus(bool connected, string message, string message2)
         {
             UpdateValue("DEBUG_Status_IsMemoryMap_Connected", connected);
@@ -274,6 +281,7 @@ namespace F1Manager2024Plugin
             UpdateValue("DEBUG_Game_Status", message2);
         }
 
+        // Update all properties in SimHub
         private void UpdateProperties(Telemetry telemetry, DateTime lastDataTime, float lastTimeElapsed)
         {
             foreach (var car in telemetry.Car)
@@ -368,6 +376,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_frDeg", car.frWear);
                 UpdateValue($"{name}_rlDeg", car.rlWear);
                 UpdateValue($"{name}_rrDeg", car.rrWear);
+                UpdateValue($"{name}_brakeTemp", car.brakeTemperature);
                 // Modes
                 UpdateValue($"{name}_PaceMode", TelemetryHelpers.GetPaceMode(car.paceMode));
                 UpdateValue($"{name}_FuelMode", TelemetryHelpers.GetFuelMode(car.fuelMode));
@@ -388,11 +397,13 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Helper Function used to make Update Values easier.
         private void UpdateValue(string data, object message)
         {
             PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
         }
 
+        // Checks whether a specific car is in a new Turn or Lap.
         private bool LapOrTurnChanged(string carName, CarTelemetry car)
         {
             try
@@ -424,6 +435,7 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Update the dictionaries of the Car's Historical Data.
         private void UpdateHistoricalData(string carName, Telemetry telemetry, int i, int CarsOnGrid)
         {
             // Check for session reset
@@ -465,6 +477,7 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Update the Historical Data Properties in SimHub.
         private void UpdateLapProperty(Telemetry telemetry, string carName, int lapNumber, int i, int CarsOnGrid)
         {
             if (!_carHistory.ContainsKey(carName) || !_carHistory[carName].ContainsKey(lapNumber))
@@ -534,6 +547,7 @@ namespace F1Manager2024Plugin
                             FRWear = t.Value.Car[i].frWear,
                             RLWear = t.Value.Car[i].rlWear,
                             RRWear = t.Value.Car[i].rrWear,
+                            BrakeTemp = t.Value.Car[i].brakeTemperature,
                             PaceMode = TelemetryHelpers.GetPaceMode(t.Value.Car[i].paceMode),
                             FuelMode = TelemetryHelpers.GetFuelMode(t.Value.Car[i].fuelMode),
                             ERSMode = TelemetryHelpers.GetERSMode(t.Value.Car[i].ersMode),
@@ -557,6 +571,7 @@ namespace F1Manager2024Plugin
             );
         }
 
+        // Clear all Historical Data Properties in SimHub.
         public void ClearAllHistory()
         {
             lock (_historyLock)
@@ -579,11 +594,13 @@ namespace F1Manager2024Plugin
             SimHub.Logging.Current.Info("Cleared all historical data due to session reset");
         }
 
+        // Reload all Settings.
         public void ReloadSettings(F1Manager2024PluginSettings settings)
         {
             Settings = settings;
         }
 
+        // Called when SimHub is closed.
         public void End(PluginManager pluginManager)
         {
             _mmfReader.DataReceived -= DataReceived;

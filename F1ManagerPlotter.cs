@@ -421,7 +421,6 @@ namespace F1Manager2024Plugin
         private void UpdateHistoricalData(string carName, Telemetry telemetry, int i)
         {
             // Check for session reset
-            float currentTime = (float)(telemetry.Session.timeElapsed);
             if (telemetry.carFloatValue != ExpectedCarValue)
             {
                 ClearAllHistory();

@@ -627,7 +627,17 @@ namespace F1Manager2024Plugin
 
             for (int j = 0; j < CarsOnGrid; j++)
             {
-                if (telemetry.Car[j].Driver.position == position + 1) return telemetry.Car[j].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
+                if (telemetry.Car[j].Driver.position == position + 1)
+                {
+                    if (telemetry.Session.sessionType is 6 or 7)
+                    {
+                        return telemetry.Car[j].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
+                    }
+                    else
+                    {
+                        return telemetry.Car[j].Driver.driverBestLap - telemetry.Car[i].Driver.driverBestLap;
+                    }
+                }
             }
 
             return 0f;
@@ -639,7 +649,39 @@ namespace F1Manager2024Plugin
 
             for (int j = 0; j < CarsOnGrid; j++)
             {
-                if (telemetry.Car[j].Driver.position == position - 1) return telemetry.Car[i].Driver.GapToLeader - telemetry.Car[j].Driver.GapToLeader;
+                if (telemetry.Car[j].Driver.position == position - 1)
+                {
+                    if (telemetry.Session.sessionType is 6 or 7)
+                    {
+                        return telemetry.Car[i].Driver.GapToLeader - telemetry.Car[j].Driver.GapToLeader;
+                    }
+                    else
+                    {
+                        return telemetry.Car[i].Driver.driverBestLap - telemetry.Car[j].Driver.driverBestLap;
+                    }
+                }
+            }
+
+            return 0f;
+        }
+
+        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        {
+            if (position == 0) return 0f;
+
+            for (int j = 0; j < CarsOnGrid; j++)
+            {
+                if (telemetry.Car[j].Driver.position == 0)
+                {
+                    if (telemetry.Session.sessionType is 6 or 7)
+                    {
+                        return telemetry.Car[i].Driver.GapToLeader - telemetry.Car[j].Driver.GapToLeader;
+                    }
+                    else
+                    {
+                        return telemetry.Car[i].Driver.driverBestLap - telemetry.Car[j].Driver.driverBestLap;
+                    }
+                }
             }
 
             return 0f;

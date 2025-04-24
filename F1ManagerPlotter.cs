@@ -225,9 +225,10 @@ namespace F1Manager2024Plugin
                     UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
                     UpdateStatus(true, "Connected", "Game in Session");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     UpdateStatus(false, "Error processing data", "Game in Session");
+                    SimHub.Logging.Current.Error(ex);
                 }
             }
         }

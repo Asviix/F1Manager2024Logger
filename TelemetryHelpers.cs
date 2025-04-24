@@ -258,8 +258,8 @@ namespace F1Manager2024Plugin
             // For all other sessions (return time remaining in seconds)
             else
             {
-                int sessionDuration = GetSessionLength(sessionType); // Convert minutes to seconds
-                float timeRemaining =  telemetry.Session.timeElapsed - sessionDuration;
+                int sessionDuration = GetSessionLength(sessionType) * 60;
+                float timeRemaining =   sessionDuration - telemetry.Session.timeElapsed;
                 return (timeRemaining, 0, timeRemaining);
             }
         }

@@ -84,6 +84,8 @@ namespace F1Manager2024Plugin
             // Add Session Properties
             pluginManager.AddProperty("TimeSpeed", GetType(), typeof(float), "Time Fast-Forward Multiplicator.");
             pluginManager.AddProperty("TimeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
+            pluginManager.AddProperty("LapsRemaining", GetType(), typeof(float), "Laps Remaining in the race.");
+            pluginManager.AddProperty("TimeRemaining", GetType(), typeof(float), "Time Remaining in the session.");
             pluginManager.AddProperty("TrackName", GetType(), typeof(int), "Track Name.");
             pluginManager.AddProperty("BestSessionTime", GetType(), typeof(float), "Best Time in the session.");
             pluginManager.AddProperty("RubberState", GetType(), typeof(int), "Rubber on Track.");
@@ -294,6 +296,8 @@ namespace F1Manager2024Plugin
             // Update Session Properties
             UpdateValue("TrackName", TelemetryHelpers.GetTrackName(session.trackId));
             UpdateValue("TimeElapsed", session.timeElapsed);
+            UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining);
+            UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining);
             UpdateValue("BestSessionTime", session.bestSessionTime);
             UpdateValue("RubberState", session.rubber);
             UpdateValue("SessionType", TelemetryHelpers.GetSessionType(session.sessionType));
@@ -480,8 +484,6 @@ namespace F1Manager2024Plugin
             }
 
             // Serialize the complete lap data
-            int position = _carHistory[carName][lapNumber][lapNumber].Car[i].Driver.position;
-
             var lapData = new
             {
                 LapNumber = lapNumber,
@@ -493,6 +495,8 @@ namespace F1Manager2024Plugin
                         {
                             TrackName = TelemetryHelpers.GetTrackName(t.Value.Session.trackId),
                             TimeElapsed = t.Value.Session.timeElapsed,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining,
                             BestSessionTime = t.Value.Session.bestSessionTime,
                             RubberState = t.Value.Session.rubber,
                             SessionType = TelemetryHelpers.GetSessionType(t.Value.Session.sessionType),
@@ -538,11 +542,11 @@ namespace F1Manager2024Plugin
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,
                             ERSWear = t.Value.Car[i].ersWear,
-                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(telemetry, position, i, carNames, CarsOnGrid),
-                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(telemetry, position, i, carNames, CarsOnGrid),
-                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, position, i, carNames, CarsOnGrid),
-                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, position, i, carNames, CarsOnGrid),
-                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, position, i, carNames, CarsOnGrid)
+                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
                         }
                     )
             };

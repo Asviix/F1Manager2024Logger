@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimHub.Plugins.DataPlugins.ShakeItV3.UI.OutputSettings.Vibration;
 
 namespace F1Manager2024Plugin
 {
@@ -79,6 +80,76 @@ namespace F1Manager2024Plugin
             };
         }
 
+        public static int GetTrackLaps(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0,    // Invalid
+                1 => 58,    // Albert Park (Australia) - 2024
+                2 => 57,   // Bahrain - 2024
+                3 => 56,   // Shanghai - 2023 data (returning in 2024 after hiatus)
+                4 => 51,   // Baku - 2023 data
+                5 => 66,   // Barcelona - 2023 data
+                6 => 78,   // Monaco - 2023 data
+                7 => 70,   // Montreal - 2023 data
+                8 => 53,   // Paul Ricard - 2022 data (not in 2023/2024)
+                9 => 71,   // Red Bull Ring (Austria) - 2023 data
+                10 => 52,  // Silverstone - 2023 data
+                11 => 50,  // Jeddah - 2024
+                12 => 70,  // Hungaroring - 2023 data
+                13 => 44,  // Spa-Francorchamps - 2023 data
+                14 => 53,  // Monza - 2023 data
+                15 => 62,  // Marina Bay - 2023 data
+                16 => 53,  // Sochi - 2021 data (not in recent seasons)
+                17 => 53,  // Suzuka - 2023 data
+                18 => 71,  // Hermanos Rodriguez (Mexico) - 2023 data
+                19 => 56,  // COTA - 2023 data
+                20 => 71,  // Interlagos - 2023 data
+                21 => 58, // Yas Marina - 2023 data
+                22 => 57,  // Miami - 2023 data
+                23 => 72,  // Zandvoort - 2023 data
+                24 => 63,  // Imola - 2023 data
+                25 => 50,  // Las Vegas - 2023
+                26 => 57,  // Qatar - 2023
+                _ => 0     // Unknown
+            };
+        }
+
+        public static int GetTrackLapsSprint(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0,   // Invalid
+                1 => 19,  // Albert Park (100.282km)
+                2 => 19,  // Bahrain (102.828km)
+                3 => 19,  // Shanghai (103.569km)
+                4 => 17,  // Baku (102.051km) - rounded up from 16.66 laps
+                5 => 22,  // Barcelona (102.454km)
+                6 => 30,  // Monaco (100.11km)
+                7 => 23,  // Montreal (100.303km)
+                8 => 18,  // Paul Ricard (105.156km)
+                9 => 24,  // Red Bull Ring (103.632km)
+                10 => 17, // Silverstone (100.147km)
+                11 => 17, // Jeddah (104.958km)
+                12 => 23, // Hungaroring (100.763km)
+                13 => 15, // Spa (105.06km)
+                14 => 18, // Monza (104.274km)
+                15 => 21, // Marina Bay (103.74km)
+                16 => 18, // Sochi (105.264km)
+                17 => 18, // Suzuka (104.526km)
+                18 => 24, // Mexico (103.296km)
+                19 => 19, // COTA (104.747km)
+                20 => 24, // Interlagos (103.416km)
+                21 => 19, // Yas Marina (100.339km)
+                22 => 19, // Miami (102.828km)
+                23 => 24, // Zandvoort (102.216km)
+                24 => 17, // Imola (100.453km)
+                25 => 17, // Las Vegas (105.417km)
+                26 => 19, // Qatar (102.961km)
+                _ => 0    // Unknown
+            };
+        }
+
         public static string GetSessionType(int sessionId)
         {
             return sessionId switch
@@ -117,6 +188,25 @@ namespace F1Manager2024Plugin
             };
         }
 
+        public static int GetSessionLength(int sessionId)
+        {
+            return sessionId switch
+            {
+                0 => 60,   // Practice 1 (1 hour)
+                1 => 60,   // Practice 2 (1 hour)
+                2 => 60,   // Practice 3 (1 hour)
+                3 => 18,   // Qualifying 1 (~18 minutes)
+                4 => 15,   // Qualifying 2 (~15 minutes)
+                5 => 12,   // Qualifying 3 (~12 minutes)
+                6 => 0,    // Race (determined by laps)
+                7 => 0,    // Sprint (determined by laps)
+                8 => 12,   // Sprint Qualifying 1 (~12 minutes)
+                9 => 10,   // Sprint Qualifying 2 (~10 minutes)
+                10 => 8,   // Sprint Qualifying 3 (~8 minutes)
+                _ => 0     // Unknown
+            };
+        }
+
         public static string GetWeather(int weather)
         {
             return weather switch
@@ -130,6 +220,38 @@ namespace F1Manager2024Plugin
                 6 => "Heavy Rain",
                 _ => "Unknown"
             };
+        }
+
+        public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, int CarsOnGrid)
+        {
+            int sessionType = telemetry.Session.sessionType;
+            int trackId = telemetry.Session.trackId;
+            int P1Car = 0;
+
+            // For Race or Sprint sessions (return laps remaining)
+            if (sessionType == 6 || sessionType == 7)
+            {
+                for (int j = 0; j < CarsOnGrid; j++)
+                {
+                    if (telemetry.Car[j].Driver.position == 0)
+                    {
+                        P1Car = telemetry.Car[j].driverPos;
+                        break;
+                    }
+                }
+
+                int totalLaps = (sessionType == 6) ? GetTrackLaps(trackId) : GetTrackLapsSprint(trackId);
+                float currentLap = telemetry.Car[P1Car].currentLap + 1; // Convert 0-index to lap count
+                float lapsRemaining = totalLaps - currentLap;
+                return (0, lapsRemaining, lapsRemaining);
+            }
+            // For all other sessions (return time remaining in seconds)
+            else
+            {
+                int sessionDuration = GetSessionLength(sessionType); // Convert minutes to seconds
+                float timeRemaining =  telemetry.Session.timeElapsed - sessionDuration;
+                return (timeRemaining, 0, timeRemaining);
+            }
         }
 
         public static string GetDriverFirstName(int driverId)

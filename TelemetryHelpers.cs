@@ -10,6 +10,7 @@ namespace F1Manager2024Plugin
     public static class TelemetryHelpers
     {
 
+        // Returns the track name based on ID.
         public static string GetTrackName(int trackId)
         {
             return trackId switch
@@ -45,6 +46,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the track length based on ID.
         public static float GetTrackLength(int trackId)
         {
             return trackId switch
@@ -80,6 +82,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the number of laps based on ID.
         public static int GetTrackLaps(int trackId)
         {
             return trackId switch
@@ -115,6 +118,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the number of sprint laps based on ID and taking into a account all sprint races are 100KM + 1 Lap.
         public static int GetTrackLapsSprint(int trackId)
         {
             return trackId switch
@@ -150,6 +154,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the session type based on ID.
         public static string GetSessionType(int sessionId)
         {
             return sessionId switch
@@ -169,6 +174,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the short session type based on ID.
         public static string GetShortSessionType(int sessionId)
         {
             return sessionId switch
@@ -188,6 +194,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the session length based on ID.
         public static int GetSessionLength(int sessionId)
         {
             return sessionId switch
@@ -207,6 +214,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the weather based on ID.
         public static string GetWeather(int weather)
         {
             return weather switch
@@ -222,6 +230,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns 3 values, TimeRemaining, LapsRemaining and Mixed depending on what track and session type that session is.
         public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, int CarsOnGrid)
         {
             int sessionType = telemetry.Session.sessionType;
@@ -231,6 +240,7 @@ namespace F1Manager2024Plugin
             // For Race or Sprint sessions (return laps remaining)
             if (sessionType == 6 || sessionType == 7)
             {
+                // Looks for the car in first position (Laps update based on the leader's position)
                 for (int j = 0; j < CarsOnGrid; j++)
                 {
                     if (telemetry.Car[j].Driver.position == 0)
@@ -254,6 +264,7 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Returns the Driver's First Name based on ID.
         public static string GetDriverFirstName(int driverId)
         {
             return driverId switch
@@ -433,6 +444,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Driver's Last Name based on ID.
         public static string GetDriverLastName(int driverId)
         {
             return driverId switch
@@ -612,6 +624,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Team's Name based on ID.
         public static string GetTeamName(int teamId, F1Manager2024PluginSettings Settings)
         {
             if (Settings.CustomTeamName != null && teamId == 32) return Settings.CustomTeamName;
@@ -633,6 +646,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the PitStop State based on ID.
         public static string GetPitStopStatus(int pitStop)
         {
             return pitStop switch
@@ -654,6 +668,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Tire Compound based on ID.
         public static string GetTireCompound(int compound)
         {
             return compound switch
@@ -667,6 +682,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Pace Mode based on ID.
         public static string GetPaceMode(int paceMode)
         {
             return paceMode switch
@@ -680,6 +696,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Fuel Mode based on ID.
         public static string GetFuelMode(int fuelMode)
         {
             return fuelMode switch
@@ -691,6 +708,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the ERS Mode based on ID.
         public static string GetERSMode(int ersMode)
         {
             return ersMode switch
@@ -703,6 +721,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the DRS Mode based on ID.
         public static string GetDRSMode(int drsMode)
         {
             return drsMode switch
@@ -715,12 +734,15 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the name of the car Currently behind the driver in [i] position
         public static string GetNameOfCarBehind(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
+            // Return the last position accounting for 20 or 22 Sized Grids.
             if (CarsOnGrid == 22 && position == 21) return carNames[i];
 
             if (CarsOnGrid == 20 && position == 19) return carNames[i];
 
+            // Looks for the driver in first Position and returns it's CarName.
             for (int j = 0; j < CarsOnGrid; j++)
             {
                 if (telemetry.Car[j].Driver.position == position + 1) return carNames[j];
@@ -729,6 +751,7 @@ namespace F1Manager2024Plugin
             return "Unknown";
         }
 
+        // Returns the name of the car Currently behind the driver in [i] position
         public static string GetNameOfCarAhead(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (position == 0) return carNames[i];
@@ -741,6 +764,7 @@ namespace F1Manager2024Plugin
             return "Unknown";
         }
 
+        // Returns the gap of the car behind the driver in [i] position
         public static float GetGapBehind(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (CarsOnGrid == 22 && position == 21) return 0f;
@@ -765,6 +789,7 @@ namespace F1Manager2024Plugin
             return 0f;
         }
 
+        // Returns the gap of the car ahead of the driver in [i] position
         public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (position == 0) return 0f;
@@ -787,6 +812,7 @@ namespace F1Manager2024Plugin
             return 0f;
         }
 
+        // Returns the gap to the leader of the driver in [i] position
         public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (position == 0) return 0f;

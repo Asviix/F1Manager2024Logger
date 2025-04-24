@@ -29,6 +29,7 @@ namespace F1Manager2024Plugin
 
         public int CarsOnGrid = 22;
 
+        // Exports Data to CSV Files depending on the chosen settings.
         public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.

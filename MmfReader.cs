@@ -18,6 +18,7 @@ namespace F1Manager2024Plugin
         private CancellationTokenSource _cts;
         private string _currentMapName;
 
+        // Reads from the Memory Map Created by the C# Application.
         public void StartReading(string mapName)
         {
             if (string.IsNullOrWhiteSpace(mapName))

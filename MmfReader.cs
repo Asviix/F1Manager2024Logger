@@ -140,6 +140,7 @@ namespace F1Manager2024Plugin
         public float energyHarvested;
         public float energySpent;
         public float fuel;
+        public float fuelDelta;
         public DriverTelemetry Driver;
     }
 

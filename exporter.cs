@@ -129,6 +129,7 @@ namespace F1Manager2024Plugin
                     ["energyHarvested"] = telemetry.Car[i].energyHarvested,
                     ["energySpent"] = telemetry.Car[i].energySpent,
                     ["fuel"] = telemetry.Car[i].fuel,
+                    ["fuelDelta"] = telemetry.Car[i].fuelDelta,
 
                     // Modes
                     ["paceMode"] = TelemetryHelpers.GetPaceMode(telemetry.Car[i].paceMode) ?? "",

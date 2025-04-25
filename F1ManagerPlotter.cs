@@ -332,18 +332,19 @@ namespace F1Manager2024Plugin
             UpdateValue("TrackTemp", session.Weather.trackTemp);
             UpdateValue("Weather", TelemetryHelpers.GetWeather(session.Weather.weather));
 
-            // Update Drivers Properties
-            for (int i = 0; i < telemetry.Car.Length; i++)
+            // Set the number of cars on the grid.
+            if (telemetry.Car[20].Driver.rpm == 0)
             {
-                // Set the number of cars on the grid.
-                if (telemetry.Car[i].Driver.rpm == 0)
-                {
-                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
-                }
-                else
-                {
-                    CarsOnGrid = 22;
-                }
+                CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+            }
+            else
+            {
+                CarsOnGrid = 22;
+            }
+
+            // Update Drivers Properties
+            for (int i = 0; i < CarsOnGrid; i++)
+            {
                 var car = telemetry.Car[i];
                 var name = carNames[i];
 

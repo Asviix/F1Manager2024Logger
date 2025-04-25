@@ -344,11 +344,11 @@ namespace F1Manager2024Plugin
                 {
                     UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
-                    _exporter.ExportData(name, telemetry, i, Settings);
+                    _exporter.ExportData(PluginManager, name, telemetry, i, Settings);
                 }
 
-                string carAheadName = TelemetryHelpers.GetNameOfCarAhead(telemetry, car.Driver.position, i, carNames, CarsOnGrid);
-                string carBehindName = TelemetryHelpers.GetNameOfCarBehind(telemetry, car.Driver.position, i, carNames, CarsOnGrid);
+                string carAheadName = TelemetryHelpers.GetNameOfCarAhead(PluginManager, car.Driver.position, i, carNames, CarsOnGrid);
+                string carBehindName = TelemetryHelpers.GetNameOfCarBehind(PluginManager, car.Driver.position, i, carNames, CarsOnGrid);
 
                 // Update Session Standings
                 UpdateValue($"P{car.Driver.position + 1}_Car", name);
@@ -410,9 +410,9 @@ namespace F1Manager2024Plugin
                 // Opponents Data
                 UpdateValue($"{name}_NameOfCarBehind", carBehindName);
                 UpdateValue($"{name}_NameOfCarAhead", carAheadName);
-                UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
-                UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
-                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
             }
         }
 
@@ -580,11 +580,11 @@ namespace F1Manager2024Plugin
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,
                             ERSWear = t.Value.Car[i].ersWear,
-                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
+                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(PluginManager, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(PluginManager, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapBehind = TelemetryHelpers.GetGapBehind(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapAhead = TelemetryHelpers.GetGapInFront(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapToLeader = TelemetryHelpers.GetGapLeader(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
                         }
                     )
             };

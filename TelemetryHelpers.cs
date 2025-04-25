@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimHub.Plugins;
 using SimHub.Plugins.DataPlugins.ShakeItV3.UI.OutputSettings.Vibration;
 
 namespace F1Manager2024Plugin
 {
+
     public static class TelemetryHelpers
     {
 
@@ -735,104 +737,149 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the name of the car Currently behind the driver in [i] position
-        public static string GetNameOfCarBehind(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static string GetNameOfCarBehind(PluginManager pluginManager, int position, int i, string[] carNames, int CarsOnGrid)
         {
-            // Return the last position accounting for 20 or 22 Sized Grids.
-            if (CarsOnGrid == 22 && position == 21) return carNames[i];
-
-            if (CarsOnGrid == 20 && position == 19) return carNames[i];
-
-            // Looks for the driver in first Position and returns it's CarName.
-            for (int j = 0; j < CarsOnGrid; j++)
+            // Return the current car if it's last in the grid
+            if ((CarsOnGrid == 22 && position == 21) || (CarsOnGrid == 20 && position == 19))
             {
-                if (telemetry.Car[j].Driver.position == position + 1) return carNames[j];
+                return carNames[i];
             }
 
-            return "Unknown";
+            try
+            {
+                // Get the car name from the pre-calculated position properties
+                string carBehindName = pluginManager.GetPropertyValue<F1ManagerPlotter>($"P{position + 2}_Car").ToString();
+                return string.IsNullOrEmpty(carBehindName) ? "Unknown" : carBehindName;
+            }
+            catch
+            {
+                return "Unknown";
+            }
         }
 
         // Returns the name of the car Currently behind the driver in [i] position
-        public static string GetNameOfCarAhead(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static string GetNameOfCarAhead(PluginManager pluginManager, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (position == 0) return carNames[i];
 
-            for (int j = 0; j < CarsOnGrid; j++)
+            try
             {
-                if (telemetry.Car[j].Driver.position == position - 1) return carNames[j];
+                // Get the car name from the pre-calculated position properties
+                string carAheadName = pluginManager.GetPropertyValue<F1ManagerPlotter>($"P{position}_Car").ToString();
+                return string.IsNullOrEmpty(carAheadName) ? "Unknown" : carAheadName;
             }
-
-            return "Unknown";
+            catch
+            {
+                return "Unknown";
+            }
         }
 
         // Returns the gap of the car behind the driver in [i] position
-        public static float GetGapBehind(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapBehind(PluginManager pluginManager, Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
-            if (CarsOnGrid == 22 && position == 21) return 0f;
-
-            if (CarsOnGrid == 20 && position == 19) return 0f;
-
-            for (int j = 0; j < CarsOnGrid; j++)
+            // Handle last position cases
+            if ((CarsOnGrid == 22 && position == 21) || (CarsOnGrid == 20 && position == 19))
             {
-                if (telemetry.Car[j].Driver.position == position + 1)
-                {
-                    if (telemetry.Session.sessionType is 6 or 7)
-                    {
-                        return telemetry.Car[j].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
-                    }
-                    else
-                    {
-                        return telemetry.Car[j].Driver.driverBestLap - telemetry.Car[i].Driver.driverBestLap;
-                    }
-                }
+                return 0f;
             }
 
-            return 0f;
+            try
+            {
+                // Get the car behind using pre-calculated position properties
+                string carBehindName = pluginManager.GetPropertyValue<F1ManagerPlotter>($"P{position + 2}_Car").ToString();
+
+                if (string.IsNullOrEmpty(carBehindName)) return 0f;
+
+                // Find the index of the car behind
+                int behindIndex = Array.IndexOf(carNames, carBehindName);
+                if (behindIndex == -1) return 0f;
+
+                // Calculate gap based on session type
+                if (telemetry.Session.sessionType is 6 or 7) // Race or Sprint
+                {
+                    return telemetry.Car[behindIndex].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
+                }
+                else // Other sessions
+                {
+                    return telemetry.Car[behindIndex].Driver.driverBestLap - telemetry.Car[i].Driver.driverBestLap;
+                }
+            }
+            catch
+            {
+                return 0f;
+            }
         }
 
         // Returns the gap of the car ahead of the driver in [i] position
-        public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapInFront(PluginManager pluginManager, Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
-            if (position == 0) return 0f;
-
-            for (int j = 0; j < CarsOnGrid; j++)
+            // Handle first position cases
+            if (position == 0)
             {
-                if (telemetry.Car[j].Driver.position == position - 1)
-                {
-                    if (telemetry.Session.sessionType is 6 or 7)
-                    {
-                        return telemetry.Car[i].Driver.GapToLeader - telemetry.Car[j].Driver.GapToLeader;
-                    }
-                    else
-                    {
-                        return telemetry.Car[i].Driver.driverBestLap - telemetry.Car[j].Driver.driverBestLap;
-                    }
-                }
+                return 0f;
             }
 
-            return 0f;
+            try
+            {
+                // Get the car behind using pre-calculated position properties
+                string carAheadName = pluginManager.GetPropertyValue<F1ManagerPlotter>($"P{position}_Car").ToString();
+
+                if (string.IsNullOrEmpty(carAheadName)) return 0f;
+
+                // Find the index of the car behind
+                int behindIndex = Array.IndexOf(carNames, carAheadName);
+                if (behindIndex == -1) return 0f;
+
+                // Calculate gap based on session type
+                if (telemetry.Session.sessionType is 6 or 7) // Race or Sprint
+                {
+                    return telemetry.Car[behindIndex].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
+                }
+                else // Other sessions
+                {
+                    return telemetry.Car[behindIndex].Driver.driverBestLap - telemetry.Car[i].Driver.driverBestLap;
+                }
+            }
+            catch
+            {
+                return 0f;
+            }
         }
 
         // Returns the gap to the leader of the driver in [i] position
-        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapLeader(PluginManager pluginManager, Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
-            if (position == 0) return 0f;
-
-            for (int j = 0; j < CarsOnGrid; j++)
+            // Handle first position cases
+            if (position == 0)
             {
-                if (telemetry.Car[j].Driver.position == 0)
-                {
-                    if (telemetry.Session.sessionType is 6 or 7)
-                    {
-                        return telemetry.Car[i].Driver.GapToLeader - telemetry.Car[j].Driver.GapToLeader;
-                    }
-                    else
-                    {
-                        return telemetry.Car[i].Driver.driverBestLap - telemetry.Car[j].Driver.driverBestLap;
-                    }
-                }
+                return 0f;
             }
 
-            return 0f;
+            try
+            {
+                // Get the car behind using pre-calculated position properties
+                string carLeaderName = pluginManager.GetPropertyValue<F1ManagerPlotter>($"P1_Car").ToString();
+
+                if (string.IsNullOrEmpty(carLeaderName)) return 0f;
+
+                // Find the index of the car behind
+                int behindIndex = Array.IndexOf(carNames, carLeaderName);
+                if (behindIndex == -1) return 0f;
+
+                // Calculate gap based on session type
+                if (telemetry.Session.sessionType is 6 or 7) // Race or Sprint
+                {
+                    return telemetry.Car[behindIndex].Driver.GapToLeader - telemetry.Car[i].Driver.GapToLeader;
+                }
+                else // Other sessions
+                {
+                    return telemetry.Car[behindIndex].Driver.driverBestLap - telemetry.Car[i].Driver.driverBestLap;
+                }
+            }
+            catch
+            {
+                return 0f;
+            }
         }
     }
 }

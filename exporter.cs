@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime;
+using Newtonsoft.Json.Linq;
 using SimHub.Plugins;
 
 namespace F1Manager2024Plugin
@@ -30,7 +31,7 @@ namespace F1Manager2024Plugin
         public int CarsOnGrid = 22;
 
         // Exports Data to CSV Files depending on the chosen settings.
-        public void ExportData(PluginManager pluginManager, string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings)
+        public void ExportData(PluginManager pluginManager, string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
@@ -68,6 +69,8 @@ namespace F1Manager2024Plugin
                 string filePath = _driverFilePaths[carName];
                 bool headersWritten = _headersWritten[carName];
 
+                var lastRecordedData = JObject.Parse(_lastRecordedData);
+
 
                 var telemetryData = new Dictionary<string, object>
                 {
@@ -88,14 +91,15 @@ namespace F1Manager2024Plugin
                     ["turnNumber"] = telemetry.Car[i].Driver.turnNumber,
                     ["distanceTravelled"] = telemetry.Car[i].Driver.distanceTravelled,
                     ["position"] = telemetry.Car[i].Driver.position + 1, // Adjust for 0-based index
-                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(pluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(pluginManager, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(pluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["carBehind"] = TelemetryHelpers.GetNameOfCarBehind(pluginManager, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["gapBehind"] = TelemetryHelpers.GetGapBehind(pluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["carBehind"] = TelemetryHelpers.GetNameOfCarBehind(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapBehind"] = TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
 
                     // Tyres
                     ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["tire_age"] = (telemetry.Car[i].currentLap + 1) - (int)lastRecordedData["LastTireChangeLap"],
                     ["flSurfaceTemp"] = telemetry.Car[i].flSurfaceTemp,
                     ["flTemp"] = telemetry.Car[i].flTemp,
                     ["flBrakeTemp"] = telemetry.Car[i].flBrakeTemp,

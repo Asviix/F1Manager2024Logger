@@ -17,6 +17,7 @@ using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using WoteverCommon;
 using System.Windows.Forms;
 using MahApps.Metro.Controls;
+using System.Drawing;
 
 namespace F1Manager2024Plugin
 {
@@ -154,6 +155,7 @@ namespace F1Manager2024Plugin
 
                 // Tires
                 pluginManager.AddProperty($"{name}_TireCompound", GetType(), typeof(string), "Tire Compound");
+                pluginManager.AddProperty($"{name}_TireAge", GetType(), typeof(int), "Tire Compound");
                 pluginManager.AddProperty($"{name}_flTemp", GetType(), typeof(float), "Front Left Temp");
                 pluginManager.AddProperty($"{name}_flSurfaceTemp", GetType(), typeof(float), "Front Left Surface Temp");
                 pluginManager.AddProperty($"{name}_flBrakeTemp", GetType(), typeof(float), "Front Left Brake Temp");
@@ -242,6 +244,8 @@ namespace F1Manager2024Plugin
         {
             public int LastTurnNumber { get; set; }
             public int LastLapNumber { get; set; }
+            public int LastTire {  get; set; }
+            public int LastTireChangeLap { get; set; }
         }
 
         // Dictionary for the Last Recorded Data.
@@ -249,6 +253,9 @@ namespace F1Manager2024Plugin
 
         // Dictionary for the Car Historical Data.
         private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>>();
+
+        // Dictionary for the Standings
+        public static readonly ConcurrentDictionary<int, string> CarPositions = new ConcurrentDictionary<int, string>();
 
         // GetDriversNames used by the SettingsControl to initialize the driver's list.
         public Dictionary<string, (string FirstName, string LastName)> GetDriversNames()
@@ -345,14 +352,21 @@ namespace F1Manager2024Plugin
                 {
                     UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
-                    _exporter.ExportData(PluginManager, name, telemetry, i, Settings);
+                    _exporter.ExportData(PluginManager, name, telemetry, i, Settings, _lastRecordedData[name].ToJson());
                 }
 
-                string carAheadName = TelemetryHelpers.GetNameOfCarAhead(PluginManager, car.Driver.position, i, carNames, CarsOnGrid);
-                string carBehindName = TelemetryHelpers.GetNameOfCarBehind(PluginManager, car.Driver.position, i, carNames, CarsOnGrid);
+                if (TireChanged(name, car))
+                {
+                    UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
+                }
 
-                // Update Session Standings
+                // Update Session Standings and Dictionary
                 UpdateValue($"P{car.Driver.position + 1}_Car", name);
+                CarPositions.AddOrUpdate(car.Driver.position, name, (_, __) => name);
+
+                // Get Ahead and Behind Name
+                string carAheadName = TelemetryHelpers.GetNameOfCarAhead(car.Driver.position, i, carNames, CarsOnGrid);
+                string carBehindName = TelemetryHelpers.GetNameOfCarBehind(car.Driver.position, i, carNames, CarsOnGrid);
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
@@ -380,8 +394,9 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_EnergyDeployed", car.energySpent);
                 UpdateValue($"{name}_Fuel", car.fuel);
                 UpdateValue($"{name}_FuelDelta", car.fuelDelta);
-                // Tyres
+                // Tires
                 UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound));
+                UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
                 UpdateValue($"{name}_flSurfaceTemp", car.flSurfaceTemp);
                 UpdateValue($"{name}_flTemp", car.flTemp);
                 UpdateValue($"{name}_flBrakeTemp", car.flBrakeTemp);
@@ -412,9 +427,9 @@ namespace F1Manager2024Plugin
                 // Opponents Data
                 UpdateValue($"{name}_NameOfCarBehind", carBehindName);
                 UpdateValue($"{name}_NameOfCarAhead", carAheadName);
-                UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
-                UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
-                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(PluginManager, telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
             }
         }
 
@@ -435,6 +450,8 @@ namespace F1Manager2024Plugin
                     {
                         LastLapNumber = car.currentLap + 1,
                         LastTurnNumber = car.Driver.turnNumber,
+                        LastTire = car.tireCompound,
+                        LastTireChangeLap = car.currentLap + 1,
                     };
                     return true;
                 }
@@ -447,6 +464,30 @@ namespace F1Manager2024Plugin
 
                 _lastRecordedData[carName].LastTurnNumber = currentTurn;
                 _lastRecordedData[carName].LastLapNumber = currentLap;
+
+                return shouldWrite;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Checks whether a specific car has had new tires fitted.
+        private bool TireChanged(string carName, CarTelemetry car)
+        {
+            try
+            {
+                int currentTire = car.tireCompound;
+                int LastTireChangedLap = car.currentLap + 1;
+
+                bool shouldWrite = currentTire != _lastRecordedData[carName].LastTire;
+
+                if (shouldWrite)
+                {
+                    _lastRecordedData[carName].LastTire = currentTire;
+                    _lastRecordedData[carName].LastTireChangeLap = LastTireChangedLap;
+                }
 
                 return shouldWrite;
             }
@@ -563,6 +604,7 @@ namespace F1Manager2024Plugin
                             Fuel = t.Value.Car[i].fuel,
                             FuelDelta = t.Value.Car[i].fuelDelta,
                             TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
+                            TireAge = (t.Value.Car[i].currentLap + 1) - _lastRecordedData[carName].LastTireChangeLap,
                             FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,
                             FLTemp = t.Value.Car[i].flTemp,
                             FLBrakeTemp = t.Value.Car[i].flBrakeTemp,
@@ -583,11 +625,11 @@ namespace F1Manager2024Plugin
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,
                             ERSWear = t.Value.Car[i].ersWear,
-                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(PluginManager, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(PluginManager, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapBehind = TelemetryHelpers.GetGapBehind(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapAhead = TelemetryHelpers.GetGapInFront(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                            GapToLeader = TelemetryHelpers.GetGapLeader(PluginManager, telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
+                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
                         }
                     )
             };

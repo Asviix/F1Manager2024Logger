@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime;
+using Newtonsoft.Json.Linq;
 using SimHub.Plugins;
 
 namespace F1Manager2024Plugin
@@ -12,20 +13,48 @@ namespace F1Manager2024Plugin
         private readonly Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
         private readonly Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
 
-        public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings)
+        public readonly string[] carNames = new string[]
+        {
+                "Ferrari1", "Ferrari2",
+                "McLaren1", "McLaren2",
+                "RedBull1", "RedBull2",
+                "Mercedes1", "Mercedes2",
+                "Alpine1", "Alpine2",
+                "Williams1", "Williams2",
+                "Haas1", "Haas2",
+                "RacingBulls1", "RacingBulls2",
+                "KickSauber1", "KickSauber2",
+                "AstonMartin1", "AstonMartin2",
+                "MyTeam1", "MyTeam2"
+        };
+
+        public int CarsOnGrid = 22;
+
+        // Exports Data to CSV Files depending on the chosen settings.
+        public void ExportData(PluginManager pluginManager, string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
             {
-                string trackName = F1ManagerPlotter.GetTrackName(telemetry.Session.trackId);
-                string sessionType = F1ManagerPlotter.GetSessionType(telemetry.Session.sessionType);
+                string trackName = TelemetryHelpers.GetTrackName(telemetry.Session.trackId);
+                string sessionType = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType);
 
                 string basePath = Settings.ExporterPath ?? Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "F1ManagerTelemetry");
 
                 string sessionFolder = Path.Combine(basePath, "exported_data", $"{trackName} {sessionType}");
-                string carFolder = Path.Combine(sessionFolder, String.Join(" ", F1ManagerPlotter.GetDriverFirstName(telemetry.Car[i].Driver.driverId), F1ManagerPlotter.GetDriverLastName(telemetry.Car[i].Driver.driverId)));
+                string carFolder = Path.Combine(sessionFolder, String.Join(" ", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId), TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId)));
+
+                // Set the number of cars on the grid.
+                if (telemetry.Car[i].Driver.rpm == 0)
+                {
+                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+                }
+                else
+                {
+                    CarsOnGrid = 22;
+                }
 
                 Directory.CreateDirectory(carFolder);
 
@@ -40,34 +69,52 @@ namespace F1Manager2024Plugin
                 string filePath = _driverFilePaths[carName];
                 bool headersWritten = _headersWritten[carName];
 
+                var lastRecordedData = JObject.Parse(_lastRecordedData);
+
 
                 var telemetryData = new Dictionary<string, object>
                 {
                     // Session data
                     ["timestamp"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
-                    ["trackName"] = F1ManagerPlotter.GetTrackName(telemetry.Session.trackId) ?? "",
-                    ["sessionType"] = F1ManagerPlotter.GetSessionType(telemetry.Session.sessionType) ?? "",
+                    ["trackName"] = TelemetryHelpers.GetTrackName(telemetry.Session.trackId) ?? "",
+                    ["sessionType"] = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType) ?? "",
                     ["timeElapsed"] = telemetry.Session.timeElapsed,
+                    ["Laps/Time Remaining"] = TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).Mixed,
 
                     // Driver info
                     ["driverNumber"] = telemetry.Car[i].Driver.driverNumber,
-                    ["driverFirstName"] = F1ManagerPlotter.GetDriverFirstName(telemetry.Car[i].Driver.driverId) ?? "",
-                    ["driverLastName"] = F1ManagerPlotter.GetDriverLastName(telemetry.Car[i].Driver.driverId) ?? "",
-                    ["teamName"] = F1ManagerPlotter.GetTeamName(telemetry.Car[i].Driver.teamId, Settings) ?? "",
-                    ["pitstopStatus"] = F1ManagerPlotter.GetPitStopStatus(telemetry.Car[i].pitStopStatus) ?? "",
+                    ["driverFirstName"] = TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId) ?? "",
+                    ["driverLastName"] = TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId) ?? "",
+                    ["teamName"] = TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings) ?? "",
+                    ["pitstopStatus"] = TelemetryHelpers.GetPitStopStatus(telemetry.Car[i].pitStopStatus) ?? "",
                     ["currentLap"] = telemetry.Car[i].currentLap + 1, // Adjust for index
                     ["turnNumber"] = telemetry.Car[i].Driver.turnNumber,
+                    ["distanceTravelled"] = telemetry.Car[i].Driver.distanceTravelled,
                     ["position"] = telemetry.Car[i].Driver.position + 1, // Adjust for 0-based index
+                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["carBehind"] = TelemetryHelpers.GetNameOfCarBehind(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapBehind"] = TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
 
                     // Tyres
-                    ["compound"] = F1ManagerPlotter.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["tire_age"] = (telemetry.Car[i].currentLap + 1) - (int)lastRecordedData["LastTireChangeLap"],
+                    ["flSurfaceTemp"] = telemetry.Car[i].flSurfaceTemp,
                     ["flTemp"] = telemetry.Car[i].flTemp,
-                    ["flDeg"] = telemetry.Car[i].flWear,
+                    ["flBrakeTemp"] = telemetry.Car[i].flBrakeTemp,
+                    ["frSurfaceTemp"] = telemetry.Car[i].frSurfaceTemp,
                     ["frTemp"] = telemetry.Car[i].frTemp,
-                    ["frDeg"] = telemetry.Car[i].frWear,
+                    ["frBrakeTemp"] = telemetry.Car[i].frBrakeTemp,
+                    ["rlSurfaceTemp"] = telemetry.Car[i].rlSurfaceTemp,
                     ["rlTemp"] = telemetry.Car[i].rlTemp,
-                    ["rlDeg"] = telemetry.Car[i].rlWear,
+                    ["rlBrakeTemp"] = telemetry.Car[i].rlBrakeTemp,
+                    ["rrSurfaceTemp"] = telemetry.Car[i].rrSurfaceTemp,
                     ["rrTemp"] = telemetry.Car[i].rrTemp,
+                    ["rrBrakeTemp"] = telemetry.Car[i].rrBrakeTemp,
+                    ["flDeg"] = telemetry.Car[i].flWear,
+                    ["frDeg"] = telemetry.Car[i].frWear,
+                    ["rlDeg"] = telemetry.Car[i].rlWear,
                     ["rrDeg"] = telemetry.Car[i].rrWear,
 
                     // Car telemetry
@@ -83,13 +130,16 @@ namespace F1Manager2024Plugin
 
                     // Energy
                     ["charge"] = telemetry.Car[i].charge,
+                    ["energyHarvested"] = telemetry.Car[i].energyHarvested,
+                    ["energySpent"] = telemetry.Car[i].energySpent,
                     ["fuel"] = telemetry.Car[i].fuel,
+                    ["fuelDelta"] = telemetry.Car[i].fuelDelta,
 
                     // Modes
-                    ["paceMode"] = F1ManagerPlotter.GetPaceMode(telemetry.Car[i].paceMode) ?? "",
-                    ["fuelMode"] = F1ManagerPlotter.GetFuelMode(telemetry.Car[i].fuelMode) ?? "",
-                    ["ersMode"] = F1ManagerPlotter.GetERSMode(telemetry.Car[i].ersMode) ?? "",
-                    ["drsMode"] = F1ManagerPlotter.GetDRSMode(telemetry.Car[i].Driver.drsMode) ?? "",
+                    ["paceMode"] = TelemetryHelpers.GetPaceMode(telemetry.Car[i].paceMode) ?? "",
+                    ["fuelMode"] = TelemetryHelpers.GetFuelMode(telemetry.Car[i].fuelMode) ?? "",
+                    ["ersMode"] = TelemetryHelpers.GetERSMode(telemetry.Car[i].ersMode) ?? "",
+                    ["drsMode"] = TelemetryHelpers.GetDRSMode(telemetry.Car[i].Driver.drsMode) ?? "",
 
                     // Timings
                     ["currentLapTime"] = telemetry.Car[i].Driver.currentLapTime,
@@ -104,7 +154,7 @@ namespace F1Manager2024Plugin
                     ["rubber"] = telemetry.Session.rubber,
                     ["airTemp"] = telemetry.Session.Weather.airTemp,
                     ["trackTemp"] = telemetry.Session.Weather.trackTemp,
-                    ["weather"] = F1ManagerPlotter.GetWeather(telemetry.Session.Weather.weather) ?? ""
+                    ["weather"] = TelemetryHelpers.GetWeather(telemetry.Session.Weather.weather) ?? ""
                 };
 
                 // Write to CSV

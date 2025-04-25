@@ -16,6 +16,8 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using WoteverCommon;
 using System.Windows.Forms;
+using MahApps.Metro.Controls;
+using System.Drawing;
 
 namespace F1Manager2024Plugin
 {
@@ -35,12 +37,13 @@ namespace F1Manager2024Plugin
         private Telemetry _lastData;
 
         private readonly float ExpectedCarValue = 8021.86f;
+        private int CarsOnGrid = 22;
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "F1 Manager Plugin";
 
         // Add Drivers Properties
-        readonly string[] carNames = new string[]
+        public readonly string[] carNames = new string[]
         {
                 "Ferrari1", "Ferrari2",
                 "McLaren1", "McLaren2",
@@ -55,6 +58,7 @@ namespace F1Manager2024Plugin
                 "MyTeam1", "MyTeam2"
         };
 
+        // Initialize the Plugin.
         public void Init(PluginManager pluginManager)
         {
             SimHub.Logging.Current.Info("Starting Plugin");
@@ -82,14 +86,39 @@ namespace F1Manager2024Plugin
             // Add Session Properties
             pluginManager.AddProperty("TimeSpeed", GetType(), typeof(float), "Time Fast-Forward Multiplicator.");
             pluginManager.AddProperty("TimeElapsed", GetType(), typeof(float), "Time Elapsed in the session.");
-            pluginManager.AddProperty("TrackName", GetType(), typeof(int), "Track Name.");
+            pluginManager.AddProperty("LapsRemaining", GetType(), typeof(float), "Laps Remaining in the race.");
+            pluginManager.AddProperty("TimeRemaining", GetType(), typeof(float), "Time Remaining in the session.");
+            pluginManager.AddProperty("TrackName", GetType(), typeof(string), "Track Name.");
             pluginManager.AddProperty("BestSessionTime", GetType(), typeof(float), "Best Time in the session.");
-            pluginManager.AddProperty("RubberState", GetType(), typeof(int), "Rubber on Track.");
+            pluginManager.AddProperty("RubberState", GetType(), typeof(float), "Rubber on Track.");
             pluginManager.AddProperty("SessionType", GetType(), typeof(string), "Type of the session.");
             pluginManager.AddProperty("SessionTypeShort", GetType(), typeof(string), "Short Type of the session.");
             pluginManager.AddProperty("AirTemp", GetType(), typeof(float), "Air Temperature in the session.");
             pluginManager.AddProperty("TrackTemp", GetType(), typeof(float), "Track Temperature in the session.");
             pluginManager.AddProperty("Weather", GetType(), typeof(string), "Weather in the session.");
+
+            pluginManager.AddProperty("P1_Car", GetType(), typeof(string), "Name of the Car Currently in P1.");
+            pluginManager.AddProperty("P2_Car", GetType(), typeof(string), "Name of the Car Currently in P2.");
+            pluginManager.AddProperty("P3_Car", GetType(), typeof(string), "Name of the Car Currently in P3.");
+            pluginManager.AddProperty("P4_Car", GetType(), typeof(string), "Name of the Car Currently in P4.");
+            pluginManager.AddProperty("P5_Car", GetType(), typeof(string), "Name of the Car Currently in P5.");
+            pluginManager.AddProperty("P6_Car", GetType(), typeof(string), "Name of the Car Currently in P6.");
+            pluginManager.AddProperty("P7_Car", GetType(), typeof(string), "Name of the Car Currently in P7.");
+            pluginManager.AddProperty("P8_Car", GetType(), typeof(string), "Name of the Car Currently in P8.");
+            pluginManager.AddProperty("P9_Car", GetType(), typeof(string), "Name of the Car Currently in P9.");
+            pluginManager.AddProperty("P10_Car", GetType(), typeof(string), "Name of the Car Currently in P10.");
+            pluginManager.AddProperty("P11_Car", GetType(), typeof(string), "Name of the Car Currently in P11.");
+            pluginManager.AddProperty("P12_Car", GetType(), typeof(string), "Name of the Car Currently in P12.");
+            pluginManager.AddProperty("P13_Car", GetType(), typeof(string), "Name of the Car Currently in P13.");
+            pluginManager.AddProperty("P14_Car", GetType(), typeof(string), "Name of the Car Currently in P14.");
+            pluginManager.AddProperty("P15_Car", GetType(), typeof(string), "Name of the Car Currently in P15.");
+            pluginManager.AddProperty("P16_Car", GetType(), typeof(string), "Name of the Car Currently in P16.");
+            pluginManager.AddProperty("P17_Car", GetType(), typeof(string), "Name of the Car Currently in P17.");
+            pluginManager.AddProperty("P18_Car", GetType(), typeof(string), "Name of the Car Currently in P18.");
+            pluginManager.AddProperty("P19_Car", GetType(), typeof(string), "Name of the Car Currently in P19.");
+            pluginManager.AddProperty("P20_Car", GetType(), typeof(string), "Name of the Car Currently in P20.");
+            pluginManager.AddProperty("P21_Car", GetType(), typeof(string), "Name of the Car Currently in P21.");
+            pluginManager.AddProperty("P22_Car", GetType(), typeof(string), "Name of the Car Currently in P22.");
 
             foreach (var name in carNames)
             {
@@ -104,6 +133,7 @@ namespace F1Manager2024Plugin
                 // Status
                 pluginManager.AddProperty($"{name}_TurnNumber", GetType(), typeof(int), "Turn Number");
                 pluginManager.AddProperty($"{name}_CurrentLap", GetType(), typeof(int), "Current Lap");
+                pluginManager.AddProperty($"{name}_DistanceTravelled", GetType(), typeof(float), "Number of meters travelled in the current lap.");
 
                 // Timings
                 pluginManager.AddProperty($"{name}_CurrentLapTime", GetType(), typeof(float), "Current Lap Time");
@@ -118,14 +148,26 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_Rpm", GetType(), typeof(int), "RPM");
                 pluginManager.AddProperty($"{name}_Gear", GetType(), typeof(int), "Gear");
                 pluginManager.AddProperty($"{name}_Charge", GetType(), typeof(float), "ERS Charge");
+                pluginManager.AddProperty($"{name}_EnergyHarvested", GetType(), typeof(float), "ERS Energy Harvested.");
+                pluginManager.AddProperty($"{name}_EnergyDeployed", GetType(), typeof(float), "ERS Energy Deployed.");
                 pluginManager.AddProperty($"{name}_Fuel", GetType(), typeof(float), "Fuel");
+                pluginManager.AddProperty($"{name}_FuelDelta", GetType(), typeof(float), "Fuel Delta");
 
-                // Tyres
+                // Tires
                 pluginManager.AddProperty($"{name}_TireCompound", GetType(), typeof(string), "Tire Compound");
+                pluginManager.AddProperty($"{name}_TireAge", GetType(), typeof(int), "Tire Compound");
                 pluginManager.AddProperty($"{name}_flTemp", GetType(), typeof(float), "Front Left Temp");
+                pluginManager.AddProperty($"{name}_flSurfaceTemp", GetType(), typeof(float), "Front Left Surface Temp");
+                pluginManager.AddProperty($"{name}_flBrakeTemp", GetType(), typeof(float), "Front Left Brake Temp");
                 pluginManager.AddProperty($"{name}_frTemp", GetType(), typeof(float), "Front Right Temp");
+                pluginManager.AddProperty($"{name}_frSurfaceTemp", GetType(), typeof(float), "Front Right Surface Temp");
+                pluginManager.AddProperty($"{name}_frBrakeTemp", GetType(), typeof(float), "Front Right Brake Temp");
                 pluginManager.AddProperty($"{name}_rlTemp", GetType(), typeof(float), "Rear Left Temp");
+                pluginManager.AddProperty($"{name}_rlSurfaceTemp", GetType(), typeof(float), "Rear Left Surface Temp");
+                pluginManager.AddProperty($"{name}_rlBrakeTemp", GetType(), typeof(float), "Rear Left Brake Temp");
                 pluginManager.AddProperty($"{name}_rrTemp", GetType(), typeof(float), "Rear Right Temp");
+                pluginManager.AddProperty($"{name}_rrSurfaceTemp", GetType(), typeof(float), "Rear Right Surface Temp");
+                pluginManager.AddProperty($"{name}_rrBrakeTemp", GetType(), typeof(float), "Rear Right Brake Temp");
                 pluginManager.AddProperty($"{name}_flDeg", GetType(), typeof(float), "Front Left Wear");
                 pluginManager.AddProperty($"{name}_frDeg", GetType(), typeof(float), "Front Right Wear");
                 pluginManager.AddProperty($"{name}_rlDeg", GetType(), typeof(float), "Rear Left Wear");
@@ -142,6 +184,13 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_EngineDeg", GetType(), typeof(float), "Engine Wear");
                 pluginManager.AddProperty($"{name}_GearboxDeg", GetType(), typeof(float), "Gearbox Wear");
                 pluginManager.AddProperty($"{name}_ERSDeg", GetType(), typeof(float), "ERS Wear");
+
+                // Opponents Data
+                pluginManager.AddProperty($"{name}_NameOfCarBehind", GetType(), typeof(string), "The name of the car behind that driver.");
+                pluginManager.AddProperty($"{name}_NameOfCarAhead", GetType(), typeof(string), "The name of the car ahead that driver.");
+                pluginManager.AddProperty($"{name}_GapAhead", GetType(), typeof(float), "The gap ahead of that driver.");
+                pluginManager.AddProperty($"{name}_GapBehind", GetType(), typeof(float), "The gap behind of that driver.");
+                pluginManager.AddProperty($"{name}_GapToLeader", GetType(), typeof(float), "The gap to the leader of that driver.");
             }
             #endregion
 
@@ -172,6 +221,7 @@ namespace F1Manager2024Plugin
         {
             lock (_dataLock)
             {
+
                 if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(false, "Connected.", "Game not in Session."); return; }
                 try
                 {
@@ -180,36 +230,46 @@ namespace F1Manager2024Plugin
                     UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
                     UpdateStatus(true, "Connected", "Game in Session");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     UpdateStatus(false, "Error processing data", "Game in Session");
+                    SimHub.Logging.Current.Error(ex);
                 }
             }
         }
 
-        // Helper Functions
+        // Helper Methods
+        // Last Recorded Data used by the LapOrTurnChanged Method.
         class LastRecordedData
         {
             public int LastTurnNumber { get; set; }
             public int LastLapNumber { get; set; }
+            public int LastTire {  get; set; }
+            public int LastTireChangeLap { get; set; }
         }
 
+        // Dictionary for the Last Recorded Data.
         private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new Dictionary<string, LastRecordedData>();
 
+        // Dictionary for the Car Historical Data.
         private readonly ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>> _carHistory = new ConcurrentDictionary<string, Dictionary<int, Dictionary<int, Telemetry>>>();
 
+        // Dictionary for the Standings
+        public static readonly ConcurrentDictionary<int, string> CarPositions = new ConcurrentDictionary<int, string>();
+
+        // GetDriversNames used by the SettingsControl to initialize the driver's list.
         public Dictionary<string, (string FirstName, string LastName)> GetDriversNames()
         {
             var result = new Dictionary<string, (string, string)>();
 
             if (_lastData.Car == null) return result;
 
-            for (int i = 0; i < Math.Min(_lastData.Car.Length, carNames.Length); i++)
+            for (int i = 0; i < Math.Min(_lastData.Car.Length, CarsOnGrid); i++)
             {
                 var driverId = _lastData.Car[i].Driver.driverId;
                 var name = carNames[i];
-                var firstName = GetDriverFirstName(driverId);
-                var lastName = GetDriverLastName(driverId);
+                var firstName = TelemetryHelpers.GetDriverFirstName(driverId);
+                var lastName = TelemetryHelpers.GetDriverLastName(driverId);
                 result[name] = (firstName, lastName);
             }
 
@@ -217,7 +277,7 @@ namespace F1Manager2024Plugin
         }
 
         private readonly object _historyLock = new object();
-        private const int MaxLapsToStore = 70; // Adjust as needed
+        private const int MaxLapsToStore = 100; // Adjust as needed
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
         {
             try
@@ -231,6 +291,7 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Update the status of the Debug Properties in SimHub.
         private void UpdateStatus(bool connected, string message, string message2)
         {
             UpdateValue("DEBUG_Status_IsMemoryMap_Connected", connected);
@@ -238,9 +299,13 @@ namespace F1Manager2024Plugin
             UpdateValue("DEBUG_Game_Status", message2);
         }
 
+        // Update all properties in SimHub
         private void UpdateProperties(Telemetry telemetry, DateTime lastDataTime, float lastTimeElapsed)
         {
-            if (telemetry.Car == null || telemetry.Car.Length < 22) return;
+            foreach (var car in telemetry.Car)
+            {
+                string carName = carNames[car.Driver.position];
+            }
 
             // Compute Time Fast-Forward Property
             var session = telemetry.Session;
@@ -255,39 +320,64 @@ namespace F1Manager2024Plugin
             UpdateValue("CameraFocusedOn", carNames[telemetry.cameraFocus]);
 
             // Update Session Properties
-            UpdateValue("TrackName", GetTrackName(session.trackId));
+            UpdateValue("TrackName", TelemetryHelpers.GetTrackName(session.trackId));
             UpdateValue("TimeElapsed", session.timeElapsed);
+            UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining);
+            UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining);
             UpdateValue("BestSessionTime", session.bestSessionTime);
             UpdateValue("RubberState", session.rubber);
-            UpdateValue("SessionType", GetSessionType(session.sessionType));
-            UpdateValue("SessionTypeShort", GetShortSessionType(session.sessionType));
+            UpdateValue("SessionType", TelemetryHelpers.GetSessionType(session.sessionType));
+            UpdateValue("SessionTypeShort", TelemetryHelpers.GetShortSessionType(session.sessionType));
             UpdateValue("AirTemp", session.Weather.airTemp);
             UpdateValue("TrackTemp", session.Weather.trackTemp);
-            UpdateValue("Weather", GetWeather(session.Weather.weather));
+            UpdateValue("Weather", TelemetryHelpers.GetWeather(session.Weather.weather));
 
             // Update Drivers Properties
-            for (int i = 0; i < telemetry.Car.Length && i < telemetry.Car.Length; i++)
+            for (int i = 0; i < telemetry.Car.Length; i++)
             {
+                // Set the number of cars on the grid.
+                if (telemetry.Car[i].Driver.rpm == 0)
+                {
+                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+                }
+                else
+                {
+                    CarsOnGrid = 22;
+                }
                 var car = telemetry.Car[i];
                 var name = carNames[i];
 
                 // Update historical data
                 if (LapOrTurnChanged(name, car))
                 {
-                    UpdateHistoricalData(name, telemetry, i);
+                    UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
-                    _exporter.ExportData(name, telemetry, i, Settings);
+                    _exporter.ExportData(PluginManager, name, telemetry, i, Settings, _lastRecordedData[name].ToJson());
                 }
+
+                if (TireChanged(name, car))
+                {
+                    UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
+                }
+
+                // Update Session Standings and Dictionary
+                UpdateValue($"P{car.Driver.position + 1}_Car", name);
+                CarPositions.AddOrUpdate(car.Driver.position, name, (_, __) => name);
+
+                // Get Ahead and Behind Name
+                string carAheadName = TelemetryHelpers.GetNameOfCarAhead(car.Driver.position, i, carNames, CarsOnGrid);
+                string carBehindName = TelemetryHelpers.GetNameOfCarBehind(car.Driver.position, i, carNames, CarsOnGrid);
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
-                UpdateValue($"{name}_PitStopStatus", GetPitStopStatus(car.pitStopStatus));
+                UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus));
                 // Status
                 UpdateValue($"{name}_TurnNumber", car.Driver.turnNumber);
-                UpdateValue($"{name}_DriverFirstName", GetDriverFirstName(car.Driver.driverId));
-                UpdateValue($"{name}_DriverLastName", GetDriverLastName(car.Driver.driverId));
-                UpdateValue($"{name}_DriverTeamName", GetTeamName(car.Driver.teamId, Settings));
+                UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
+                UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
+                UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
                 UpdateValue($"{name}_CurrentLap", (car.currentLap) + 1); // Adjust for Index
+                UpdateValue($"{name}_DistanceTravelled", car.Driver.distanceTravelled);
                 // Timings
                 UpdateValue($"{name}_CurrentLapTime", car.Driver.currentLapTime);
                 UpdateValue($"{name}_DriverBestLap", car.Driver.driverBestLap);
@@ -300,584 +390,56 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Rpm", car.Driver.rpm);
                 UpdateValue($"{name}_Gear", car.Driver.gear);
                 UpdateValue($"{name}_Charge", car.charge);
+                UpdateValue($"{name}_EnergyHarvested", car.energyHarvested);
+                UpdateValue($"{name}_EnergyDeployed", car.energySpent);
                 UpdateValue($"{name}_Fuel", car.fuel);
-                // Tyres
-                UpdateValue($"{name}_TireCompound", GetTireCompound(car.tireCompound));
+                UpdateValue($"{name}_FuelDelta", car.fuelDelta);
+                // Tires
+                UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound));
+                UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
+                UpdateValue($"{name}_flSurfaceTemp", car.flSurfaceTemp);
                 UpdateValue($"{name}_flTemp", car.flTemp);
+                UpdateValue($"{name}_flBrakeTemp", car.flBrakeTemp);
+                UpdateValue($"{name}_frSurfaceTemp", car.frSurfaceTemp);
                 UpdateValue($"{name}_frTemp", car.frTemp);
+                UpdateValue($"{name}_frBrakeTemp", car.frBrakeTemp);
+                UpdateValue($"{name}_rlSurfaceTemp", car.rlSurfaceTemp);
                 UpdateValue($"{name}_rlTemp", car.rlTemp);
+                UpdateValue($"{name}_rlBrakeTemp", car.rlBrakeTemp);
+                UpdateValue($"{name}_rrSurfaceTemp", car.rrSurfaceTemp);
                 UpdateValue($"{name}_rrTemp", car.rrTemp);
+                UpdateValue($"{name}_rrBrakeTemp", car.rrBrakeTemp);
                 UpdateValue($"{name}_flDeg", car.flWear);
                 UpdateValue($"{name}_frDeg", car.frWear);
                 UpdateValue($"{name}_rlDeg", car.rlWear);
                 UpdateValue($"{name}_rrDeg", car.rrWear);
                 // Modes
-                UpdateValue($"{name}_PaceMode", GetPaceMode(car.paceMode));
-                UpdateValue($"{name}_FuelMode", GetFuelMode(car.fuelMode));
-                UpdateValue($"{name}_ERSMode", GetERSMode(car.ersMode));
-                UpdateValue($"{name}_DRSMode", GetDRSMode(car.Driver.drsMode));
+                UpdateValue($"{name}_PaceMode", TelemetryHelpers.GetPaceMode(car.paceMode));
+                UpdateValue($"{name}_FuelMode", TelemetryHelpers.GetFuelMode(car.fuelMode));
+                UpdateValue($"{name}_ERSMode", TelemetryHelpers.GetERSMode(car.ersMode));
+                UpdateValue($"{name}_DRSMode", TelemetryHelpers.GetDRSMode(car.Driver.drsMode));
                 // Components
                 UpdateValue($"{name}_EngineTemp", car.engineTemp);
                 UpdateValue($"{name}_EngineDeg", car.engineWear);
                 UpdateValue($"{name}_GearboxDeg", car.gearboxWear);
                 UpdateValue($"{name}_ERSDeg", car.ersWear);
+
+                // Opponents Data
+                UpdateValue($"{name}_NameOfCarBehind", carBehindName);
+                UpdateValue($"{name}_NameOfCarAhead", carAheadName);
+                UpdateValue($"{name}_GapBehind", TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
             }
         }
 
-        public static string GetTrackName(int trackId)
-        {
-            return trackId switch
-            {
-                0 => "Invalid",
-                1 => "Albert Park",
-                2 => "Bahrain",
-                3 => "Shanghai",
-                4 => "Baku",
-                5 => "Barcelona",
-                6 => "Monaco",
-                7 => "Montreal",
-                8 => "Paul Ricard",
-                9 => "Red Bull Ring",
-                10 => "Silverstone",
-                11 => "Jeddah",
-                12 => "Hungaroring",
-                13 => "Spa-Francorchamps",
-                14 => "Monza",
-                15 => "Marina Bay",
-                16 => "Sochi",
-                17 => "Suzuka",
-                18 => "Hermanos Rodriguez",
-                19 => "Circuit of the Americas",
-                20 => "Interlagos",
-                21 => "Yas Marina",
-                22 => "Miami",
-                23 => "Zandvoort",
-                24 => "Imola",
-                25 => "Las Vegas",
-                26 => "Qatar",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetSessionType(int sessionId)
-        {
-            return sessionId switch
-            {
-                0 => "Practice 1",
-                1 => "Practice 2",
-                2 => "Practice 3",
-                3 => "Qualifying 1",
-                4 => "Qualifying 2",
-                5 => "Qualifying 3",
-                6 => "Race",
-                7 => "Sprint",
-                8 => "Sprint Qualifying 1",
-                9 => "Sprint Qualifying 2",
-                10 => "Sprint Qualifying 3",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetShortSessionType(int sessionId)
-        {
-            return sessionId switch
-            {
-                0 => "P1",
-                1 => "P2",
-                2 => "P3",
-                3 => "Q1",
-                4 => "Q2",
-                5 => "Q3",
-                6 => "R",
-                7 => "S",
-                8 => "SQ1",
-                9 => "SQ2",
-                10 => "SQ3",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetWeather(int weather)
-        {
-            return weather switch
-            {
-                0 => "None",
-                1 => "Sunny",
-                2 => "Partly Sunny",
-                3 => "Cloudy",
-                4 => "Light Rain",
-                5 => "Moderate Rain",
-                6 => "Heavy Rain",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetDriverFirstName(int driverId)
-        {
-            return driverId switch
-            {
-                1 => "Lewis",
-                2 => "Charles",
-                3 => "Alexander",
-                8 => "Valtteri",
-                9 => "Sebastian",
-                10 => "Max",
-                11 => "Carlos",
-                12 => "Lando",
-                13 => "Daniel",
-                14 => "Esteban",
-                15 => "Pierre",
-                16 => "Daniil",
-                17 => "Sergio",
-                18 => "Lance",
-                19 => "Kimi",
-                20 => "Antonio",
-                22 => "Stoffel",
-                23 => "George",
-                24 => "Nicholas",
-                74 => "Mick",
-                76 => "Nyck",
-                77 => "Fernando",
-                78 => "Roy",
-                79 => "Nikita",
-                80 => "Pietro",
-                81 => "Yuki",
-                82 => "Robert",
-                83 => "Nico",
-                85 => "Denis",
-                87 => "Theo",
-                88 => "Ralph",
-                91 => "Jehan",
-                94 => "Marcus",
-                95 => "Liam",
-                96 => "Juri",
-                99 => "Richard",
-                102 => "Oscar",
-                104 => "Marino",
-                105 => "Guanyu",
-                106 => "Felipe",
-                107 => "Frederik",
-                108 => "Alexander",
-                109 => "Juan Manuel",
-                110 => "Amaury",
-                112 => "Laszlo",
-                114 => "Ido",
-                115 => "Kaylen",
-                116 => "Logan",
-                117 => "Enzo",
-                119 => "Roman",
-                120 => "Ayumu",
-                121 => "Jak",
-                123 => "Rafael",
-                125 => "Calan",
-                127 => "Victor",
-                128 => "Caio",
-                130 => "Dennis",
-                131 => "Olli",
-                132 => "Arthur",
-                133 => "Clement",
-                135 => "Jack",
-                140 => "Jake",
-                141 => "Cem",
-                142 => "Oliver",
-                143 => "Gregoire",
-                144 => "Isack",
-                242 => "Zane",
-                243 => "Francesco",
-                244 => "Hunter",
-                245 => "Pepe",
-                246 => "William",
-                247 => "Zak",
-                248 => "Franco",
-                249 => "Reece",
-                250 => "David",
-                251 => "Ayrton",
-                252 => "Kush",
-                253 => "Brad",
-                254 => "Romain",
-                255 => "Kevin",
-                256 => "Pascal",
-                257 => "Felipe",
-                258 => "Michael",
-                259 => "Pedro",
-                260 => "Rubens",
-                263 => "Jack",
-                264 => "Sebastien",
-                265 => "Enzo",
-                267 => "Nazim",
-                268 => "Oliver",
-                269 => "Federico",
-                270 => "David",
-                272 => "Jonny",
-                273 => "Filip",
-                274 => "Zdenek",
-                275 => "Lirim",
-                276 => "David",
-                277 => "Roberto",
-                278 => "Niko",
-                279 => "Gabriel",
-                280 => "Gabriele",
-                281 => "Paul",
-                282 => "Dino",
-                283 => "Mari",
-                284 => "Christian",
-                285 => "Pato",
-                286 => "Nikola",
-                287 => "Tommy",
-                288 => "Oliver",
-                289 => "Leonardo",
-                300 => "Oliver",
-                301 => "Sebastian",
-                302 => "Hugh",
-                303 => "Alejandro",
-                304 => "Nikita",
-                305 => "Taylor",
-                306 => "Sophia",
-                307 => "Roberto",
-                308 => "Piotr",
-                322 => "Luke",
-                351 => "Miguel",
-                359 => "Luc",
-                371 => "Mckenzy",
-                373 => "Arvid",
-                374 => "Sami",
-                375 => "Martinius",
-                376 => "Andrea Kimi",
-                377 => "Ritomo",
-                378 => "Joshua",
-                379 => "Tim",
-                380 => "Noel",
-                381 => "Laurens",
-                382 => "Charlie",
-                383 => "Santiago",
-                384 => "Callum",
-                385 => "Cian",
-                386 => "Joshua",
-                387 => "Kacper",
-                388 => "Matias",
-                389 => "Joseph",
-                390 => "Maxwell",
-                394 => "Tasanapol",
-                398 => "Ryo",
-                399 => "Alexander",
-                400 => "Lena",
-                401 => "Carrie",
-                402 => "Chloe",
-                405 => "Abbi",
-                406 => "Nicola",
-                407 => "Kean",
-                408 => "Jessica",
-                409 => "Tina",
-                410 => "Bianca",
-                411 => "Ugo",
-                413 => "Robert",
-                416 => "James",
-                417 => "Kabir",
-                418 => "Maya",
-                419 => "Aurelia",
-                436 => "Amna",
-                437 => "Hamda",
-                438 => "Emely",
-                439 => "Tuukka",
-                547 => "Hiroko",
-                548 => "Minna",
-                549 => "Jennifer",
-                550 => "Anne-Marie",
-                551 => "Stephanie",
-                552 => "Claudio",
-                553 => "Ludwig",
-                567 => "Waseem",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetDriverLastName(int driverId)
-        {
-            return driverId switch
-            {
-                1 => "Hamilton",
-                2 => "Leclerc",
-                3 => "Albon",
-                8 => "Bottas",
-                9 => "Vettel",
-                10 => "Verstappen",
-                11 => "Sainz",
-                12 => "Norris",
-                13 => "Ricciardo",
-                14 => "Ocon",
-                15 => "Gasly",
-                16 => "Kvyat",
-                17 => "Perez",
-                18 => "Stroll",
-                19 => "Raikkonen",
-                20 => "Giovinazzi",
-                22 => "Vandoorne",
-                23 => "Russell",
-                24 => "Latifi",
-                74 => "Schumacher",
-                76 => "de Vries",
-                77 => "Alonso",
-                78 => "Nissany",
-                79 => "Mazepin",
-                80 => "Fittipaldi",
-                81 => "Tsunoda",
-                82 => "Kubica",
-                83 => "Hulkenberg",
-                85 => "Moreau",
-                87 => "Pourchaire",
-                88 => "Boschung",
-                91 => "Daruvala",
-                94 => "Armstrong",
-                95 => "Lawson",
-                96 => "Vips",
-                99 => "Verschoor",
-                102 => "Piastri",
-                104 => "Sato",
-                105 => "Zhou",
-                106 => "Drugovich",
-                107 => "Vesti",
-                108 => "Smolyar",
-                109 => "Correa",
-                110 => "Cordeel",
-                112 => "Toth",
-                114 => "Cohen",
-                115 => "Frederick",
-                116 => "Sargeant",
-                117 => "Fittipaldi",
-                119 => "Stanek",
-                120 => "Iwasa",
-                121 => "Crawford",
-                123 => "Villagomez",
-                125 => "Williams",
-                127 => "Martins",
-                128 => "Collet",
-                130 => "Hauger",
-                131 => "Caldwell",
-                132 => "Leclerc",
-                133 => "Novalak",
-                135 => "Doohan",
-                140 => "Hughes",
-                141 => "Bolukbasi",
-                142 => "Bearman",
-                143 => "Saucy",
-                144 => "Hadjar",
-                242 => "Maloney",
-                243 => "Pizzi",
-                244 => "Yeany",
-                245 => "Marti",
-                246 => "Alatalo",
-                247 => "O'Sullivan",
-                248 => "Colapinto",
-                249 => "Ushijima",
-                250 => "Vidales",
-                251 => "Simmons",
-                252 => "Maini",
-                253 => "Benavides",
-                254 => "Grosjean",
-                255 => "Magnussen",
-                256 => "Wehrlein",
-                257 => "Massa",
-                258 => "Schumacher",
-                259 => "De La Rosa",
-                260 => "Barrichello",
-                263 => "Aitken",
-                264 => "Buemi",
-                265 => "Trulli",
-                267 => "Azman",
-                268 => "Rasmussen",
-                269 => "Malvestiti",
-                270 => "Schumacher",
-                272 => "Edgar",
-                273 => "Ugran",
-                274 => "Chovanec",
-                275 => "Zendeli",
-                276 => "Beckmann",
-                277 => "Merhi",
-                278 => "Kari",
-                279 => "Bortoleto",
-                280 => "Mini",
-                281 => "Aron",
-                282 => "Beganovic",
-                283 => "Boya",
-                284 => "Mansell",
-                285 => "O'Ward",
-                286 => "Tsolov",
-                287 => "Smith",
-                288 => "Goethe",
-                289 => "Fornaroli",
-                300 => "Gray",
-                301 => "Montoya",
-                302 => "Barter",
-                303 => "Garcia",
-                304 => "Bedrin",
-                305 => "Barnard",
-                306 => "Florsch",
-                307 => "Faria",
-                308 => "Wisnicki",
-                322 => "Browning",
-                351 => "Baltazar",
-                359 => "Dupont",
-                371 => "Cresswell",
-                373 => "Lindblad",
-                374 => "Meguetounif",
-                375 => "Stenshorne",
-                376 => "Antonelli",
-                377 => "Miyata",
-                378 => "Durksen",
-                379 => "Tramnitz",
-                380 => "Leon",
-                381 => "van Hoepen",
-                382 => "Wurz",
-                383 => "Ramos",
-                384 => "Voisin",
-                385 => "Shields",
-                386 => "Dufek",
-                387 => "Sztuka",
-                388 => "Zagazeta",
-                389 => "Loake",
-                390 => "Esterson",
-                394 => "Inthraphuvasak",
-                398 => "Hirakawa",
-                399 => "Dunne",
-                400 => "Buhler",
-                401 => "Schreiner",
-                402 => "Chambers",
-                405 => "Pulling",
-                406 => "Lacorte",
-                407 => "Nakamura-Berta",
-                408 => "Hawkins",
-                409 => "Hausmann",
-                410 => "Bustamante",
-                411 => "Ugochukwu",
-                413 => "Shwartzman",
-                416 => "Hedley",
-                417 => "Anurag",
-                418 => "Weug",
-                419 => "Nobels",
-                436 => "Al Qubaisi",
-                437 => "Al Qubaisi",
-                438 => "de Heus",
-                439 => "Taponen",
-                547 => "Ueda",
-                548 => "Bruun",
-                549 => "Randall",
-                550 => "Bertin",
-                551 => "Augar",
-                552 => "Alvarez",
-                553 => "Sommer",
-                567 => "Nazari",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetTeamName(int teamId, F1Manager2024PluginSettings Settings)
-        {
-            if (Settings.CustomTeamName != null && teamId == 32) return Settings.CustomTeamName;
-
-            return teamId switch
-            {
-                1 => "Ferrari",
-                2 => "McLaren",
-                3 => "Red Bull Racing",
-                4 => "Mercedes AMG Petronas F1",
-                5 => "Alpine",
-                6 => "Williams Racing",
-                7 => "Haas F1",
-                8 => "Racing Bulls",
-                9 => "Kick Sauber",
-                10 => "Aston Martin",
-                32 => "Custom Team",
-                _ => "Unknown",
-            };
-        }
-
-        public static string GetPitStopStatus(int pitStop)
-        {
-            return pitStop switch
-            {
-                0 => "None",
-                1 => "Requested",
-                2 => "Entering",
-                3 => "Queuing",
-                4 => "Stopped",
-                5 => "Exiting",
-                6 => "In Garage",
-                7 => "Jack Up",
-                8 => "Releasing",
-                9 => "Car Setup",
-                10 => "Pit Stop Approach",
-                11 => "Pit Stop Penalty",
-                12 => "Waiting for Release",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetTireCompound(int compound)
-        {
-            return compound switch
-            {
-                0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 => "Soft",
-                8 or 9 or 10 => "Medium",
-                11 or 12 => "Hard",
-                13 or 14 or 15 or 16 or 17 => "Intermediated",
-                18 or 19 => "Wet",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetPaceMode(int paceMode)
-        {
-            return paceMode switch
-            {
-                0 => "Attack",
-                1 => "Aggressive",
-                2 => "Standard",
-                3 => "Light",
-                4 => "Conserve",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetFuelMode(int fuelMode)
-        {
-            return fuelMode switch
-            {
-                0 => "Push",
-                1 => "Balanced",
-                2 => "Conserve",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetERSMode(int ersMode)
-        {
-            return ersMode switch
-            {
-                0 => "Neutral",
-                1 => "Harvest",
-                2 => "Standard",
-                3 => "Top Up",
-                _ => "Unknown"
-            };
-        }
-
-        public static string GetDRSMode(int drsMode)
-        {
-            return drsMode switch
-            {
-                0 => "Disabled",
-                1 => "Detected",
-                2 => "Enabled",
-                3 => "Active",
-                _ => "Unknown"
-            };
-        }
-
+        // Helper Function used to make Update Values easier.
         private void UpdateValue(string data, object message)
         {
             PluginManager.SetPropertyValue<F1ManagerPlotter>(data, message);
         }
 
+        // Checks whether a specific car is in a new Turn or Lap.
         private bool LapOrTurnChanged(string carName, CarTelemetry car)
         {
             try
@@ -888,6 +450,8 @@ namespace F1Manager2024Plugin
                     {
                         LastLapNumber = car.currentLap + 1,
                         LastTurnNumber = car.Driver.turnNumber,
+                        LastTire = car.tireCompound,
+                        LastTireChangeLap = car.currentLap + 1,
                     };
                     return true;
                 }
@@ -909,10 +473,34 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void UpdateHistoricalData(string carName, Telemetry telemetry, int i)
+        // Checks whether a specific car has had new tires fitted.
+        private bool TireChanged(string carName, CarTelemetry car)
+        {
+            try
+            {
+                int currentTire = car.tireCompound;
+                int LastTireChangedLap = car.currentLap + 1;
+
+                bool shouldWrite = currentTire != _lastRecordedData[carName].LastTire;
+
+                if (shouldWrite)
+                {
+                    _lastRecordedData[carName].LastTire = currentTire;
+                    _lastRecordedData[carName].LastTireChangeLap = LastTireChangedLap;
+                }
+
+                return shouldWrite;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Update the dictionaries of the Car's Historical Data.
+        private void UpdateHistoricalData(string carName, Telemetry telemetry, int i, int CarsOnGrid)
         {
             // Check for session reset
-            float currentTime = (float)(telemetry.Session.timeElapsed);
             if (telemetry.carFloatValue != ExpectedCarValue)
             {
                 ClearAllHistory();
@@ -947,11 +535,12 @@ namespace F1Manager2024Plugin
                 _carHistory[carName][currentLap][currentTurn] = telemetry;
 
                 // Update JSON properties
-                UpdateLapProperty(carName, currentLap, i);
+                UpdateLapProperty(telemetry, carName, currentLap, i, CarsOnGrid);
             }
         }
 
-        private void UpdateLapProperty(string carName, int lapNumber, int i)
+        // Update the Historical Data Properties in SimHub.
+        private void UpdateLapProperty(Telemetry telemetry, string carName, int lapNumber, int i, int CarsOnGrid)
         {
             if (!_carHistory.ContainsKey(carName) || !_carHistory[carName].ContainsKey(lapNumber))
                 return;
@@ -979,23 +568,26 @@ namespace F1Manager2024Plugin
                         t => t.Key,
                         t => new
                         {
-                            TrackName = GetTrackName(t.Value.Session.trackId),
+                            TrackName = TelemetryHelpers.GetTrackName(t.Value.Session.trackId),
                             TimeElapsed = t.Value.Session.timeElapsed,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining,
                             BestSessionTime = t.Value.Session.bestSessionTime,
                             RubberState = t.Value.Session.rubber,
-                            SessionType = GetSessionType(t.Value.Session.sessionType),
-                            SessionTypeShort = GetShortSessionType(t.Value.Session.sessionType),
+                            SessionType = TelemetryHelpers.GetSessionType(t.Value.Session.sessionType),
+                            SessionTypeShort = TelemetryHelpers.GetShortSessionType(t.Value.Session.sessionType),
                             AirTemp = t.Value.Session.Weather.airTemp,
                             TrackTemp = t.Value.Session.Weather.trackTemp,
-                            Weather = GetWeather(t.Value.Session.Weather.weather),
+                            Weather = TelemetryHelpers.GetWeather(t.Value.Session.Weather.weather),
 
                             Position = t.Value.Car[i].Driver.position,
                             DriverNumber = t.Value.Car[i].Driver.driverNumber,
-                            DriverFirstName = GetDriverFirstName(t.Value.Car[i].Driver.driverId),
-                            DriverLastName = GetDriverLastName(t.Value.Car[i].Driver.driverId),
-                            TeamName = GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
-                            PitStopStatus = GetPitStopStatus(t.Value.Car[i].pitStopStatus),
+                            DriverFirstName = TelemetryHelpers.GetDriverFirstName(t.Value.Car[i].Driver.driverId),
+                            DriverLastName = TelemetryHelpers.GetDriverLastName(t.Value.Car[i].Driver.driverId),
+                            TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
+                            PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus),
                             TurnNumber = t.Value.Car[i].Driver.turnNumber,
+                            DistanceTravelled = t.Value.Car[i].Driver.distanceTravelled,
                             CurrentLap = t.Value.Car[i].currentLap,
                             CurrentLapTime = t.Value.Car[i].Driver.currentLapTime,
                             DriverBestLap = t.Value.Car[i].Driver.driverBestLap,
@@ -1007,24 +599,37 @@ namespace F1Manager2024Plugin
                             RPM = t.Value.Car[i].Driver.rpm,
                             Gear = t.Value.Car[i].Driver.gear,
                             Charge = t.Value.Car[i].charge,
+                            EnergyHarvested = t.Value.Car[i].energyHarvested,
+                            EnergySpent = t.Value.Car[i].energySpent,
                             Fuel = t.Value.Car[i].fuel,
-                            TireCompound = GetTireCompound(t.Value.Car[i].tireCompound),
+                            FuelDelta = t.Value.Car[i].fuelDelta,
+                            TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
+                            TireAge = (t.Value.Car[i].currentLap + 1) - _lastRecordedData[carName].LastTireChangeLap,
+                            FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,
                             FLTemp = t.Value.Car[i].flTemp,
+                            FLBrakeTemp = t.Value.Car[i].flBrakeTemp,
+                            FRSurfaceTemp = t.Value.Car[i].frSurfaceTemp,
                             FRTemp = t.Value.Car[i].frTemp,
+                            FRBrakeTemp = t.Value.Car[i].frBrakeTemp,
+                            RLSurfaceTemp = t.Value.Car[i].rlSurfaceTemp,
                             RLTemp = t.Value.Car[i].rlTemp,
+                            RLBrakeTemp = t.Value.Car[i].rlBrakeTemp,
+                            RRSurfaceTemp = t.Value.Car[i].rrSurfaceTemp,
                             RRTemp = t.Value.Car[i].rrTemp,
-                            FLWear = t.Value.Car[i].flWear,
-                            FRWear = t.Value.Car[i].frWear,
-                            RLWear = t.Value.Car[i].rlWear,
-                            RRWear = t.Value.Car[i].rrWear,
-                            PaceMode = GetPaceMode(t.Value.Car[i].paceMode),
-                            FuelMode = GetFuelMode(t.Value.Car[i].fuelMode),
-                            ERSMode = GetERSMode(t.Value.Car[i].ersMode),
-                            DRSMode = GetDRSMode(t.Value.Car[i].Driver.drsMode),
+                            RRBrakeTemp = t.Value.Car[i].rrBrakeTemp,
+                            PaceMode = TelemetryHelpers.GetPaceMode(t.Value.Car[i].paceMode),
+                            FuelMode = TelemetryHelpers.GetFuelMode(t.Value.Car[i].fuelMode),
+                            ERSMode = TelemetryHelpers.GetERSMode(t.Value.Car[i].ersMode),
+                            DRSMode = TelemetryHelpers.GetDRSMode(t.Value.Car[i].Driver.drsMode),
                             EngineTemp = t.Value.Car[i].engineTemp,
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,
-                            ERSWear = t.Value.Car[i].ersWear
+                            ERSWear = t.Value.Car[i].ersWear,
+                            NameOfCarBehind = TelemetryHelpers.GetNameOfCarBehind(t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            NameOfCarAhead = TelemetryHelpers.GetNameOfCarAhead(t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapBehind = TelemetryHelpers.GetGapBehind(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapAhead = TelemetryHelpers.GetGapInFront(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                            GapToLeader = TelemetryHelpers.GetGapLeader(telemetry, t.Value.Car[i].Driver.position, i, carNames, CarsOnGrid)
                         }
                     )
             };
@@ -1035,6 +640,7 @@ namespace F1Manager2024Plugin
             );
         }
 
+        // Clear all Historical Data Properties in SimHub.
         public void ClearAllHistory()
         {
             lock (_historyLock)
@@ -1057,11 +663,13 @@ namespace F1Manager2024Plugin
             SimHub.Logging.Current.Info("Cleared all historical data due to session reset");
         }
 
+        // Reload all Settings.
         public void ReloadSettings(F1Manager2024PluginSettings settings)
         {
             Settings = settings;
         }
 
+        // Called when SimHub is closed.
         public void End(PluginManager pluginManager)
         {
             _mmfReader.DataReceived -= DataReceived;

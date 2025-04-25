@@ -18,6 +18,7 @@ namespace F1Manager2024Plugin
         private CancellationTokenSource _cts;
         private string _currentMapName;
 
+        // Reads from the Memory Map Created by the C# Application.
         public void StartReading(string mapName)
         {
             if (string.IsNullOrWhiteSpace(mapName))
@@ -115,10 +116,18 @@ namespace F1Manager2024Plugin
         public int paceMode;
         public int fuelMode;
         public int ersMode;
+        public float flSurfaceTemp;
         public float flTemp;
+        public float flBrakeTemp;
+        public float frSurfaceTemp;
         public float frTemp;
+        public float frBrakeTemp;
+        public float rlSurfaceTemp;
         public float rlTemp;
+        public float rlBrakeTemp;
+        public float rrSurfaceTemp;
         public float rrTemp;
+        public float rrBrakeTemp;
         public float flWear;
         public float frWear;
         public float rlWear;
@@ -128,7 +137,10 @@ namespace F1Manager2024Plugin
         public float gearboxWear;
         public float ersWear;
         public float charge;
+        public float energyHarvested;
+        public float energySpent;
         public float fuel;
+        public float fuelDelta;
         public DriverTelemetry Driver;
     }
 
@@ -150,6 +162,8 @@ namespace F1Manager2024Plugin
         public float lastS1Time;
         public float lastS2Time;
         public float lastS3Time;
+        public float distanceTravelled;
+        public float GapToLeader;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

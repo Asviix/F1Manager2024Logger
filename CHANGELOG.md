@@ -1,3 +1,31 @@
+# Changelog
+
+## BETA 0.5 - Everything is easier!
+
+### Accessibility
+For sake of simplicity, I have made a number of key changes to the Script.
+
+Now for installation, all that's needed is to run the setup and follow the instructions, everything will be done automatically and you'll have neat Desktop Shortcut to start it!
+
+Also, the Plugin DLL will now be automatically moved to SimHub's installation folder by the script, it's never been easier to become a pro!
+
+### Changed
+- Settings will now reset on a new update. ([`6eae649`](https://github.com/Asviix/F1Manager2024Logger/commit/6eae649fa946cec70f2ed37653ea0d7027fda350))
+- Refactored Gaps and Position calculations to save on CPU cycles. ([`3acec76`](https://github.com/Asviix/F1Manager2024Logger/commit/3acec7661abad64e03faf9b90eced4059abc195d))
+- Full Revamp of the Wiki.
+- Full Revamp of README.md.
+
+### Added
+- Added Energy Harvested and Deployed during a lap. ([`82baa8a`](https://github.com/Asviix/F1Manager2024Logger/commit/82baa8a4dc41abd8f1fd89902e78f2a21dcb85d8))
+- Added Fuel Delta. ([`b0783a6`](https://github.com/Asviix/F1Manager2024Logger/commit/b0783a607abee1fa749a494bb78694c607bb9db5))
+- Added Tire Surface Temperature. ([`2608876`](https://github.com/Asviix/F1Manager2024Logger/commit/2608876f53af7d107ee77e102e66f4fcbabfca0e))
+- Added Tire Age. ([`1050c48`](https://github.com/Asviix/F1Manager2024Logger/commit/1050c48699c280d1fdb482fb3f0b647bafe5449d))
+- Added Brake Temperature. ([`02aa918`](https://github.com/Asviix/F1Manager2024Logger/commit/02aa918a345bf3e88dde753aee8ab7ff440a2249))
+- Added Number of Laps/Time Remaining depending on the type of session and track. ([`76914de`](https://github.com/Asviix/F1Manager2024Logger/commit/76914de90d675aa760aafd7709f40b483614aaac))
+- Added Distance Travelled per Lap. ([`66911ca`](https://github.com/Asviix/F1Manager2024Logger/commit/66911ca3112140ea28bc6bc9ddfb1ead31de69de))
+- Added Data for in Front and Behind. ([`22fcc60`](https://github.com/Asviix/F1Manager2024Logger/commit/22fcc6087bc5ad49360c9443d9659fb3c2d53fd9))
+- Added Gap to Driver in Front/Behind/To Leader. ([`8bf4b61`](https://github.com/Asviix/F1Manager2024Logger/commit/8bf4b6154dabe52fa898357b6aa812818dbb1e9f)) & ([`339e96a`](https://github.com/Asviix/F1Manager2024Logger/commit/339e96a49662e4a0113710b22978ab300e59b3c0))
+
 ## BETA 0.4 - Whatcha Looking at' ?
 
 ### Note
@@ -24,8 +52,6 @@ You can refer to the list below or the updated Wiki to know what's been added.
 - Added Driver Last Name. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
 - Added Driver Team Name. (Can Input the name of your custom team when needed.) ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
 - Added Property to know whichever car the camera is currently focused on. ([`66c51df`](https://github.com/Asviix/F1Manager2024Logger/commit/66c51df53e2d9373812f45dbdbb039ab1a289e80))
-
-# Changelog
 
 ## BETA 0.3.1
 

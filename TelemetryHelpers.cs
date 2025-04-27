@@ -678,7 +678,7 @@ namespace F1Manager2024Plugin
                 0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 => "Soft",
                 8 or 9 or 10 => "Medium",
                 11 or 12 => "Hard",
-                13 or 14 or 15 or 16 or 17 => "Intermediated",
+                13 or 14 or 15 or 16 or 17 => "Intermediates",
                 18 or 19 => "Wet",
                 _ => "Unknown"
             };
@@ -851,7 +851,7 @@ namespace F1Manager2024Plugin
 
                     if (string.IsNullOrEmpty(carLeader)) return 0f;
 
-                // Find the index of the car behind
+                // Find the index of the lead car
                 int behindIndex = Array.IndexOf(carNames, carLeader);
                 if (behindIndex == -1) return 0f;
 

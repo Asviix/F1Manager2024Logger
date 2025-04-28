@@ -141,7 +141,7 @@ namespace F1Manager2024Plugin
 
                 if (plugin.Settings.TrackedDrivers != null)
                 {
-                    // Initialize driver selections
+                    // Initialize team selections
                     foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
                     {
                         team.Driver1.IsSelected = plugin.Settings.TrackedDrivers.Contains(team.Driver1.Name);
@@ -299,14 +299,16 @@ namespace F1Manager2024Plugin
                 // Reset selections based on saved settings
                 foreach (var team in DriversListBoxDash.ItemsSource.Cast<TeamDrivers>())
                 {
-                    team.Driver1.IsSelected = Plugin.Settings.TrackedDriversDashboard?.Contains(team.Driver1.Name) ?? false;
-                    team.Driver2.IsSelected = Plugin.Settings.TrackedDriversDashboard?.Contains(team.Driver2.Name) ?? false;
+                    team.Driver1.IsSelected = Plugin.Settings.TrackedDriversDashboard.Contains(team.Driver1.Name);
+                    team.Driver2.IsSelected = Plugin.Settings.TrackedDriversDashboard.Contains(team.Driver2.Name);
                 }
 
                 Plugin.Settings.TrackedDriversDashboard = selectedDriversDash.ToArray();
                 Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
                 Plugin.ReloadSettings(Plugin.Settings);
                 await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                InitializeUI(Plugin);
             }
         }
 

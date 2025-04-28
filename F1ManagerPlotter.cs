@@ -18,6 +18,8 @@ using WoteverCommon;
 using System.Windows.Forms;
 using MahApps.Metro.Controls;
 using System.Drawing;
+using System.Runtime;
+using WoteverCommon.Extensions;
 
 namespace F1Manager2024Plugin
 {
@@ -710,9 +712,21 @@ namespace F1Manager2024Plugin
         // Reload all Settings.
         public void ReloadSettings(F1Manager2024PluginSettings settings)
         {
+            if (settings.TrackedDriversDashboard.Length != 0)
+            {
+                if (settings.TrackedDriversDashboard.Length == 1)
+                {
+                    UpdateValue("TrackedDriver1", settings.TrackedDriversDashboard[0] ?? "");
+                    UpdateValue("TrackedDriver2", "NONE");
+                }
+                if (settings.TrackedDriversDashboard.Length == 2)
+                {
+                    UpdateValue("TrackedDriver1", settings.TrackedDriversDashboard[0] ?? "");
+                    UpdateValue("TrackedDriver2", settings.TrackedDriversDashboard[1] ?? "");
+                }
+            }
+
             Settings = settings;
-            UpdateValue("TrackedDriver1", settings.TrackedDriversDashboard[0]);
-            UpdateValue("TrackedDriver2", settings.TrackedDriversDashboard[1]);
         }
 
         // Called when SimHub is closed.

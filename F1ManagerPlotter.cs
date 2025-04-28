@@ -80,6 +80,10 @@ namespace F1Manager2024Plugin
             _mmfReader.DataReceived += DataReceived;
 
             #region Init Properties
+            // Add Settings Properties
+            pluginManager.AddProperty("TrackedDriver1", GetType(), typeof(string));
+            pluginManager.AddProperty("TrackedDriver2", GetType(), typeof(string));
+
             // Add Game Properties
             pluginManager.AddProperty("CameraFocusedOn", GetType(), typeof(string), "The Car name the camera is focus on.");
 
@@ -707,6 +711,8 @@ namespace F1Manager2024Plugin
         public void ReloadSettings(F1Manager2024PluginSettings settings)
         {
             Settings = settings;
+            UpdateValue("TrackedDriver1", settings.TrackedDriversDashboard[0]);
+            UpdateValue("TrackedDriver2", settings.TrackedDriversDashboard[1]);
         }
 
         // Called when SimHub is closed.

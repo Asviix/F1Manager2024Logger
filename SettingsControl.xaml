@@ -39,7 +39,7 @@
                                 <styles:SHButtonPrimary Click="BrowseExporter_Folder" Content="Browse..."/>
                             </StackPanel>
                         </StackPanel>
-                        <styles:SHSectionSeparator></styles:SHSectionSeparator>
+                        <styles:SHSectionSeparator/>
                         <Label Content="Select drivers to track:" FontSize="16"/>
                         <ItemsControl x:Name="DriversListBox" Margin="0,5,0,0">
                             <ItemsControl.ItemsPanel>
@@ -61,6 +61,32 @@
                         </ItemsControl>
                         <Label Content="Selected Drivers:" FontSize="16"/>
                         <TextBox x:Name="DriversTextBox" Margin="0,5,0,0" HorizontalAlignment="Left" MinWidth="300" Width="auto" VerticalAlignment="Center" IsReadOnly="True"/>
+                    </StackPanel>
+                </styles:SHTabItem>
+                <!-- Tab 2: DashBoard Tracker-->
+                <styles:SHTabItem Header="Tracker Drivers">
+                    <StackPanel Margin="0,20,0,0">
+                        <styles:SHButtonPrimary x:Name="SaveTrackedDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Width="auto" FontSize="16" Click="SaveTrackedDriversButton_Click"/>
+                        <Label Content="Select Drivers to Track for the dashboard:" FontSize="16"/>
+                        <styles:SHSectionSeparator/>
+                        <ItemsControl x:Name="DriversListBoxDash" Margin="0,5,0,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,5,0,0">
+                                        <TextBlock Text="{Binding BeautifiedTeamName}" FontWeight="Bold" Margin="0,0,0,2"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox Content="{Binding Driver1.DisplayName}" Margin="2,0,10,0" IsChecked="{Binding Driver1.IsSelected}"/>
+                                            <CheckBox Content="{Binding Driver2.DisplayName}" Margin="2" IsChecked="{Binding Driver2.IsSelected}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </styles:SHTabItem>
                 <!-- Tab 3: Custom Settings -->

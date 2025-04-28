@@ -39,12 +39,33 @@ namespace F1Manager2024Plugin
         private void InitializeDriverSelection()
         {
             var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
-            // Initialize with all drivers from your carNames array
-            var teams = new List<TeamDrivers>
+
+            // Create a deep copy for Dashboard Tracker
+            var teamsDash = CreateTeamsList(driverNames);
+            var teamsExporter = CreateTeamsList(driverNames); // Separate list for Exporter
+
+            if (Plugin.Settings.CustomTeamName.Length > 0)
             {
-                new TeamDrivers { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari", 
-                Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames), IsSelected = false },
-                Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames), IsSelected = false } },
+                teamsDash.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
+                teamsExporter.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
+            }
+            else
+            {
+                teamsDash.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
+                teamsExporter.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
+            }
+
+            DriversListBox.ItemsSource = teamsExporter;
+            DriversListBoxDash.ItemsSource = teamsDash; // Different source for dashboard
+        }
+
+        private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
+        {
+            return new List<TeamDrivers>
+            {
+                new TeamDrivers { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari",
+                Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames) },
+                Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames) }},
 
                 new TeamDrivers { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
                 Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
@@ -82,25 +103,17 @@ namespace F1Manager2024Plugin
                 Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
             };
+        }
 
-            if (Plugin.Settings.CustomTeamName.Length > 0)
+        private TeamDrivers CreateMyTeamEntry(Dictionary<string, (string, string)> driverNames, string teamName)
+        {
+            return new TeamDrivers
             {
-                teams.Add(
-                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = Plugin.Settings.CustomTeamName,
-                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
-                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
-                );
-            }
-            else
-            {
-                teams.Add(
-                    new TeamDrivers { TeamName = "MyTeam", BeautifiedTeamName = "MyTeam",
-                    Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
-                    Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false }}
-                );
-            }
-
-                DriversListBox.ItemsSource = teams;
+                TeamName = "MyTeam",
+                BeautifiedTeamName = teamName,
+                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames) },
+                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames) }
+            };
         }
 
         private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
@@ -141,6 +154,13 @@ namespace F1Manager2024Plugin
                     {
                         if (team.Driver1.IsSelected) selectedDrivers.Add(team.Driver1.DisplayName);
                         if (team.Driver2.IsSelected) selectedDrivers.Add(team.Driver2.DisplayName);
+                    }
+
+                    // Initialize Driver Dash Selections
+                    foreach (var team in DriversListBoxDash.ItemsSource.Cast<TeamDrivers>())
+                    {
+                        team.Driver1.IsSelected = plugin.Settings.TrackedDriversDashboard.Contains(team.Driver1.Name);
+                        team.Driver2.IsSelected = plugin.Settings.TrackedDriversDashboard.Contains(team.Driver2.Name);
                     }
 
                     DriversTextBox.Text = selectedDrivers.Any()
@@ -257,6 +277,37 @@ namespace F1Manager2024Plugin
             await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
             InitializeUI(Plugin);
 
+        }
+
+        private async void SaveTrackedDriversButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedDriversDash = new List<string>();
+
+            foreach (var team in DriversListBoxDash.ItemsSource.Cast<TeamDrivers>())
+            {
+                if (team.Driver1.IsSelected) selectedDriversDash.Add(team.Driver1.Name);
+                if (team.Driver2.IsSelected) selectedDriversDash.Add(team.Driver2.Name);
+            }
+
+            if (selectedDriversDash.Count > 2)
+            {
+                await SHMessageBox.Show("You cannot select more than 2 drivers!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+            else
+            {
+                // Reset selections based on saved settings
+                foreach (var team in DriversListBoxDash.ItemsSource.Cast<TeamDrivers>())
+                {
+                    team.Driver1.IsSelected = Plugin.Settings.TrackedDriversDashboard?.Contains(team.Driver1.Name) ?? false;
+                    team.Driver2.IsSelected = Plugin.Settings.TrackedDriversDashboard?.Contains(team.Driver2.Name) ?? false;
+                }
+
+                Plugin.Settings.TrackedDriversDashboard = selectedDriversDash.ToArray();
+                Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+                Plugin.ReloadSettings(Plugin.Settings);
+                await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void HistoricalDataDelete_Click(object sender, RoutedEventArgs e)

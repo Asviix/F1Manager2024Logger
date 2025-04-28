@@ -145,9 +145,12 @@ namespace F1Manager2024Plugin
                     ["currentLapTime"] = telemetry.Car[i].Driver.currentLapTime,
                     ["driverBestLap"] = telemetry.Car[i].Driver.driverBestLap,
                     ["lastLapTime"] = telemetry.Car[i].Driver.lastLapTime,
-                    ["lastS1Time"] = telemetry.Car[i].Driver.lastS1Time,
-                    ["lastS2Time"] = telemetry.Car[i].Driver.lastS2Time,
-                    ["lastS3Time"] = telemetry.Car[i].Driver.lastS3Time,
+                    ["lastS1Time"] = lastRecordedData["S1Time"],
+                    ["bestS1Time"] = lastRecordedData["BestS1Time"],
+                    ["lastS2Time"] = lastRecordedData["S2Time"],
+                    ["bestS2Time"] = lastRecordedData["BestS2Time"],
+                    ["lastS3Time"] = lastRecordedData["S3Time"],
+                    ["bestS3Time"] = lastRecordedData["BestS3Time"],
 
                     // Session info
                     ["bestSessionTime"] = telemetry.Session.bestSessionTime,

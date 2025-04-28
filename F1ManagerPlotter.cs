@@ -140,8 +140,11 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_DriverBestLap", GetType(), typeof(float), "Driver Best Lap");
                 pluginManager.AddProperty($"{name}_LastLapTime", GetType(), typeof(float), "Last Lap Time");
                 pluginManager.AddProperty($"{name}_LastS1Time", GetType(), typeof(float), "Last Sector 1 Time");
+                pluginManager.AddProperty($"{name}_BestS1Time", GetType(), typeof(float), "Best Sector 1 Time");
                 pluginManager.AddProperty($"{name}_LastS2Time", GetType(), typeof(float), "Last Sector 2 Time");
+                pluginManager.AddProperty($"{name}_BestS2Time", GetType(), typeof(float), "Best Sector 2 Time");
                 pluginManager.AddProperty($"{name}_LastS3Time", GetType(), typeof(float), "Last Sector 3 Time");
+                pluginManager.AddProperty($"{name}_BestS3Time", GetType(), typeof(float), "Best Sector 3 Time");
 
                 // Car telemetry
                 pluginManager.AddProperty($"{name}_Speed", GetType(), typeof(int), "Speed (km/h)");
@@ -240,12 +243,39 @@ namespace F1Manager2024Plugin
 
         // Helper Methods
         // Last Recorded Data used by the LapOrTurnChanged Method.
-        class LastRecordedData
+        public class LastRecordedData
         {
             public int LastTurnNumber { get; set; }
             public int LastLapNumber { get; set; }
             public int LastTire {  get; set; }
             public int LastTireChangeLap { get; set; }
+            public float S1Time { get; set; }
+            public float S2Time { get; set; }
+            public float S3Time { get; set; }
+            public float BestS1Time { get; set; }
+            public float BestS2Time { get; set; }
+            public float BestS3Time { get; set; }
+            public void UpdateSectorTimes(float s1, float s2, float s3)
+            {
+                if (s1 != 0) S1Time = s1;
+                if (s2 != 0) S2Time = s2;
+                if (s3 != 0) S3Time = s3;
+
+                if ((S1Time < BestS1Time || BestS1Time == 0) && s1 != 0)
+                {
+                    BestS1Time = S1Time;
+                }
+
+                if ((S2Time < BestS2Time || BestS2Time == 0) && s2 != 0)
+                {
+                    BestS2Time = S2Time;
+                }
+
+                if ((S3Time < BestS3Time || BestS3Time == 0) && s3 != 0)
+                {
+                    BestS3Time = S3Time;
+                }
+            }
         }
 
         // Dictionary for the Last Recorded Data.
@@ -369,6 +399,9 @@ namespace F1Manager2024Plugin
                 string carAheadName = TelemetryHelpers.GetNameOfCarAhead(car.Driver.position, i, carNames, CarsOnGrid);
                 string carBehindName = TelemetryHelpers.GetNameOfCarBehind(car.Driver.position, i, carNames, CarsOnGrid);
 
+
+                TelemetryHelpers.UpdateSectorTimes(_lastRecordedData[name], car.Driver.lastS1Time, car.Driver.lastS2Time, car.Driver.lastS3Time);
+
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus));
@@ -383,9 +416,12 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_CurrentLapTime", car.Driver.currentLapTime);
                 UpdateValue($"{name}_DriverBestLap", car.Driver.driverBestLap);
                 UpdateValue($"{name}_LastLapTime", car.Driver.lastLapTime);
-                UpdateValue($"{name}_LastS1Time", car.Driver.lastS1Time);
-                UpdateValue($"{name}_LastS2Time", car.Driver.lastS2Time);
-                UpdateValue($"{name}_LastS3Time", car.Driver.lastS3Time);
+                UpdateValue($"{name}_LastS1Time", _lastRecordedData[name].S1Time);
+                UpdateValue($"{name}_BestS1Time", _lastRecordedData[name].BestS1Time);
+                UpdateValue($"{name}_LastS2Time", _lastRecordedData[name].S2Time);
+                UpdateValue($"{name}_BestS2Time", _lastRecordedData[name].BestS2Time);
+                UpdateValue($"{name}_LastS3Time", _lastRecordedData[name].S3Time);
+                UpdateValue($"{name}_BestS3Time", _lastRecordedData[name].BestS3Time);
                 // Car telemetry
                 UpdateValue($"{name}_Speed", car.Driver.speed);
                 UpdateValue($"{name}_Rpm", car.Driver.rpm);
@@ -593,9 +629,12 @@ namespace F1Manager2024Plugin
                             CurrentLapTime = t.Value.Car[i].Driver.currentLapTime,
                             DriverBestLap = t.Value.Car[i].Driver.driverBestLap,
                             LastLapTime = t.Value.Car[i].Driver.lastLapTime,
-                            LastS1Time = t.Value.Car[i].Driver.lastS1Time,
-                            LastS2Time = t.Value.Car[i].Driver.lastS2Time,
-                            LastS3Time = t.Value.Car[i].Driver.lastS3Time,
+                            LastS1Time = _lastRecordedData[carName].S1Time,
+                            BestS1Time = _lastRecordedData[carName].BestS1Time,
+                            LastS2Time = _lastRecordedData[carName].S2Time,
+                            BestS2Time = _lastRecordedData[carName].BestS2Time,
+                            LastS3Time = _lastRecordedData[carName].S3Time,
+                            BestS3Time = _lastRecordedData[carName].BestS3Time,
                             Speed = t.Value.Car[i].Driver.speed,
                             RPM = t.Value.Car[i].Driver.rpm,
                             Gear = t.Value.Car[i].Driver.gear,

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SimHub.Plugins;
 using SimHub.Plugins.DataPlugins.ShakeItV3.UI.OutputSettings.Vibration;
+using static F1Manager2024Plugin.F1ManagerPlotter;
 
 namespace F1Manager2024Plugin
 {
@@ -646,6 +647,12 @@ namespace F1Manager2024Plugin
                 32 => "Custom Team",
                 _ => "Unknown",
             };
+        }
+
+        // Returns the Sector Times.
+        public static void UpdateSectorTimes(LastRecordedData lastData, float s1Time, float s2Time, float s3Time)
+        {
+            lastData.UpdateSectorTimes(s1Time, s2Time, s3Time);
         }
 
         // Returns the PitStop State based on ID.

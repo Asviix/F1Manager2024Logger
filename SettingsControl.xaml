@@ -8,14 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
     xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins"
-    xmlns:dd="urn:gong-wpf-dragdrop"
+    xmlns:dd="urn:gong-wpf-dragdrop" x:Name="userControl"
     x:Class="F1Manager2024Plugin.SettingsControl"
     mc:Ignorable="d" Loaded="CheckNewVersion">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="0*" />
-            </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="0*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
@@ -40,7 +40,7 @@
                             </StackPanel>
                         </StackPanel>
                         <styles:SHSectionSeparator/>
-                        <Label Content="Select drivers to track:" FontSize="16"/>
+                        <Label Content="Select drivers to track in the CSV Files:" FontSize="16"/>
                         <ItemsControl x:Name="DriversListBox" Margin="0,5,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -64,10 +64,10 @@
                     </StackPanel>
                 </styles:SHTabItem>
                 <!-- Tab 2: DashBoard Tracker-->
-                <styles:SHTabItem Header="Tracker Drivers">
+                <styles:SHTabItem Header="Tracked Drivers">
                     <StackPanel Margin="0,20,0,0">
                         <styles:SHButtonPrimary x:Name="SaveTrackedDriversButton" Content="Save Settings" Margin="0,5,0,0" HorizontalAlignment="Center" Width="auto" FontSize="16" Click="SaveTrackedDriversButton_Click"/>
-                        <Label Content="Select Drivers to Track for the dashboard:" FontSize="16"/>
+                        <Label Content="Select Drivers to track to use in Dashboards: (Limited to 2 MAX)" FontSize="16"/>
                         <styles:SHSectionSeparator/>
                         <ItemsControl x:Name="DriversListBoxDash" Margin="0,5,0,0">
                             <ItemsControl.ItemsPanel>
@@ -121,39 +121,44 @@
             </styles:SHTabControl>
         </ScrollViewer>
         <!-- Bottom Footer -->
+        <!-- Bottom Footer -->
         <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.Row="1">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="For support, join our Discord: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
-                        <TextBlock
-                                    x:Name="DiscordTextBost"
-                                    MouseLeftButtonDown="OpenHelpLinks"
-                                    MouseEnter="HighlightHelpLinks"
-                                    MouseLeave="RemoveHighlightHelpLinks"
-                                    Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Visit the GitHub wiki: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
-                        <TextBlock
-                                    x:Name="GitHubTextBot"
-                                    MouseLeftButtonDown="OpenHelpLinks"
-                                    MouseEnter="HighlightHelpLinks"
-                                    MouseLeave="RemoveHighlightHelpLinks"
-                                    Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="For support, join our Discord: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                    <TextBlock
+                        x:Name="DiscordTextBost"
+                        MouseLeftButtonDown="OpenHelpLinks"
+                        MouseEnter="HighlightHelpLinks"
+                        MouseLeave="RemoveHighlightHelpLinks"
+                        Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Visit the GitHub wiki: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                    <TextBlock
+                        x:Name="GitHubTextBox"
+                        MouseLeftButtonDown="OpenHelpLinks"
+                        MouseEnter="HighlightHelpLinks"
+                        MouseLeave="RemoveHighlightHelpLinks"
+                        Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Column="0">
                         <TextBlock Text="Download the lastest release at: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                         <TextBlock 
-                                    x:Name="OvertakeTextBox"
-                                    MouseLeftButtonDown="OpenHelpLinks"
-                                    MouseEnter="HighlightHelpLinks"
-                                    MouseLeave="RemoveHighlightHelpLinks"
-                                    Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                            x:Name="OvertakeTextBox"
+                            MouseLeftButtonDown="OpenHelpLinks"
+                            MouseEnter="HighlightHelpLinks"
+                            MouseLeave="RemoveHighlightHelpLinks"
+                            Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Version: BETA 0.6 " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-                </StackPanel>
+                    <TextBlock Text="Version: BETA 0.6" FontSize="14" TextWrapping="Wrap" Margin="0,5,5,0" VerticalAlignment="Center" Grid.Column="1"/>
+                </Grid>
+            </StackPanel>
         </styles:SHSubSection>
     </Grid>
 </UserControl>

@@ -42,29 +42,27 @@ namespace F1Manager2024Plugin
             {
                 try
                 {
-                    using (var mmf = MemoryMappedFile.OpenExisting(mapName, MemoryMappedFileRights.Read))
-                    using (var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Read))
+                    using var mmf = MemoryMappedFile.OpenExisting(mapName, MemoryMappedFileRights.Read);
+                    using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Read);
+                    byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
+
+                    while (_isReading && !_cts.IsCancellationRequested)
                     {
-                        byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
 
-                        while (_isReading && !_cts.IsCancellationRequested)
+                        try
                         {
+                            accessor.ReadArray(0, buffer, 0, buffer.Length);
+                            GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                            var telemetry = Marshal.PtrToStructure<Telemetry>(handle.AddrOfPinnedObject());
+                            handle.Free();
 
-                            try
-                            {
-                                accessor.ReadArray(0, buffer, 0, buffer.Length);
-                                GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                                var telemetry = Marshal.PtrToStructure<Telemetry>(handle.AddrOfPinnedObject());
-                                handle.Free();
-
-                                DataReceived?.Invoke(telemetry);
-                                Thread.Sleep(10); // Adjust as needed
-                            }
-                            catch (Exception ex)
-                            {
-                                SimHub.Logging.Current.Error($"Read error: {ex.Message}");
-                                Thread.Sleep(100);
-                            }
+                            DataReceived?.Invoke(telemetry);
+                            Thread.Sleep(10); // Adjust as needed
+                        }
+                        catch (Exception ex)
+                        {
+                            SimHub.Logging.Current.Error($"Read error: {ex.Message}");
+                            Thread.Sleep(100);
                         }
                     }
                 }

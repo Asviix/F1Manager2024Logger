@@ -10,8 +10,8 @@ namespace F1Manager2024Plugin
 {
     public class Exporter
     {
-        private readonly Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
-        private readonly Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _driverFilePaths = new();
+        private readonly Dictionary<string, bool> _headersWritten = new();
 
         public readonly string[] carNames = new string[]
         {
@@ -31,7 +31,7 @@ namespace F1Manager2024Plugin
         public int CarsOnGrid = 22;
 
         // Exports Data to CSV Files depending on the chosen settings.
-        public void ExportData(PluginManager pluginManager, string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
+        public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
@@ -91,9 +91,9 @@ namespace F1Manager2024Plugin
                     ["turnNumber"] = telemetry.Car[i].Driver.turnNumber,
                     ["distanceTravelled"] = telemetry.Car[i].Driver.distanceTravelled,
                     ["position"] = telemetry.Car[i].Driver.position + 1, // Adjust for 0-based index
-                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames),
+                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames),
+                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames),
                     ["carBehind"] = TelemetryHelpers.GetNameOfCarBehind(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
                     ["gapBehind"] = TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
 
@@ -161,18 +161,16 @@ namespace F1Manager2024Plugin
                 };
 
                 // Write to CSV
-                using (var writer = new StreamWriter(filePath, true))
+                using var writer = new StreamWriter(filePath, true);
+                if (!headersWritten)
                 {
-                    if (!headersWritten)
-                    {
-                        // Write headers in the specified order
-                        writer.WriteLine(string.Join(",", telemetryData.Keys));
-                        _headersWritten[carName] = true;
-                    }
-
-                    // Write values in the same order as headers
-                    writer.WriteLine(string.Join(",", telemetryData.Values.Select(v => EscapeCsvValue(v?.ToString()))));
+                    // Write headers in the specified order
+                    writer.WriteLine(string.Join(",", telemetryData.Keys));
+                    _headersWritten[carName] = true;
                 }
+
+                // Write values in the same order as headers
+                writer.WriteLine(string.Join(",", telemetryData.Values.Select(v => EscapeCsvValue(v?.ToString()))));
             }
             catch (Exception ex)
             {

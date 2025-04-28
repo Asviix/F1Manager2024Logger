@@ -63,43 +63,43 @@ namespace F1Manager2024Plugin
         {
             return new List<TeamDrivers>
             {
-                new TeamDrivers { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari",
+                new() { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari",
                 Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames) },
                 Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames) }},
 
-                new TeamDrivers { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
+                new() { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
                 Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "McLaren2", DisplayName = GetDisplayName("McLaren2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
+                new() { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
                 Driver1 = new DriverSelection { Name = "RedBull1", DisplayName = GetDisplayName("RedBull1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RedBull2", DisplayName = GetDisplayName("RedBull2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
+                new() { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
                 Driver1 = new DriverSelection { Name = "Mercedes1", DisplayName = GetDisplayName("Mercedes1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Mercedes2", DisplayName = GetDisplayName("Mercedes2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
+                new() { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
                 Driver1 = new DriverSelection { Name = "Alpine1", DisplayName = GetDisplayName("Alpine1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Alpine2", DisplayName = GetDisplayName("Alpine2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
+                new() { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
                 Driver1 = new DriverSelection { Name = "Williams1", DisplayName = GetDisplayName("Williams1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Williams2", DisplayName = GetDisplayName("Williams2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
+                new() { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
                 Driver1 = new DriverSelection { Name = "Haas1", DisplayName = GetDisplayName("Haas1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Haas2", DisplayName = GetDisplayName("Haas2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
+                new() { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
                 Driver1 = new DriverSelection { Name = "RacingBulls1", DisplayName = GetDisplayName("RacingBulls1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RacingBulls2", DisplayName = GetDisplayName("RacingBulls2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
+                new() { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
                 Driver1 = new DriverSelection { Name = "KickSauber1", DisplayName = GetDisplayName("KickSauber1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "KickSauber2", DisplayName = GetDisplayName("KickSauber2", driverNames), IsSelected = false } },
 
-                new TeamDrivers { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
+                new() { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
                 Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
             };

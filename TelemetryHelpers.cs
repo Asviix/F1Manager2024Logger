@@ -760,7 +760,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the name of the car Currently ahead the driver in [i] position
-        public static string GetNameOfCarAhead(int position, int i, string[] carNames, int CarsOnGrid)
+        public static string GetNameOfCarAhead(int position, int i, string[] carNames)
         {
             if (position == 0) return carNames[i];
 
@@ -807,7 +807,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the gap of the car ahead of the driver in [i] position
-        public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames)
         {
             // Handle first position cases
             if (position == 0)
@@ -843,7 +843,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the gap to the leader of the driver in [i] position
-        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames)
         {
             // Handle first position cases
             if (position == 0)

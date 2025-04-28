@@ -124,6 +124,9 @@
                                     MouseLeave="RemoveHighlightHelpLinks"
                                     Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Version: BETA 0.6 " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
                 </StackPanel>
         </styles:SHSubSection>
     </Grid>

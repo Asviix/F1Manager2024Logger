@@ -85,6 +85,41 @@ namespace F1Manager2024Plugin
             };
         }
 
+        public static float GetSpeedTrapDistance(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0f,
+                1 => 231.402594f,
+                2 => 554.268687f,
+                3 => 4472.886543f,
+                4 => 5142.278267f,
+                5 => 599.251425f,
+                6 => 1859.776249f,
+                7 => 3550.89665f,
+                8 => 2580.680579f,
+                9 => 2014.860737f,
+                10 => 4858.272171f,
+                11 => 5301.036909f,
+                12 => 315.89929f,
+                13 => 1222.67089f,
+                14 => 664.830088f,
+                15 => 241.944879f,
+                16 => 1070.783823f,
+                17 => 5047.793003f,
+                18 => 957.583701f,
+                19 => 3552.430392f,
+                20 => 262.152169f,
+                21 => 2480.84897f,
+                22 => 4579.952002f,
+                23 => 570.120918f,
+                24 => 4197.11918f,
+                25 => 5018.287971f,
+                26 => 599.526241f,
+                _ => 0f
+            };
+        }
+
         // Returns the number of laps based on ID.
         public static int GetTrackLaps(int trackId)
         {
@@ -647,12 +682,6 @@ namespace F1Manager2024Plugin
                 32 => "Custom Team",
                 _ => "Unknown",
             };
-        }
-
-        // Returns the Sector Times.
-        public static void UpdateSectorTimes(LastRecordedData lastData, float s1Time, float s2Time, float s3Time)
-        {
-            lastData.UpdateSectorTimes(s1Time, s2Time, s3Time);
         }
 
         // Returns the PitStop State based on ID.

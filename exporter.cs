@@ -119,6 +119,7 @@ namespace F1Manager2024Plugin
 
                     // Car telemetry
                     ["speed"] = telemetry.Car[i].Driver.speed,
+                    ["SpeedST"] = lastRecordedData["SpeedST"],
                     ["rpm"] = telemetry.Car[i].Driver.rpm,
                     ["gear"] = telemetry.Car[i].Driver.gear,
 

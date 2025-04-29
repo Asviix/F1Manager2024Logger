@@ -20,6 +20,7 @@ using MahApps.Metro.Controls;
 using System.Drawing;
 using System.Runtime;
 using WoteverCommon.Extensions;
+using System.Linq.Expressions;
 
 namespace F1Manager2024Plugin
 {
@@ -151,6 +152,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_BestS2Time", GetType(), typeof(float), "Best Sector 2 Time");
                 pluginManager.AddProperty($"{name}_LastS3Time", GetType(), typeof(float), "Last Sector 3 Time");
                 pluginManager.AddProperty($"{name}_BestS3Time", GetType(), typeof(float), "Best Sector 3 Time");
+                pluginManager.AddProperty($"{name}_SpeedST", GetType(), typeof(float), "Speed at the Speed Trap");
 
                 // Car telemetry
                 pluginManager.AddProperty($"{name}_Speed", GetType(), typeof(int), "Speed (km/h)");
@@ -282,6 +284,19 @@ namespace F1Manager2024Plugin
                     BestS3Time = S3Time;
                 }
             }
+
+            public int SpeedST { get; set; }
+            public bool SpeedSTRecorded { get; set; }
+
+            public void UpdateSTSpeed(int speed, int lap, float distance, float STDistance)
+            {
+                float difference = STDistance - distance;
+                if (difference > 0 && difference <= 100 && SpeedSTRecorded == false)
+                {
+                    SpeedST = speed;
+                    SpeedSTRecorded = true;
+                }
+            }
         }
 
         // Dictionary for the Last Recorded Data.
@@ -406,7 +421,8 @@ namespace F1Manager2024Plugin
                 string carBehindName = TelemetryHelpers.GetNameOfCarBehind(car.Driver.position, i, carNames, CarsOnGrid);
 
 
-                TelemetryHelpers.UpdateSectorTimes(_lastRecordedData[name], car.Driver.lastS1Time, car.Driver.lastS2Time, car.Driver.lastS3Time);
+                _lastRecordedData[name].UpdateSectorTimes(car.Driver.lastS1Time, car.Driver.lastS2Time, car.Driver.lastS3Time);
+                _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
@@ -428,6 +444,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_BestS2Time", _lastRecordedData[name].BestS2Time);
                 UpdateValue($"{name}_LastS3Time", _lastRecordedData[name].S3Time);
                 UpdateValue($"{name}_BestS3Time", _lastRecordedData[name].BestS3Time);
+                UpdateValue($"{name}_SpeedST", _lastRecordedData[name].SpeedST);
                 // Car telemetry
                 UpdateValue($"{name}_Speed", car.Driver.speed);
                 UpdateValue($"{name}_Rpm", car.Driver.rpm);
@@ -501,6 +518,8 @@ namespace F1Manager2024Plugin
 
                 int currentTurn = car.Driver.turnNumber;
                 int currentLap = car.currentLap + 1;
+
+                if (currentLap != _lastRecordedData[carName].LastLapNumber) _lastRecordedData[carName].SpeedSTRecorded = false;
 
                 bool shouldWrite = currentTurn != _lastRecordedData[carName].LastTurnNumber ||
                                    currentLap != _lastRecordedData[carName].LastLapNumber;
@@ -641,6 +660,7 @@ namespace F1Manager2024Plugin
                             _lastRecordedData[carName].BestS2Time,
                             LastS3Time = _lastRecordedData[carName].S3Time,
                             _lastRecordedData[carName].BestS3Time,
+                            _lastRecordedData[carName].SpeedST,
                             Speed = t.Value.Car[i].Driver.speed,
                             RPM = t.Value.Car[i].Driver.rpm,
                             Gear = t.Value.Car[i].Driver.gear,

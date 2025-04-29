@@ -5,6 +5,7 @@ obj/
 bin/
 /CustomDialog.xaml
 /CustomDialog.xaml.cs
+/importdata.py
 
 # Prerequisites
 *.d

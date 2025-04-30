@@ -79,7 +79,7 @@ namespace F1Manager2024Plugin
                     ["trackName"] = TelemetryHelpers.GetTrackName(telemetry.Session.trackId) ?? "",
                     ["sessionType"] = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType) ?? "",
                     ["timeElapsed"] = telemetry.Session.timeElapsed,
-                    ["Laps/Time Remaining"] = TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).Mixed,
+                    ["Laps/Time Remaining"] = TelemetryHelpers.GetSessionRemaining(telemetry, carNames).Mixed,
 
                     // Driver info
                     ["driverNumber"] = telemetry.Car[i].Driver.driverNumber,

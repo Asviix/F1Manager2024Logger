@@ -21,6 +21,7 @@ using System.Drawing;
 using System.Runtime;
 using WoteverCommon.Extensions;
 using System.Linq.Expressions;
+using System.Xml.Linq;
 
 namespace F1Manager2024Plugin
 {
@@ -320,7 +321,7 @@ namespace F1Manager2024Plugin
 
             if (_lastData.Car == null) return result;
 
-            for (int i = 0; i < Math.Min(_lastData.Car.Length, CarsOnGrid); i++)
+            for (int i = 0; i < _lastData.Car.Length; i++)
             {
                 var driverId = _lastData.Car[i].Driver.driverId;
                 var name = carNames[i];
@@ -378,8 +379,8 @@ namespace F1Manager2024Plugin
             // Update Session Properties
             UpdateValue("TrackName", TelemetryHelpers.GetTrackName(session.trackId));
             UpdateValue("TimeElapsed", session.timeElapsed);
-            UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining);
-            UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining);
+            UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining);
+            UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining);
             UpdateValue("BestSessionTime", session.bestSessionTime);
             UpdateValue("RubberState", session.rubber);
             UpdateValue("SessionType", TelemetryHelpers.GetSessionType(session.sessionType));
@@ -421,7 +422,7 @@ namespace F1Manager2024Plugin
             }
 
             // Update Drivers Properties
-            for (int i = 0; i < CarsOnGrid; i++)
+            for (int i = 0; i < carNames.Length; i++)
             {
                 var car = telemetry.Car[i];
                 var name = carNames[i];
@@ -432,6 +433,19 @@ namespace F1Manager2024Plugin
                     UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
                     _exporter.ExportData(name, telemetry, i, Settings, _lastRecordedData[name].ToJson());
+                }
+
+
+                if (session.sessionType is 6 or 7 && car.Driver.rpm < 4000)
+                {
+                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    continue;
+                }
+
+                if (session.sessionType is not 6 or 7 && car.Driver.rpm == 0)
+                {
+                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    continue;
                 }
 
                 if (TireChanged(name, car))
@@ -526,6 +540,117 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_GapAhead", TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames));
                 UpdateValue($"{name}_GapToLeader", TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames));
             }
+        }
+
+        private void ResetProperties(Telemetry telemetry, int i, string carName, int rpm)
+        {
+            int position = telemetry.Car[i].Driver.position + 1;
+
+            if (carName is "MyTeam1") position = 21;
+            if (carName is "MyTeam2") position = 22;
+
+            // Update Session Standings and Dictionary
+            UpdateValue($"P{position}_Car", carName);
+            CarPositions.AddOrUpdate(position - 1, carName, (_, __) => carName);
+
+            // Position and basic info
+            UpdateValue($"{carName}_Position", position);
+            UpdateValue($"{carName}_DriverNumber", 0);
+            UpdateValue($"{carName}_EstimatedPositionAfterPit", 0);
+
+            // Status
+            UpdateValue($"{carName}_TurnNumber", 0);
+            UpdateValue($"{carName}_CurrentLap", 0);
+            UpdateValue($"{carName}_DistanceTravelled", 0f);
+
+            // Timings
+            UpdateValue($"{carName}_CurrentLapTime", 0f);
+            UpdateValue($"{carName}_DriverBestLap", 0f);
+            UpdateValue($"{carName}_LastLapTime", 0f);
+            UpdateValue($"{carName}_LastS1Time", 0f);
+            UpdateValue($"{carName}_BestS1Time", 0f);
+            UpdateValue($"{carName}_LastS2Time", 0f);
+            UpdateValue($"{carName}_BestS2Time", 0f);
+            UpdateValue($"{carName}_LastS3Time", 0f);
+            UpdateValue($"{carName}_BestS3Time", 0f);
+            UpdateValue($"{carName}_SpeedST", 0);
+
+            // Car telemetry
+            UpdateValue($"{carName}_Speed", 0);
+            UpdateValue($"{carName}_Rpm", 0);
+            UpdateValue($"{carName}_Gear", 0);
+            UpdateValue($"{carName}_Charge", 0f);
+            UpdateValue($"{carName}_EnergyHarvested", 0f);
+            UpdateValue($"{carName}_EnergyDeployed", 0f);
+            UpdateValue($"{carName}_Fuel", 0f);
+            UpdateValue($"{carName}_FuelDelta", 0f);
+
+            // Tires
+            UpdateValue($"{carName}_TireCompound", null);
+            UpdateValue($"{carName}_TireAge", 0);
+            UpdateValue($"{carName}_flSurfaceTemp", 0f);
+            UpdateValue($"{carName}_flTemp", 0f);
+            UpdateValue($"{carName}_flBrakeTemp", 0f);
+            UpdateValue($"{carName}_frSurfaceTemp", 0f);
+            UpdateValue($"{carName}_frTemp", 0f);
+            UpdateValue($"{carName}_frBrakeTemp", 0f);
+            UpdateValue($"{carName}_rlSurfaceTemp", 0f);
+            UpdateValue($"{carName}_rlTemp", 0f);
+            UpdateValue($"{carName}_rlBrakeTemp", 0f);
+            UpdateValue($"{carName}_rrSurfaceTemp", 0f);
+            UpdateValue($"{carName}_rrTemp", 0f);
+            UpdateValue($"{carName}_rrBrakeTemp", 0f);
+            UpdateValue($"{carName}_flDeg", 0f);
+            UpdateValue($"{carName}_frDeg", 0f);
+            UpdateValue($"{carName}_rlDeg", 0f);
+            UpdateValue($"{carName}_rrDeg", 0f);
+
+            // Modes
+            UpdateValue($"{carName}_PaceMode", null);
+            UpdateValue($"{carName}_FuelMode", null);
+            UpdateValue($"{carName}_ERSMode", null);
+            UpdateValue($"{carName}_DRSMode", null);
+
+            // Components
+            UpdateValue($"{carName}_EngineTemp", 0f);
+            UpdateValue($"{carName}_EngineDeg", 0f);
+            UpdateValue($"{carName}_GearboxDeg", 0f);
+            UpdateValue($"{carName}_ERSDeg", 0f);
+
+            // Opponents Data
+            UpdateValue($"{carName}_NameOfCarBehind", null);
+            UpdateValue($"{carName}_NameOfCarAhead", null);
+            UpdateValue($"{carName}_GapBehind", 0f);
+            UpdateValue($"{carName}_GapAhead", 0f);
+            UpdateValue($"{carName}_GapToLeader", 0f);
+
+            if (rpm != 0)
+            {
+                UpdateValue($"{carName}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId));
+                UpdateValue($"{carName}_DriverLastName", TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId));
+                UpdateValue($"{carName}_DriverTeamName", TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings));
+                UpdateValue($"{carName}_PitStopStatus", "RETIRED");
+            }
+            else
+            {
+                UpdateValue($"{carName}_DriverFirstName", "NOT LOADED");
+                UpdateValue($"{carName}_DriverLastName", "NOT LOADED");
+                UpdateValue($"{carName}_DriverTeamName", "NOT LOADED");
+                UpdateValue($"{carName}_PitStopStatus", "NOT LOADED");
+            }
+
+            // Reset the last recorded data for this car
+            if (_lastRecordedData.ContainsKey(carName))
+            {
+                _lastRecordedData[carName] = new LastRecordedData();
+            }
+
+            // Reset the Gaps Dictionary
+            GapsToLeader.AddOrUpdate(
+                position,
+                0f,
+                (_, __) => 0f
+            );
         }
 
         // Helper Function used to make Update Values easier.
@@ -667,8 +792,8 @@ namespace F1Manager2024Plugin
                         {
                             TrackName = TelemetryHelpers.GetTrackName(t.Value.Session.trackId),
                             TimeElapsed = t.Value.Session.timeElapsed,
-                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).LapsRemaining,
-                            TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).TimeRemaining,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining,
+                            TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining,
                             BestSessionTime = t.Value.Session.bestSessionTime,
                             RubberState = t.Value.Session.rubber,
                             SessionType = TelemetryHelpers.GetSessionType(t.Value.Session.sessionType),

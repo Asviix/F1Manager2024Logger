@@ -320,13 +320,13 @@ namespace F1Manager2024Plugin
                 3 => "Cloudy",
                 4 => "Light Rain",
                 5 => "Moderate Rain",
-                6 => "Heavy Rain",
+                16 => "Heavy Rain",
                 _ => "Unknown"
             };
         }
 
         // Returns 3 values, TimeRemaining, LapsRemaining and Mixed depending on what track and session type that session is.
-        public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, int CarsOnGrid)
+        public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, string[] carNames)
         {
             int sessionType = telemetry.Session.sessionType;
             int trackId = telemetry.Session.trackId;
@@ -336,7 +336,7 @@ namespace F1Manager2024Plugin
             if (sessionType == 6 || sessionType == 7)
             {
                 // Looks for the car in first position (Laps update based on the leader's position)
-                for (int j = 0; j < CarsOnGrid; j++)
+                for (int j = 0; j < carNames.Length; j++)
                 {
                     if (telemetry.Car[j].Driver.position == 0)
                     {

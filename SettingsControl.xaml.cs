@@ -118,6 +118,13 @@ namespace F1Manager2024Plugin
 
         private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
         {
+            driverNames.TryGetValue(internalName, out var nameTest);
+
+            if (nameTest.First is "Unknown")
+            {
+                return "Not Loaded";
+            }
+
             return driverNames.TryGetValue(internalName, out var name) ? $"{name.First} {name.Last}" : internalName;
         }
 

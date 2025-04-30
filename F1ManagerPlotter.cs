@@ -103,6 +103,7 @@ namespace F1Manager2024Plugin
             pluginManager.AddProperty("AirTemp", GetType(), typeof(float), "Air Temperature in the session.");
             pluginManager.AddProperty("TrackTemp", GetType(), typeof(float), "Track Temperature in the session.");
             pluginManager.AddProperty("Weather", GetType(), typeof(string), "Weather in the session.");
+            pluginManager.AddProperty("WaterOnTrack", GetType(), typeof(float), "Millimeters of water on track.");
 
             pluginManager.AddProperty("P1_Car", GetType(), typeof(string), "Name of the Car Currently in P1.");
             pluginManager.AddProperty("P2_Car", GetType(), typeof(string), "Name of the Car Currently in P2.");
@@ -386,6 +387,7 @@ namespace F1Manager2024Plugin
             UpdateValue("AirTemp", session.Weather.airTemp);
             UpdateValue("TrackTemp", session.Weather.trackTemp);
             UpdateValue("Weather", TelemetryHelpers.GetWeather(session.Weather.weather));
+            UpdateValue("WaterOnTrack", session.Weather.waterOnTrack);
 
             // Set the number of cars on the grid
             if (telemetry.Session.sessionType == 6 || telemetry.Session.sessionType == 7) // Race session
@@ -674,6 +676,7 @@ namespace F1Manager2024Plugin
                             AirTemp = t.Value.Session.Weather.airTemp,
                             TrackTemp = t.Value.Session.Weather.trackTemp,
                             Weather = TelemetryHelpers.GetWeather(t.Value.Session.Weather.weather),
+                            WaterOnTrack = t.Value.Session.Weather.waterOnTrack,
 
                             Position = t.Value.Car[i].Driver.position,
                             DriverNumber = t.Value.Car[i].Driver.driverNumber,

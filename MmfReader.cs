@@ -181,5 +181,6 @@ namespace F1Manager2024Plugin
         public float airTemp;
         public float trackTemp;
         public int weather;
+        public float waterOnTrack;
     }
 }

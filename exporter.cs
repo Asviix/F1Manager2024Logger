@@ -158,7 +158,8 @@ namespace F1Manager2024Plugin
                     ["rubber"] = telemetry.Session.rubber,
                     ["airTemp"] = telemetry.Session.Weather.airTemp,
                     ["trackTemp"] = telemetry.Session.Weather.trackTemp,
-                    ["weather"] = TelemetryHelpers.GetWeather(telemetry.Session.Weather.weather) ?? ""
+                    ["weather"] = TelemetryHelpers.GetWeather(telemetry.Session.Weather.weather) ?? "",
+                    ["waterOnTrack"] = telemetry.Session.Weather.waterOnTrack
                 };
 
                 // Write to CSV

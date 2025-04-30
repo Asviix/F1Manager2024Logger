@@ -387,14 +387,35 @@ namespace F1Manager2024Plugin
             UpdateValue("TrackTemp", session.Weather.trackTemp);
             UpdateValue("Weather", TelemetryHelpers.GetWeather(session.Weather.weather));
 
-            // Set the number of cars on the grid.
-            if (telemetry.Car[20].Driver.rpm == 0)
+            // Set the number of cars on the grid
+            if (telemetry.Session.sessionType == 6 || telemetry.Session.sessionType == 7) // Race session
             {
-                CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+                // First check if we might have a 20-car grid (car20 has RPM 0)
+                if (telemetry.Car[20].Driver.rpm == 0)
+                {
+                    // Count cars that are not retired AND have RPM > 0
+                    CarsOnGrid = telemetry.Car.Count(c =>
+                        c.Driver.rpm > 0 &&
+                        c.pitStopStatus != 6); // 6 = In Garage (retired)
+                }
+                else
+                {
+                    // Full 22-car grid (minus any retirements)
+                    CarsOnGrid = telemetry.Car.Count(c =>
+                        c.pitStopStatus != 6); // Count all non-retired cars
+                }
             }
             else
             {
-                CarsOnGrid = 22;
+                // For non-race sessions, use the original logic
+                if (telemetry.Car[20].Driver.rpm == 0)
+                {
+                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+                }
+                else
+                {
+                    CarsOnGrid = 22;
+                }
             }
 
             // Update Drivers Properties

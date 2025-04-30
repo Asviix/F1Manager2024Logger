@@ -85,6 +85,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the distance in meters from the start-finish lines to the Speed Trap.
         public static float GetSpeedTrapDistance(int trackId)
         {
             return trackId switch
@@ -118,6 +119,62 @@ namespace F1Manager2024Plugin
                 26 => 599.526241f,
                 _ => 0f
             };
+        }
+
+        // Returns to average Pit Lane Time Loss based on ID.
+        public static float GetAveragePitLaneLoss(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0f,
+                1 => 19f,
+                2 => 23f,
+                3 => 25f,
+                4 => 19f,
+                5 => 23f,
+                6 => 20f,
+                7 => 22f,
+                8 => 0f,
+                9 => 22f,
+                10 => 22f,
+                11 => 20f,
+                12 => 21f,
+                13 => 17f,
+                14 => 25f,
+                15 => 28f,
+                16 => 0f,
+                17 => 23f,
+                18 => 25f,
+                19 => 21f,
+                20 => 23f,
+                21 => 21f,
+                22 => 21f,
+                23 => 21f,
+                24 => 29f,
+                25 => 17f,
+                26 => 24f,
+                _ => 0f
+            };
+        }
+
+        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        {
+            if (telemetry.Session.sessionType is not 6 or 7) return 0;
+
+            if (!F1ManagerPlotter.GapsToLeader.TryGetValue(position, out float currentGapToLeader))
+            {
+                return position;
+            }
+
+            float pitLaneLoss = GetAveragePitLaneLoss(telemetry.Session.trackId);
+            float estimatedGapAfterPit = currentGapToLeader + pitLaneLoss;
+
+            int carsToPass = F1ManagerPlotter.GapsToLeader.Count(kv =>
+            kv.Key != position &&
+            kv.Value > currentGapToLeader &&
+            kv.Value <= estimatedGapAfterPit);
+
+            return Math.Min(position + 1 + carsToPass, CarsOnGrid);
         }
 
         // Returns the number of laps based on ID.

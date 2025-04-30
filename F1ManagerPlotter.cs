@@ -136,6 +136,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_DriverLastName", GetType(), typeof(string), "Driver Last Name");
                 pluginManager.AddProperty($"{name}_DriverTeamName", GetType(), typeof(string), "Name of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_PitStopStatus", GetType(), typeof(string), "Pit Stop Status");
+                pluginManager.AddProperty($"{name}_EstimatedPositionAfterPit", GetType(), typeof(int), "Estimated Position after Pit Stop.");
 
                 // Status
                 pluginManager.AddProperty($"{name}_TurnNumber", GetType(), typeof(int), "Turn Number");
@@ -308,6 +309,9 @@ namespace F1Manager2024Plugin
         // Dictionary for the Standings
         public static readonly ConcurrentDictionary<int, string> CarPositions = new();
 
+        // Dictionary for the gaps to leader.
+        public static readonly ConcurrentDictionary<int, float> GapsToLeader = new();
+
         // GetDriversNames used by the SettingsControl to initialize the driver's list.
         public Dictionary<string, (string FirstName, string LastName)> GetDriversNames()
         {
@@ -416,6 +420,13 @@ namespace F1Manager2024Plugin
                 UpdateValue($"P{car.Driver.position + 1}_Car", name);
                 CarPositions.AddOrUpdate(car.Driver.position, name, (_, __) => name);
 
+                // Update Gap to Leader Dictionary
+                GapsToLeader.AddOrUpdate(
+                    telemetry.Car[i].Driver.position,
+                    TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames),
+                    (_, __) => TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames)
+                );
+
                 // Get Ahead and Behind Name
                 string carAheadName = TelemetryHelpers.GetNameOfCarAhead(car.Driver.position, i, carNames);
                 string carBehindName = TelemetryHelpers.GetNameOfCarBehind(car.Driver.position, i, carNames, CarsOnGrid);
@@ -427,6 +438,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus));
+                UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
                 // Status
                 UpdateValue($"{name}_TurnNumber", car.Driver.turnNumber);
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));

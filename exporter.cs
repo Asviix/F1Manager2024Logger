@@ -86,9 +86,9 @@ namespace F1Manager2024Plugin
                     ["driverFirstName"] = TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId) ?? "",
                     ["driverLastName"] = TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId) ?? "",
                     ["teamName"] = TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings) ?? "",
-                    ["pitstopStatus"] = TelemetryHelpers.GetPitStopStatus(telemetry.Car[i].pitStopStatus) ?? "",
+                    ["pitstopStatus"] = TelemetryHelpers.GetPitStopStatus(telemetry.Car[i].pitStopStatus, telemetry.Session.sessionType) ?? "",
                     ["currentLap"] = telemetry.Car[i].currentLap + 1, // Adjust for index
-                    ["turnNumber"] = telemetry.Car[i].Driver.turnNumber,
+                    ["turnNumber"] = lastRecordedData["LastTurnNumber"],
                     ["distanceTravelled"] = telemetry.Car[i].Driver.distanceTravelled,
                     ["position"] = telemetry.Car[i].Driver.position + 1, // Adjust for 0-based index
                     ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames),

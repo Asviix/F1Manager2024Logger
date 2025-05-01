@@ -85,6 +85,42 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the number of turns in a track based on ID.
+        public static int GetTrackTurns(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0,
+                1 => 14,
+                2 => 15,
+                3 => 16,
+                4 => 20,
+                5 => 14,
+                6 => 19,
+                7 => 14,
+                8 => 15,
+                9 => 10,
+                10 => 18,
+                11 => 27,
+                12 => 14,
+                13 => 19,
+                14 => 11,
+                15 => 19,
+                16 => 18,
+                17 => 18,
+                18 => 17,
+                19 => 20,
+                20 => 15,
+                21 => 16,
+                22 => 19,
+                23 => 14,
+                24 => 19,
+                25 => 17,
+                26 => 16,
+                _ => 0
+            };
+        }
+
         // Returns the distance in meters from the start-finish lines to the Speed Trap.
         public static float GetSpeedTrapDistance(int trackId)
         {
@@ -157,6 +193,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the estimated position after pitting.
         public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
         {
             if (telemetry.Session.sessionType is not 6 or 7) return 0;
@@ -742,11 +779,17 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the PitStop State based on ID.
-        public static string GetPitStopStatus(int pitStop)
+        public static string GetPitStopStatus(int pitStop, int sessionType)
         {
+            string None = "None";
+            if (sessionType is 6 or 7)
+            {
+                None = "On Track";
+            }
+
             return pitStop switch
             {
-                0 => "None",
+                0 => None,
                 1 => "Requested",
                 2 => "Entering",
                 3 => "Queuing",

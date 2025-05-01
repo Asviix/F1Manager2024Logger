@@ -22,6 +22,7 @@ using System.Runtime;
 using WoteverCommon.Extensions;
 using System.Linq.Expressions;
 using System.Xml.Linq;
+using SimHub.Plugins.OutputPlugins.Nextion.Roles;
 
 namespace F1Manager2024Plugin
 {
@@ -256,7 +257,9 @@ namespace F1Manager2024Plugin
         // Last Recorded Data used by the LapOrTurnChanged Method.
         public class LastRecordedData
         {
+            public bool NewLapStarted { get; set; }
             public int LastTurnNumber { get; set; }
+            public bool LastTurnRecorded { get; set; }
             public int LastLapNumber { get; set; }
             public int LastTire {  get; set; }
             public int LastTireChangeLap { get; set; }
@@ -428,7 +431,7 @@ namespace F1Manager2024Plugin
                 var name = carNames[i];
 
                 // Update historical data
-                if (LapOrTurnChanged(name, car))
+                if (LapOrTurnChanged(name, car, telemetry.Session.trackId))
                 {
                     UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
@@ -474,10 +477,10 @@ namespace F1Manager2024Plugin
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
-                UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus));
+                UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
                 UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
                 // Status
-                UpdateValue($"{name}_TurnNumber", car.Driver.turnNumber);
+                UpdateValue($"{name}_TurnNumber", _lastRecordedData[name].LastTurnNumber);
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
@@ -624,7 +627,7 @@ namespace F1Manager2024Plugin
             UpdateValue($"{carName}_GapAhead", 0f);
             UpdateValue($"{carName}_GapToLeader", 0f);
 
-            if (rpm != 0)
+            if (rpm != 0 && telemetry.Car[i].Driver.driverId == 0)
             {
                 UpdateValue($"{carName}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_DriverLastName", TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId));
@@ -660,7 +663,7 @@ namespace F1Manager2024Plugin
         }
 
         // Checks whether a specific car is in a new Turn or Lap.
-        private bool LapOrTurnChanged(string carName, CarTelemetry car)
+        private bool LapOrTurnChanged(string carName, CarTelemetry car, int trackId)
         {
             try
             {
@@ -668,8 +671,10 @@ namespace F1Manager2024Plugin
                 {
                     _lastRecordedData[carName] = new LastRecordedData
                     {
+                        NewLapStarted = false,
                         LastLapNumber = car.currentLap + 1,
                         LastTurnNumber = car.Driver.turnNumber,
+                        LastTurnRecorded = false,
                         LastTire = car.tireCompound,
                         LastTireChangeLap = car.currentLap + 1,
                     };
@@ -679,15 +684,30 @@ namespace F1Manager2024Plugin
                 int currentTurn = car.Driver.turnNumber;
                 int currentLap = car.currentLap + 1;
 
-                if (currentLap != _lastRecordedData[carName].LastLapNumber) _lastRecordedData[carName].SpeedSTRecorded = false;
+                if (currentLap != _lastRecordedData[carName].LastLapNumber)
+                {
+                    _lastRecordedData[carName].NewLapStarted = true;
+                    _lastRecordedData[carName].LastLapNumber = currentLap;
+                    _lastRecordedData[carName].LastTurnNumber = 0;
+                    return true;
+                }
 
-                bool shouldWrite = currentTurn != _lastRecordedData[carName].LastTurnNumber ||
-                                   currentLap != _lastRecordedData[carName].LastLapNumber;
+                if (currentTurn != _lastRecordedData[carName].LastTurnNumber && currentTurn >= 1 && currentTurn < TelemetryHelpers.GetTrackTurns(trackId))
+                {
+                    _lastRecordedData[carName].NewLapStarted = false;
+                    _lastRecordedData[carName].LastTurnRecorded = false;
+                    _lastRecordedData[carName].LastTurnNumber = currentTurn;
+                    return true;
+                }
 
-                _lastRecordedData[carName].LastTurnNumber = currentTurn;
-                _lastRecordedData[carName].LastLapNumber = currentLap;
+                if (currentTurn == TelemetryHelpers.GetTrackTurns(trackId) && _lastRecordedData[carName].LastTurnRecorded == false)
+                {
+                    _lastRecordedData[carName].LastTurnRecorded = true;
+                    _lastRecordedData[carName].LastTurnNumber = currentTurn;
+                    return true;
+                }
 
-                return shouldWrite;
+                return false;
             }
             catch
             {
@@ -729,9 +749,9 @@ namespace F1Manager2024Plugin
             }
 
             int currentLap = telemetry.Car[i].currentLap + 1; // Don't forget to index
-            int currentTurn = telemetry.Car[i].Driver.turnNumber;
+            int currentTurn = _lastRecordedData[carName].LastTurnNumber;
 
-            if (currentLap < 1 || currentTurn < 1) return; // Skip invalid data
+            if (currentLap < 1 || currentTurn < 0) return; // Skip invalid data
 
             lock (_historyLock)
             {
@@ -808,8 +828,8 @@ namespace F1Manager2024Plugin
                             DriverFirstName = TelemetryHelpers.GetDriverFirstName(t.Value.Car[i].Driver.driverId),
                             DriverLastName = TelemetryHelpers.GetDriverLastName(t.Value.Car[i].Driver.driverId),
                             TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
-                            PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus),
-                            TurnNumber = t.Value.Car[i].Driver.turnNumber,
+                            PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus, t.Value.Session.sessionType),
+                            TurnNumber = _lastRecordedData[carName].LastTurnNumber,
                             DistanceTravelled = t.Value.Car[i].Driver.distanceTravelled,
                             CurrentLap = t.Value.Car[i].currentLap,
                             CurrentLapTime = t.Value.Car[i].Driver.currentLapTime,

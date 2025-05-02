@@ -288,17 +288,17 @@ namespace F1Manager2024Plugin
                 if (s2 != 0) S2Time = s2;
                 if (s3 != 0) S3Time = s3;
 
-                if ((S1Time < BestS1Time || BestS1Time == 0) && s1 != 0)
+                if ((S1Time > BestS1Time || BestS1Time == 0) && s1 != 0)
                 {
                     BestS1Time = S1Time;
                 }
 
-                if ((S2Time < BestS2Time || BestS2Time == 0) && s2 != 0)
+                if ((S2Time > BestS2Time || BestS2Time == 0) && s2 != 0)
                 {
                     BestS2Time = S2Time;
                 }
 
-                if ((S3Time < BestS3Time || BestS3Time == 0) && s3 != 0)
+                if ((S3Time > BestS3Time || BestS3Time == 0) && s3 != 0)
                 {
                     BestS3Time = S3Time;
                 }

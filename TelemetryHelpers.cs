@@ -396,6 +396,47 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Returns the points gains based on position and session type.
+        public static int GetPointsGained(int position, int sessionId, bool isFastest)
+        {
+            int basePoints = 0;
+            if (sessionId is 6)
+            {
+                basePoints = position switch
+                {
+                    1 => 25,
+                    2 => 18,
+                    3 => 15,
+                    4 => 12,
+                    5 => 10,
+                    6 => 8,
+                    7 => 6,
+                    8 => 4,
+                    9 => 2,
+                    10 => 1,
+                    _ => 0
+                };
+            }
+            else if (sessionId is 7)
+            {
+                basePoints = position switch
+                {
+                    1 => 8,
+                    2 => 7,
+                    3 => 6,
+                    4 => 5,
+                    5 => 4,
+                    6 => 3,
+                    7 => 2,
+                    8 => 1,
+                    9 => 0,
+                    10 => 0,
+                    _ => 0
+                };
+            }
+            return basePoints + (isFastest && position is >= 1 and <= 10 ? 1 : 0);
+        }
+
         // Returns the Driver's First Name based on ID.
         public static string GetDriverFirstName(int driverId)
         {

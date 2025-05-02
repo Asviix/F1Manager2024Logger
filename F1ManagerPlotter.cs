@@ -134,6 +134,7 @@ namespace F1Manager2024Plugin
             {
                 // Position and basic info
                 pluginManager.AddProperty($"{name}_Position", GetType(), typeof(int), "Position");
+                pluginManager.AddProperty($"{name}_PointsGain", GetType(), typeof(int), "Points gained at this position.");
                 pluginManager.AddProperty($"{name}_DriverNumber", GetType(), typeof(int), "Driver Number");
                 pluginManager.AddProperty($"{name}_DriverFirstName", GetType(), typeof(string), "Driver First Name");
                 pluginManager.AddProperty($"{name}_DriverLastName", GetType(), typeof(string), "Driver Last Name");
@@ -476,6 +477,7 @@ namespace F1Manager2024Plugin
                 _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
+                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, (session.bestSessionTime == car.Driver.driverBestLap)));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
                 UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));

@@ -434,7 +434,12 @@ namespace F1Manager2024Plugin
                     _ => 0
                 };
             }
-            return basePoints + (isFastest && position is >= 1 and <= 10 ? 1 : 0);
+
+            if (sessionId is 8 or 7 && isFastest is true)
+            {
+                basePoints += 1;
+            }
+            return basePoints;
         }
 
         // Returns the Driver's First Name based on ID.

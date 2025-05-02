@@ -1,4 +1,4 @@
-﻿using GameReaderCommon;
+using GameReaderCommon;
 using SimHub.Plugins;
 using Newtonsoft.Json;
 using System;
@@ -108,6 +108,9 @@ namespace F1Manager2024Plugin
             pluginManager.AddProperty("TimeRemaining", GetType(), typeof(float), "Time Remaining in the session.");
             pluginManager.AddProperty("TrackName", GetType(), typeof(string), "Track Name.");
             pluginManager.AddProperty("BestSessionTime", GetType(), typeof(float), "Best Time in the session.");
+            pluginManager.AddProperty("BestS1Time", GetType(), typeof(float), "Best S1 Time in the session.");
+            pluginManager.AddProperty("BestS2Time", GetType(), typeof(float), "Best S2 Time in the session.");
+            pluginManager.AddProperty("BestS3Time", GetType(), typeof(float), "Best S3 Time in the session.");
             pluginManager.AddProperty("RubberState", GetType(), typeof(float), "Rubber on Track.");
             pluginManager.AddProperty("SessionType", GetType(), typeof(string), "Type of the session.");
             pluginManager.AddProperty("SessionTypeShort", GetType(), typeof(string), "Short Type of the session.");
@@ -315,6 +318,39 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Get Best sector Times
+        public (float MinS1, float MinS2, float MinS3) GetLowestSectorTimes()
+        {
+            float minS1 = float.MaxValue;
+            float minS2 = float.MaxValue;
+            float minS3 = float.MaxValue;
+
+            foreach (var entry in _lastRecordedData.Values)
+            {
+                if (entry.S1Time != 0 && entry.S1Time < minS1)
+                {
+                    minS1 = entry.S1Time;
+                }
+
+                if (entry.S2Time != 0 && entry.S2Time < minS2)
+                {
+                    minS2 = entry.S2Time;
+                }
+
+                if (entry.S3Time != 0 && entry.S3Time < minS3)
+                {
+                    minS3 = entry.S3Time;
+                }
+            }
+
+            // Handle case where no valid times were found (return 0 or another default)
+            minS1 = minS1 == float.MaxValue ? 0 : minS1;
+            minS2 = minS2 == float.MaxValue ? 0 : minS2;
+            minS3 = minS3 == float.MaxValue ? 0 : minS3;
+
+            return (minS1, minS2, minS3);
+        }
+
         // Dictionary for the Last Recorded Data.
         private readonly Dictionary<string, LastRecordedData> _lastRecordedData = new();
 
@@ -386,6 +422,10 @@ namespace F1Manager2024Plugin
                 _lastTimeElapsed = session.timeElapsed;
             }
 
+            // Get Best Session Times
+            var (bestS1, bestS2, bestS3) = GetLowestSectorTimes();
+
+
             // Update Game Properties
             UpdateValue("CameraFocusedOn", carNames[telemetry.cameraFocus]);
 
@@ -395,6 +435,9 @@ namespace F1Manager2024Plugin
             UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining);
             UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining);
             UpdateValue("BestSessionTime", session.bestSessionTime);
+            UpdateValue("BestS1Time", bestS1);
+            UpdateValue("BestS2Time", bestS2);
+            UpdateValue("BestS3Time", bestS3);
             UpdateValue("RubberState", session.rubber);
             UpdateValue("SessionType", TelemetryHelpers.GetSessionType(session.sessionType));
             UpdateValue("SessionTypeShort", TelemetryHelpers.GetShortSessionType(session.sessionType));
@@ -811,6 +854,9 @@ namespace F1Manager2024Plugin
                 );
             }
 
+            // Get best Sector Times
+            var (BestS1, BestS2, BestS3) = GetLowestSectorTimes();
+
             // Serialize the complete lap data
             var lapData = new
             {
@@ -826,6 +872,9 @@ namespace F1Manager2024Plugin
                             TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining,
                             TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining,
                             BestSessionTime = t.Value.Session.bestSessionTime,
+                            BestS1,
+                            BestS2,
+                            BestS3,
                             RubberState = t.Value.Session.rubber,
                             SessionType = TelemetryHelpers.GetSessionType(t.Value.Session.sessionType),
                             SessionTypeShort = TelemetryHelpers.GetShortSessionType(t.Value.Session.sessionType),

@@ -845,9 +845,9 @@ namespace F1Manager2024Plugin
                 7 => "Jack Up",
                 8 => "Releasing",
                 9 => "Car Setup",
-                10 => "Pit Stop Approach",
-                11 => "Pit Stop Penalty",
-                12 => "Waiting for Release",
+                10 => "Approach",
+                11 => "Penalty",
+                12 => "Releasing",
                 _ => "Unknown"
             };
         }

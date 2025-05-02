@@ -70,7 +70,7 @@ namespace F1Manager2024Plugin
 
             // Register properties for SimHub
             pluginManager.AddProperty("DEBUG_Status_IsMemoryMap_Connected", this.GetType(), false);
-            pluginManager.AddProperty("DEBUG_Status_MemoryMap_Status", this.GetType(), "Waiting for Mapped Memory");
+            pluginManager.AddProperty("DEBUG_Status_Game_Connected", this.GetType(), false);
             pluginManager.AddProperty("DEBUG_Game_Status", this.GetType(), typeof(string));
 
             // Load Settings
@@ -86,8 +86,17 @@ namespace F1Manager2024Plugin
 
             #region Init Properties
             // Add Settings Properties
-            pluginManager.AddProperty("TrackedDriver1", GetType(), typeof(string));
-            pluginManager.AddProperty("TrackedDriver2", GetType(), typeof(string));
+
+            string trackedDriver1 = Settings.TrackedDriversDashboard.Length > 0
+                                ? Settings.TrackedDriversDashboard[0]
+                                : null;
+
+            string trackedDriver2 = Settings.TrackedDriversDashboard.Length > 1
+                                ? Settings.TrackedDriversDashboard[1]
+                                : null;
+
+            pluginManager.AddProperty("TrackedDriver1", this.GetType(), trackedDriver1);
+            pluginManager.AddProperty("TrackedDriver2", this.GetType(), trackedDriver2);
 
             // Add Game Properties
             pluginManager.AddProperty("CameraFocusedOn", GetType(), typeof(string), "The Car name the camera is focus on.");
@@ -238,17 +247,17 @@ namespace F1Manager2024Plugin
             lock (_dataLock)
             {
 
-                if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(false, "Connected.", "Game not in Session."); return; }
+                if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(true, false, "Game not in Session."); return; }
                 try
                 {
                     _lastData = telemetry;
 
                     UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
-                    UpdateStatus(true, "Connected", "Game in Session");
+                    UpdateStatus(true, true, "Receiving Data");
                 }
                 catch (Exception ex)
                 {
-                    UpdateStatus(false, "Error processing data", "Game in Session");
+                    UpdateStatus(true, false, "Error!");
                     SimHub.Logging.Current.Error(ex);
                 }
             }
@@ -353,10 +362,10 @@ namespace F1Manager2024Plugin
         }
 
         // Update the status of the Debug Properties in SimHub.
-        private void UpdateStatus(bool connected, string message, string message2)
+        private void UpdateStatus(bool connected, bool connected2, string message2)
         {
             UpdateValue("DEBUG_Status_IsMemoryMap_Connected", connected);
-            UpdateValue("DEBUG_Status_MemoryMap_Status", message);
+            UpdateValue("DEBUG_Status_Game_Connected", connected2);
             UpdateValue("DEBUG_Game_Status", message2);
         }
 
@@ -920,7 +929,7 @@ namespace F1Manager2024Plugin
                 if (settings.TrackedDriversDashboard.Length == 1)
                 {
                     UpdateValue("TrackedDriver1", settings.TrackedDriversDashboard[0] ?? "");
-                    UpdateValue("TrackedDriver2", "NONE");
+                    UpdateValue("TrackedDriver2", null);
                 }
                 if (settings.TrackedDriversDashboard.Length == 2)
                 {

@@ -1,5 +1,28 @@
 # Changelog
 
+## RELEASE 1.0
+
+### Changed
+- Fixed Standings Data not updating properly depending grid size. ([`f402d41`](https://github.com/Asviix/F1Manager2024Logger/commit/f402d4198c9e84dbc8bb047d8a4d0f91070abf14))
+- Added Version in the settings footer. ([`8cd8fdb`](https://github.com/Asviix/F1Manager2024Logger/commit/8cd8fdb480f0682722e6bd8df614997662674f16))
+- Changed how Last Sector Times work to prevent them from resetting to 0. ([`e6339e5`](https://github.com/Asviix/F1Manager2024Logger/commit/e6339e5ecdda9229053540f2dd854e011434bb88))
+- Change the Memory Reader to always overwrite the Plugin DLL. ([`#49`](https://github.com/Asviix/F1Manager2024Logger/issues/49))
+- Refactored some code to limit cross-file interactions. ([`9aabfd7`](https://github.com/Asviix/F1Manager2024Logger/commit/9aabfd781c90984d16e0cf2a9e49ba41a50a9012))
+- Refactor telemetry handling and improve data accuracy ([`cf5ca34`](https://github.com/Asviix/F1Manager2024Logger/commit/cf5ca34abe2dd65449788651807402b77f7a4358))
+- Fixed a bug which would add a last turn recording of the data at the start of a new lap. ([`dc04456`](https://github.com/Asviix/F1Manager2024Logger/commit/dc04456ec25095e0820dd434f09a73fdda2a5b8d))
+- Fixed a bug where Driver's Best Sector Times wouldn't record. ([`9c75dd3`](https://github.com/Asviix/F1Manager2024Logger/commit/9c75dd35cba9bbad7031784e1b666c5ee75aba24))
+- Shortened Pit Stop Statuses for Ease of use. ([`ccf9c5f`](https://github.com/Asviix/F1Manager2024Logger/commit/ccf9c5fc632d8dca0a41766ce330dd59055052e4)) && ([`ac82bf3`](https://github.com/Asviix/F1Manager2024Logger/commit/ac82bf3694eac6a43c20efb442158ab0c047222e))
+
+### Added
+- Added Best Sector Times. ([`e6339e5`](https://github.com/Asviix/F1Manager2024Logger/commit/e6339e5ecdda9229053540f2dd854e011434bb88))
+- Added Dashboard Tracked Drivers. ([`8d526ad`](https://github.com/Asviix/F1Manager2024Logger/commit/8d526ad98c6426c6b20e1b16efddd32be7f933f4)) & ([`9644f93`](https://github.com/Asviix/F1Manager2024Logger/commit/9644f9341fddfb4c7eba41731dde7a2ab991a584))
+- Added Speed Trap Data ([`9aabfd7`](https://github.com/Asviix/F1Manager2024Logger/commit/9aabfd781c90984d16e0cf2a9e49ba41a50a9012))
+- Added Estimated Position after Pit-Stop. ([`f3dafd1`](https://github.com/Asviix/F1Manager2024Logger/commit/f3dafd1f460a4373b846e4effddbbb79b5beeb13))
+- Added Depth of the water on track. ([`722e3ce`](https://github.com/Asviix/F1Manager2024Logger/commit/722e3cea2a37a541a0630c506968cf206aab6256))
+- Added Points Gain per driver. ([`1354d14`](https://github.com/Asviix/F1Manager2024Logger/commit/1354d1443c2581666d214b26eb089348f4ec5096))
+- Added Best Sector Times of the Session. ([`7d0453d`](https://github.com/Asviix/F1Manager2024Logger/commit/7d0453d3cf9e2691956456f6cc8d00fb747d56dd))
+- Added Custom Team Colors. ([`80b8fe9`](https://github.com/Asviix/F1Manager2024Logger/commit/80b8fe9dc5bab27eea0e6f180378656981e347ba))
+
 ## BETA 0.5 - Everything is easier!
 
 ### Accessibility

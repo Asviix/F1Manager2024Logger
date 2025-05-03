@@ -824,6 +824,7 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Team's Color based on ID.
         public static string GetTeamColor(int teamId, F1Manager2024PluginSettings Settings)
         {
             if (Settings.CustomTeamColor != null && teamId == 32) return Settings.CustomTeamColor;

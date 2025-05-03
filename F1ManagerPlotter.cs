@@ -151,6 +151,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_DriverFirstName", GetType(), typeof(string), "Driver First Name");
                 pluginManager.AddProperty($"{name}_DriverLastName", GetType(), typeof(string), "Driver Last Name");
                 pluginManager.AddProperty($"{name}_DriverTeamName", GetType(), typeof(string), "Name of the Driver's Team.");
+                pluginManager.AddProperty($"{name}_DriverTeamColor", GetType(), typeof(string), "Color of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_PitStopStatus", GetType(), typeof(string), "Pit Stop Status");
                 pluginManager.AddProperty($"{name}_EstimatedPositionAfterPit", GetType(), typeof(int), "Estimated Position after Pit Stop.");
 
@@ -309,8 +310,7 @@ namespace F1Manager2024Plugin
 
             public void UpdateSTSpeed(int speed, int lap, float distance, float STDistance)
             {
-                float difference = STDistance - distance;
-                if (difference > 0 && difference <= 100 && SpeedSTRecorded == false)
+                if (distance > STDistance && SpeedSTRecorded == false)
                 {
                     SpeedST = speed;
                     SpeedSTRecorded = true;
@@ -538,6 +538,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
+                UpdateValue($"{name}_DriverTeamColor", TelemetryHelpers.GetTeamColor(car.Driver.teamId, Settings));
                 UpdateValue($"{name}_CurrentLap", (car.currentLap) + 1); // Adjust for Index
                 UpdateValue($"{name}_DistanceTravelled", car.Driver.distanceTravelled);
                 // Timings
@@ -891,7 +892,7 @@ namespace F1Manager2024Plugin
                             PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus, t.Value.Session.sessionType),
                             TurnNumber = _lastRecordedData[carName].LastTurnNumber,
                             DistanceTravelled = t.Value.Car[i].Driver.distanceTravelled,
-                            CurrentLap = t.Value.Car[i].currentLap,
+                            CurrentLap = t.Value.Car[i].currentLap + 1,
                             CurrentLapTime = t.Value.Car[i].Driver.currentLapTime,
                             DriverBestLap = t.Value.Car[i].Driver.driverBestLap,
                             LastLapTime = t.Value.Car[i].Driver.lastLapTime,

@@ -824,6 +824,27 @@ namespace F1Manager2024Plugin
             };
         }
 
+        public static string GetTeamColor(int teamId, F1Manager2024PluginSettings Settings)
+        {
+            if (Settings.CustomTeamColor != null && teamId == 32) return Settings.CustomTeamColor;
+
+            return teamId switch
+            {
+                1 => "#e80030",
+                2 => "#ff8300",
+                3 => "#3974c7",
+                4 => "#2af4d3",
+                5 => "#0095cd",
+                6 => "#67c5ff",
+                7 => "#b8bcbf",
+                8 => "#6994ff",
+                9 => "#55e355",
+                10 => "#249b74",
+                32 => "#FFFFFF",
+                _ => "#FFFFFF",
+            };
+        }
+
         // Returns the PitStop State based on ID.
         public static string GetPitStopStatus(int pitStop, int sessionType)
         {

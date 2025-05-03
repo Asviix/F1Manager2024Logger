@@ -95,7 +95,17 @@
                         <StackPanel>
                             <Label FontSize="16">Enter the Name of your custom team here:</Label>
                             <TextBox Name="CustomTeamInput" FontSize="16"></TextBox>
-                            <styles:SHButtonPrimary x:Name="SaveCustomSettings" Content="Save Settings" Margin="0,10,0,0" HorizontalAlignment="Center" Click="SaveCustomSettings_Click"  Width="auto" FontSize="18"/>
+
+                            <Label FontSize="16" Margin="0,10,0,0">Select your team color:</Label>
+                            <StackPanel Orientation="Horizontal">
+                                <styles:SHButtonPrimary x:Name="ColorPickerButton" Content="Pick Color" Margin="0,0,10,0" Click="ColorPickerButton_Click"/>
+                                <Border x:Name="ColorPreview" BorderBrush="Black" BorderThickness="1" Width="50" Height="25" 
+                        Background="{Binding TeamColorBrush, ElementName=userControl}"/>
+                                <TextBlock x:Name="ColorHexText" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="16"/>
+                            </StackPanel>
+
+                            <styles:SHButtonPrimary x:Name="SaveCustomSettings" Content="Save Settings" Margin="0,10,0,0" 
+                                   HorizontalAlignment="Center" Click="SaveCustomSettings_Click" Width="auto" FontSize="18"/>
                         </StackPanel>
                     </StackPanel>
                 </styles:SHTabItem>

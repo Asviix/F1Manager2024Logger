@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Xml.Linq;
 using SimHub.Plugins.OutputPlugins.Nextion.Roles;
 using Microsoft.Win32.TaskScheduler;
+using System.Threading;
 
 namespace F1Manager2024Plugin
 {
@@ -262,8 +263,7 @@ namespace F1Manager2024Plugin
                 }
                 catch (Exception ex)
                 {
-                    UpdateStatus(true, false, "Error!");
-                    SimHub.Logging.Current.Error(ex);
+                    UpdateStatus(true, false, ex.ToString());
                 }
             }
         }
@@ -454,11 +454,11 @@ namespace F1Manager2024Plugin
             if (telemetry.Session.sessionType == 6 || telemetry.Session.sessionType == 7) // Race session
             {
                 // First check if we might have a 20-car grid (car20 has RPM 0)
-                if (telemetry.Car[20].Driver.rpm == 0)
+                if (telemetry.Car[20].Driver.driverId == 0)
                 {
                     // Count cars that are not retired AND have RPM > 0
                     CarsOnGrid = telemetry.Car.Count(c =>
-                        c.Driver.rpm > 0 &&
+                        c.Driver.driverId > 0 &&
                         c.pitStopStatus != 6); // 6 = In Garage (retired)
                 }
                 else
@@ -471,9 +471,9 @@ namespace F1Manager2024Plugin
             else
             {
                 // For non-race sessions, use the original logic
-                if (telemetry.Car[20].Driver.rpm == 0)
+                if (telemetry.Car[20].Driver.driverId == 0)
                 {
-                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.rpm > 0);
+                    CarsOnGrid = telemetry.Car.Count(c => c.Driver.driverId > 0);
                 }
                 else
                 {
@@ -496,13 +496,13 @@ namespace F1Manager2024Plugin
                 }
 
 
-                if (session.sessionType is 6 or 7 && car.Driver.rpm < 4000)
+                if (session.sessionType is 6 or 7 && (car.pitStopStatus is 6 || car.Driver.rpm == 0))
                 {
                     ResetProperties(telemetry, i, name, car.Driver.rpm);
                     continue;
                 }
 
-                if (session.sessionType is not 6 or 7 && car.Driver.rpm == 0)
+                if (session.sessionType is not 6 or 7 && car.Driver.driverId == 0)
                 {
                     ResetProperties(telemetry, i, name, car.Driver.rpm);
                     continue;
@@ -689,7 +689,7 @@ namespace F1Manager2024Plugin
             UpdateValue($"{carName}_GapAhead", 0f);
             UpdateValue($"{carName}_GapToLeader", 0f);
 
-            if (rpm != 0 && telemetry.Car[i].Driver.driverId == 0)
+            if (telemetry.Car[i].Driver.driverId != 0)
             {
                 UpdateValue($"{carName}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_DriverLastName", TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId));

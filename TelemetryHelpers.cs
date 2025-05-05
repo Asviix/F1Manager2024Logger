@@ -463,7 +463,7 @@ namespace F1Manager2024Plugin
                 };
             }
 
-            if (sessionId is 8 or 7 && isFastest is true)
+            if ((sessionId is 6 or 7) && isFastest is true)
             {
                 basePoints += 1;
             }

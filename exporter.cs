@@ -43,7 +43,7 @@ namespace F1Manager2024Plugin
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "F1ManagerTelemetry");
 
-                string sessionFolder = Path.Combine(basePath, "exported_data", $"{trackName} {sessionType}");
+                string sessionFolder = Path.Combine(basePath, "exported_data", trackName, sessionType);
                 string carFolder = Path.Combine(sessionFolder, String.Join(" ", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId), TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId)));
 
                 // Set the number of cars on the grid.
@@ -61,8 +61,7 @@ namespace F1Manager2024Plugin
                 // Initialize file path for this driver if not exists
                 if (!_driverFilePaths.ContainsKey(carName))
                 {
-                    string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_{timestamp}.csv");
+                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_${trackName}_${sessionType}.csv");
                     _headersWritten[carName] = false;
                 }
 

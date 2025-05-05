@@ -23,6 +23,7 @@ using WoteverCommon.Extensions;
 using System.Linq.Expressions;
 using System.Xml.Linq;
 using SimHub.Plugins.OutputPlugins.Nextion.Roles;
+using Microsoft.Win32.TaskScheduler;
 
 namespace F1Manager2024Plugin
 {
@@ -310,7 +311,7 @@ namespace F1Manager2024Plugin
 
             public void UpdateSTSpeed(int speed, int lap, float distance, float STDistance)
             {
-                if (distance > STDistance && SpeedSTRecorded == false)
+                if (distance > (STDistance - 240) && distance < (STDistance + 240) && SpeedSTRecorded == false)
                 {
                     SpeedST = speed;
                     SpeedSTRecorded = true;
@@ -359,6 +360,9 @@ namespace F1Manager2024Plugin
 
         // Dictionary for the Standings
         public static readonly ConcurrentDictionary<int, string> CarPositions = new();
+
+        // Dictionary for the best lap times.
+        public static readonly ConcurrentDictionary<string, float> CarBestLapTimes = new();
 
         // Dictionary for the gaps to leader.
         public static readonly ConcurrentDictionary<int, float> GapsToLeader = new();
@@ -434,7 +438,7 @@ namespace F1Manager2024Plugin
             UpdateValue("TimeElapsed", session.timeElapsed);
             UpdateValue("LapsRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining);
             UpdateValue("TimeRemaining", TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining);
-            UpdateValue("BestSessionTime", session.bestSessionTime);
+            UpdateValue("BestSessionTime", TelemetryHelpers.GetBestSessionTime(telemetry));
             UpdateValue("BestS1Time", bestS1);
             UpdateValue("BestS2Time", bestS2);
             UpdateValue("BestS3Time", bestS3);
@@ -488,7 +492,7 @@ namespace F1Manager2024Plugin
                 {
                     UpdateHistoricalData(name, telemetry, i, CarsOnGrid);
 
-                    _exporter.ExportData(name, telemetry, i, Settings, _lastRecordedData[name].ToJson());
+                    _exporter.ExportData(name, telemetry, i, Settings, _lastRecordedData[name].ToJson(), bestS1, bestS2, bestS3);
                 }
 
 
@@ -513,6 +517,9 @@ namespace F1Manager2024Plugin
                 UpdateValue($"P{car.Driver.position + 1}_Car", name);
                 CarPositions.AddOrUpdate(car.Driver.position, name, (_, __) => name);
 
+                // Update best lap times dictionary
+                CarBestLapTimes.AddOrUpdate(name, car.Driver.driverBestLap, (_, __) => car.Driver.driverBestLap);
+
                 // Update Gap to Leader Dictionary
                 GapsToLeader.AddOrUpdate(
                     telemetry.Car[i].Driver.position,
@@ -529,7 +536,7 @@ namespace F1Manager2024Plugin
                 _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
-                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, (session.bestSessionTime == car.Driver.driverBestLap)));
+                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, (TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap)));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
                 UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
@@ -742,6 +749,7 @@ namespace F1Manager2024Plugin
                 if (currentLap != _lastRecordedData[carName].LastLapNumber)
                 {
                     _lastRecordedData[carName].NewLapStarted = true;
+                    _lastRecordedData[carName].SpeedSTRecorded = false;
                     _lastRecordedData[carName].LastLapNumber = currentLap;
                     _lastRecordedData[carName].LastTurnNumber = 0;
                     return true;
@@ -872,7 +880,7 @@ namespace F1Manager2024Plugin
                             TimeElapsed = t.Value.Session.timeElapsed,
                             TelemetryHelpers.GetSessionRemaining(telemetry, carNames).LapsRemaining,
                             TelemetryHelpers.GetSessionRemaining(telemetry, carNames).TimeRemaining,
-                            BestSessionTime = t.Value.Session.bestSessionTime,
+                            BestSessionTime = TelemetryHelpers.GetBestSessionTime(telemetry),
                             BestS1,
                             BestS2,
                             BestS3,
@@ -913,15 +921,19 @@ namespace F1Manager2024Plugin
                             FuelDelta = t.Value.Car[i].fuelDelta,
                             TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
                             TireAge = (t.Value.Car[i].currentLap + 1) - _lastRecordedData[carName].LastTireChangeLap,
+                            FLDeg = t.Value.Car[i].flWear,
                             FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,
                             FLTemp = t.Value.Car[i].flTemp,
                             FLBrakeTemp = t.Value.Car[i].flBrakeTemp,
+                            FRDeg = t.Value.Car[i].frWear,
                             FRSurfaceTemp = t.Value.Car[i].frSurfaceTemp,
                             FRTemp = t.Value.Car[i].frTemp,
                             FRBrakeTemp = t.Value.Car[i].frBrakeTemp,
+                            RLDeg = t.Value.Car[i].rlWear,
                             RLSurfaceTemp = t.Value.Car[i].rlSurfaceTemp,
                             RLTemp = t.Value.Car[i].rlTemp,
                             RLBrakeTemp = t.Value.Car[i].rlBrakeTemp,
+                            RRDeg = t.Value.Car[i].rrWear,
                             RRSurfaceTemp = t.Value.Car[i].rrSurfaceTemp,
                             RRTemp = t.Value.Car[i].rrTemp,
                             RRBrakeTemp = t.Value.Car[i].rrBrakeTemp,
@@ -966,7 +978,11 @@ namespace F1Manager2024Plugin
                     }
                 }
 
+                _lastRecordedData.Clear();
                 _carHistory.Clear();
+                CarPositions.Clear();
+                CarBestLapTimes.Clear();
+                GapsToLeader.Clear();
             }
             SimHub.Logging.Current.Info("Cleared all historical data due to session reset");
         }

@@ -169,7 +169,6 @@ namespace F1Manager2024Plugin
     {
         public float timeElapsed;
         public float rubber;
-        public float bestSessionTime;
         public int trackId;
         public int sessionType;
         public WeatherTelemetry Weather;

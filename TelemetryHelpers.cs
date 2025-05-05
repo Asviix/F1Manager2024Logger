@@ -396,6 +396,34 @@ namespace F1Manager2024Plugin
             }
         }
 
+        // Returns the best lap time of the session.
+        public static float GetBestSessionTime(Telemetry telemetry)
+        {
+            try
+            {
+                // Get all valid lap times (greater than 0)
+                var validLapTimes = F1ManagerPlotter.CarBestLapTimes
+                    .Where(kv => kv.Value > 0)
+                    .Select(kv => kv.Value)
+                    .ToList();
+
+                if (!validLapTimes.Any())
+                {
+                    // Fallback to P1's best lap if dictionary is empty
+                    var p1Car = telemetry.Car.FirstOrDefault(c => c.Driver.position == 0);
+                    return p1Car.Driver.driverBestLap;
+                }
+
+                return validLapTimes.Min();
+            }
+            catch
+            {
+                // Fallback to P1's best lap if there's an error
+                var p1Car = telemetry.Car.FirstOrDefault(c => c.Driver.position == 0);
+                return p1Car.Driver.driverBestLap;
+            }
+        }
+
         // Returns the points gains based on position and session type.
         public static int GetPointsGained(int position, int sessionId, bool isFastest)
         {

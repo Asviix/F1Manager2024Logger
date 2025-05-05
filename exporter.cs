@@ -31,7 +31,7 @@ namespace F1Manager2024Plugin
         public int CarsOnGrid = 22;
 
         // Exports Data to CSV Files depending on the chosen settings.
-        public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
+        public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData, float BestS1, float BestS2, float BestS3)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
@@ -154,7 +154,10 @@ namespace F1Manager2024Plugin
                     ["bestS3Time"] = lastRecordedData["BestS3Time"],
 
                     // Session info
-                    ["bestSessionTime"] = telemetry.Session.bestSessionTime,
+                    ["bestSessionTime"] = TelemetryHelpers.GetBestSessionTime(telemetry),
+                    ["bestS1Time"] = BestS1,
+                    ["bestS2Time"] = BestS2,
+                    ["bestS3Time"] = BestS3,
                     ["rubber"] = telemetry.Session.rubber,
                     ["airTemp"] = telemetry.Session.Weather.airTemp,
                     ["trackTemp"] = telemetry.Session.Weather.trackTemp,

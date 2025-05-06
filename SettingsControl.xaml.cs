@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -472,7 +472,7 @@ namespace F1Manager2024Plugin
 
         private async void CheckNewVersion(object sender, RoutedEventArgs e)
         {
-            if (Plugin.Settings.SavedVersion != Plugin.Settings.RequiredVersion)
+            if (Plugin.Settings.SavedVersion != Plugin.version)
             {
                 ResetSettingsToDefault();
 
@@ -488,8 +488,11 @@ namespace F1Manager2024Plugin
             Plugin.Settings.ExporterEnabled = defaults.ExporterEnabled;
             Plugin.Settings.ExporterPath = defaults.ExporterPath;
             Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
+            Plugin.Settings.TrackedDriversDashboard = defaults.TrackedDriversDashboard;
             Plugin.Settings.CustomTeamName = defaults.CustomTeamName;
-            Plugin.Settings.SavedVersion = defaults.SavedVersion;
+            Plugin.Settings.CustomTeamColor = defaults.CustomTeamColor;
+            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
+            Plugin.Settings.SavedVersion = Plugin.version;
 
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             Plugin.ReloadSettings(Plugin.Settings);

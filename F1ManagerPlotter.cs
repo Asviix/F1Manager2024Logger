@@ -1,4 +1,4 @@
-﻿using GameReaderCommon;
+using GameReaderCommon;
 using SimHub.Plugins;
 using Newtonsoft.Json;
 using System;
@@ -33,6 +33,7 @@ namespace F1Manager2024Plugin
     [PluginAuthor("Thomas DEFRANCE")]
     public class F1ManagerPlotter : IPlugin, IWPFSettingsV2
     {
+        public double version = 1.0; 
         public PluginManager PluginManager { get; set; }
 
         public F1Manager2024PluginSettings Settings;

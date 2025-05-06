@@ -1,4 +1,4 @@
-using GameReaderCommon;
+﻿using GameReaderCommon;
 using SimHub.Plugins;
 using Newtonsoft.Json;
 using System;
@@ -42,7 +42,7 @@ namespace F1Manager2024Plugin
         private DateTime _lastDataTime;
         private float _lastTimeElapsed;
         private readonly object _dataLock = new();
-        private Telemetry _lastData;
+        public Telemetry _lastData;
 
         private readonly float ExpectedCarValue = 8021.86f;
         private int CarsOnGrid = 22;
@@ -570,7 +570,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Fuel", car.fuel);
                 UpdateValue($"{name}_FuelDelta", car.fuelDelta);
                 // Tires
-                UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound));
+                UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound, Settings));
                 UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
                 UpdateValue($"{name}_flSurfaceTemp", car.flSurfaceTemp);
                 UpdateValue($"{name}_flTemp", car.flTemp);
@@ -920,7 +920,7 @@ namespace F1Manager2024Plugin
                             EnergySpent = t.Value.Car[i].energySpent,
                             Fuel = t.Value.Car[i].fuel,
                             FuelDelta = t.Value.Car[i].fuelDelta,
-                            TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound),
+                            TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound, Settings),
                             TireAge = (t.Value.Car[i].currentLap + 1) - _lastRecordedData[carName].LastTireChangeLap,
                             FLDeg = t.Value.Car[i].flWear,
                             FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -11,6 +11,9 @@ using System.Windows.Forms;
 using System.Linq.Expressions;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
 using log4net.Plugin;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 
 namespace F1Manager2024Plugin
 {
@@ -36,6 +39,42 @@ namespace F1Manager2024Plugin
             public DriverSelection Driver2 { get; set; }
         }
 
+        public class DriverDisplayItem
+        {
+            public string InternalName { get; set; }
+            public string DisplayName { get; set; }
+        }
+
+        public class TireMappingItem : INotifyPropertyChanged
+        {
+            public int Index { get; set; }
+
+            private string _selectedTireType;
+            public string SelectedTireType
+            {
+                get => _selectedTireType;
+                set
+                {
+                    _selectedTireType = value;
+                    OnPropertyChanged();
+                }
+            }
+
+            public List<string> AvailableTireTypes { get; } = new List<string>
+            {
+                "Soft", "Medium", "Hard", "Intermediates", "Wet"
+            };
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private DispatcherTimer _tireValueUpdateTimer;
+
         private void InitializeDriverSelection()
         {
             var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
@@ -57,6 +96,58 @@ namespace F1Manager2024Plugin
 
             DriversListBox.ItemsSource = teamsExporter;
             DriversListBoxDash.ItemsSource = teamsDash; // Different source for dashboard
+        }
+
+        private void InitializeTireMapping()
+        {
+            // Get driver names with real names
+            var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
+            var drivers = new List<DriverDisplayItem>();
+
+            foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
+            {
+                drivers.Add(new DriverDisplayItem
+                {
+                    InternalName = team.Driver1.Name,
+                    DisplayName = GetDisplayName(team.Driver1.Name, driverNames)
+                });
+                drivers.Add(new DriverDisplayItem
+                {
+                    InternalName = team.Driver2.Name,
+                    DisplayName = GetDisplayName(team.Driver2.Name, driverNames)
+                });
+            }
+
+            // Set up combo box
+            TireMappingDriverComboBox.DisplayMemberPath = "DisplayName";
+            TireMappingDriverComboBox.SelectedValuePath = "InternalName";
+            TireMappingDriverComboBox.ItemsSource = drivers;
+
+            // Select first driver by default if available
+            if (drivers.Count > 0)
+            {
+                TireMappingDriverComboBox.SelectedIndex = 0;
+            }
+
+            // Initialize tire mapping controls
+            var tireMappings = new List<TireMappingItem>();
+            for (int i = 0; i < Plugin.Settings.CustomTireEnum.Length; i++)
+            {
+                tireMappings.Add(new TireMappingItem
+                {
+                    Index = i,
+                    SelectedTireType = Plugin.Settings.CustomTireEnum[i]
+                });
+            }
+            TireMappingItemsControl.ItemsSource = tireMappings;
+
+            // Start timer for real-time updates
+            _tireValueUpdateTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1000)
+            };
+            _tireValueUpdateTimer.Tick += UpdateCurrentTireValue;
+            _tireValueUpdateTimer.Start();
         }
 
         private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
@@ -118,14 +209,21 @@ namespace F1Manager2024Plugin
 
         private string GetDisplayName(string internalName, Dictionary<string, (string First, string Last)> driverNames)
         {
-            driverNames.TryGetValue(internalName, out var nameTest);
-
-            if (nameTest.First is "Unknown")
+            if (driverNames.TryGetValue(internalName, out var name))
             {
-                return "Not Loaded";
+                // Handle cases where first or last name might be null or "Unknown"
+                var firstName = string.IsNullOrWhiteSpace(name.First) || name.First == "Unknown"
+                    ? string.Empty
+                    : name.First;
+                var lastName = string.IsNullOrWhiteSpace(name.Last) || name.Last == "Unknown"
+                    ? string.Empty
+                    : name.Last;
+
+                return $"{firstName} {lastName}".Trim();
             }
 
-            return driverNames.TryGetValue(internalName, out var name) ? $"{name.First} {name.Last}" : internalName;
+            // Fallback to internal name if no driver info found
+            return internalName;
         }
 
         // Main constructor with plugin parameter
@@ -138,6 +236,7 @@ namespace F1Manager2024Plugin
         {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
+            InitializeTireMapping();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
@@ -342,6 +441,123 @@ namespace F1Manager2024Plugin
             }
         }
 
+        private void ColorPickerButton_Click(object sender, RoutedEventArgs e)
+        {
+            var colorDialog = new System.Windows.Forms.ColorDialog
+            {
+                AllowFullOpen = true,
+                AnyColor = true,
+                FullOpen = true
+            };
+
+            // Set current color if one exists
+            if (!string.IsNullOrEmpty(Plugin.Settings.CustomTeamColor))
+            {
+                try
+                {
+                    var currentColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(Plugin.Settings.CustomTeamColor);
+                    colorDialog.Color = System.Drawing.Color.FromArgb(currentColor.A, currentColor.R, currentColor.G, currentColor.B);
+                }
+                catch
+                {
+                    // If there's an error parsing the color, just use default
+                }
+            }
+
+            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                var selectedColor = System.Windows.Media.Color.FromArgb(
+                    colorDialog.Color.A,
+                    colorDialog.Color.R,
+                    colorDialog.Color.G,
+                    colorDialog.Color.B);
+
+                TeamColorBrush = new System.Windows.Media.SolidColorBrush(selectedColor);
+                ColorHexText.Text = $"#{selectedColor.R:X2}{selectedColor.G:X2}{selectedColor.B:X2}";
+            }
+        }
+
+        public System.Windows.Media.Brush TeamColorBrush
+        {
+            get { return (System.Windows.Media.Brush)GetValue(TeamColorBrushProperty); }
+            set { SetValue(TeamColorBrushProperty, value); }
+        }
+
+        private void UpdateCurrentTireValue(object sender, EventArgs e)
+        {
+            if (TireMappingDriverComboBox.SelectedValue is string selectedDriver && Plugin != null)
+            {
+                // Find the driver in the telemetry data
+                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
+                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
+                {
+                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
+                }
+                else
+                {
+                    CurrentTireByteValueText.Text = "N/A";
+                }
+            }
+        }
+
+        private void TireMappingDriverComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TireMappingDriverComboBox.SelectedItem is string selectedDriver && Plugin != null)
+            {
+                // Find the driver in the telemetry data
+                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
+                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
+                {
+                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
+                }
+                else
+                {
+                    CurrentTireByteValueText.Text = "N/A";
+                }
+                UpdateCurrentTireValue(null, EventArgs.Empty);
+            }
+        }
+
+        private void ResetTireMappingButton_Click(object sender, RoutedEventArgs e)
+        {
+            var defaults = F1Manager2024PluginSettings.GetDefaults();
+
+            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
+            {
+                int i = 0;
+                foreach (var item in tireMappings)
+                {
+                    item.SelectedTireType = defaults.CustomTireEnum[i++];
+                }
+            }
+
+            // Also reset the settings
+            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
+        }
+
+        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (CustomTeamInput.Text.Length == 0)
+            {
+                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+
+            // Save tire mappings
+            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
+            {
+                Plugin.Settings.CustomTireEnum = tireMappings.Select(x => x.SelectedTireType).ToArray();
+            }
+
+            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
+            Plugin.Settings.CustomTeamColor = ColorHexText.Text;
+            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
+            Plugin.ReloadSettings(Plugin.Settings);
+
+            InitializeUI(Plugin);
+        }
+
         private void HistoricalDataDelete_Click(object sender, RoutedEventArgs e)
         {
             Plugin.ClearAllHistory();
@@ -406,69 +622,9 @@ namespace F1Manager2024Plugin
             }
         }
 
-        public System.Windows.Media.Brush TeamColorBrush
-        {
-            get { return (System.Windows.Media.Brush)GetValue(TeamColorBrushProperty); }
-            set { SetValue(TeamColorBrushProperty, value); }
-        }
-
         public static readonly DependencyProperty TeamColorBrushProperty =
             DependencyProperty.Register("TeamColorBrush", typeof(System.Windows.Media.Brush), typeof(SettingsControl),
             new PropertyMetadata(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)));
-
-        // Add this method for color picking
-        private void ColorPickerButton_Click(object sender, RoutedEventArgs e)
-        {
-            var colorDialog = new System.Windows.Forms.ColorDialog
-            {
-                AllowFullOpen = true,
-                AnyColor = true,
-                FullOpen = true
-            };
-
-            // Set current color if one exists
-            if (!string.IsNullOrEmpty(Plugin.Settings.CustomTeamColor))
-            {
-                try
-                {
-                    var currentColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(Plugin.Settings.CustomTeamColor);
-                    colorDialog.Color = System.Drawing.Color.FromArgb(currentColor.A, currentColor.R, currentColor.G, currentColor.B);
-                }
-                catch
-                {
-                    // If there's an error parsing the color, just use default
-                }
-            }
-
-            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                var selectedColor = System.Windows.Media.Color.FromArgb(
-                    colorDialog.Color.A,
-                    colorDialog.Color.R,
-                    colorDialog.Color.G,
-                    colorDialog.Color.B);
-
-                TeamColorBrush = new System.Windows.Media.SolidColorBrush(selectedColor);
-                ColorHexText.Text = $"#{selectedColor.R:X2}{selectedColor.G:X2}{selectedColor.B:X2}";
-            }
-        }
-
-        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
-        {
-            if (CustomTeamInput.Text.Length == 0)
-            {
-                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
-            }
-
-            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
-            Plugin.Settings.CustomTeamColor = ColorHexText.Text;
-            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-            Plugin.ReloadSettings(Plugin.Settings);
-
-            InitializeUI(Plugin);
-        }
 
         private async void CheckNewVersion(object sender, RoutedEventArgs e)
         {

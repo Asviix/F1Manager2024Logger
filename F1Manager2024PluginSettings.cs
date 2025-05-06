@@ -1,4 +1,4 @@
-using System.Security.Permissions;
+﻿using System.Security.Permissions;
 using System.Security.Policy;
 
 namespace F1Manager2024Plugin
@@ -11,6 +11,12 @@ namespace F1Manager2024Plugin
         public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string CustomTeamName { get; set; } = "MyTeam";
         public string CustomTeamColor { get; set; } = "#FFFFFF";
+        public string[] CustomTireEnum { get; set; } = 
+            new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
+                            "Medium", "Medium", "Medium",
+                            "Hard", "Hard",
+                            "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
+                            "Wet", "Wet"};
         public double SavedVersion { get; set; } = 0.6;
 
         public static F1Manager2024PluginSettings GetDefaults()
@@ -21,6 +27,12 @@ namespace F1Manager2024Plugin
                 ExporterPath = null,
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
+                CustomTireEnum =
+            new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
+                            "Medium", "Medium", "Medium",
+                            "Hard", "Hard",
+                            "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
+                            "Wet", "Wet"},
                 CustomTeamName = "MyTeam",
                 CustomTeamColor = "#FFFFFF",
             };

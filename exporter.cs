@@ -97,7 +97,7 @@ namespace F1Manager2024Plugin
                     ["gapBehind"] = TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
 
                     // Tyres
-                    ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound, Settings) ?? "",
                     ["tire_age"] = (telemetry.Car[i].currentLap + 1) - (int)lastRecordedData["LastTireChangeLap"],
                     ["flSurfaceTemp"] = telemetry.Car[i].flSurfaceTemp,
                     ["flTemp"] = telemetry.Car[i].flTemp,

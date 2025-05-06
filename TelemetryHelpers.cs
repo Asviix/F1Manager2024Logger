@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using SimHub.Plugins;
@@ -903,17 +904,13 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the Tire Compound based on ID.
-        public static string GetTireCompound(int compound)
+        public static string GetTireCompound(int compound, F1Manager2024PluginSettings Settings)
         {
-            return compound switch
+            if (compound >= 0 && compound < Settings.CustomTireEnum.Length)
             {
-                0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 => "Soft",
-                8 or 9 or 10 => "Medium",
-                11 or 12 => "Hard",
-                13 or 14 or 15 or 16 or 17 => "Intermediates",
-                18 or 19 => "Wet",
-                _ => "Unknown"
-            };
+                return Settings.CustomTireEnum[compound];
+            }
+            return "Unknown";
         }
 
         // Returns the Pace Mode based on ID.

@@ -12,6 +12,11 @@
 - Fixed a bug which would add a last turn recording of the data at the start of a new lap. ([`dc04456`](https://github.com/Asviix/F1Manager2024Logger/commit/dc04456ec25095e0820dd434f09a73fdda2a5b8d))
 - Fixed a bug where Driver's Best Sector Times wouldn't record. ([`9c75dd3`](https://github.com/Asviix/F1Manager2024Logger/commit/9c75dd35cba9bbad7031784e1b666c5ee75aba24))
 - Shortened Pit Stop Statuses for Ease of use. ([`ccf9c5f`](https://github.com/Asviix/F1Manager2024Logger/commit/ccf9c5fc632d8dca0a41766ce330dd59055052e4)) && ([`ac82bf3`](https://github.com/Asviix/F1Manager2024Logger/commit/ac82bf3694eac6a43c20efb442158ab0c047222e))
+- Fixed Grid size Logic. ([`1e2b41b`](https://github.com/Asviix/F1Manager2024Logger/commit/1e2b41b8fa1b2dd1bab375f96186b2f1fad5c5e2))
+- Fixed Points Gains. ([`41c584f`](https://github.com/Asviix/F1Manager2024Logger/commit/41c584f6a4aa8918b198108436b1c9bbb5285031))
+- Fixed Best Session Time not returning the correct data. ([`e490bb7`](https://github.com/Asviix/F1Manager2024Logger/commit/e490bb7468acb3ccc2fef9bb19e7ae105171ba01))
+- Change CSV Formatting and naming scheme. ([`df14dd8`](https://github.com/Asviix/F1Manager2024Logger/commit/df14dd811eb98e159f5c38e4478cb188f243eddc))
+- Updated the way a new version is checked. ([`90e43a9`](https://github.com/Asviix/F1Manager2024Logger/commit/90e43a9132056b777219754e335570f1ccaece8e))
 
 ### Added
 - Added Best Sector Times. ([`e6339e5`](https://github.com/Asviix/F1Manager2024Logger/commit/e6339e5ecdda9229053540f2dd854e011434bb88))

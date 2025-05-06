@@ -62,7 +62,7 @@ namespace F1Manager2024Plugin
 
             public List<string> AvailableTireTypes { get; } = new List<string>
             {
-                "Soft", "Medium", "Hard", "Intermediates", "Wet"
+                "Soft", "Medium", "Hard", "Intermediates", "Wet", "Not-Set"
             };
 
             public event PropertyChangedEventHandler PropertyChanged;

@@ -61,7 +61,7 @@ namespace F1Manager2024Plugin
                 // Initialize file path for this driver if not exists
                 if (!_driverFilePaths.ContainsKey(carName))
                 {
-                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_${trackName}_${sessionType}.csv");
+                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_{trackName}_{sessionType}.csv");
                     _headersWritten[carName] = false;
                 }
 
@@ -146,11 +146,11 @@ namespace F1Manager2024Plugin
                     ["driverBestLap"] = telemetry.Car[i].Driver.driverBestLap,
                     ["lastLapTime"] = telemetry.Car[i].Driver.lastLapTime,
                     ["lastS1Time"] = lastRecordedData["S1Time"],
-                    ["bestS1Time"] = lastRecordedData["BestS1Time"],
+                    ["driverBestS1Time"] = lastRecordedData["BestS1Time"],
                     ["lastS2Time"] = lastRecordedData["S2Time"],
-                    ["bestS2Time"] = lastRecordedData["BestS2Time"],
+                    ["driverBestS2Time"] = lastRecordedData["BestS2Time"],
                     ["lastS3Time"] = lastRecordedData["S3Time"],
-                    ["bestS3Time"] = lastRecordedData["BestS3Time"],
+                    ["driverBestS3Time"] = lastRecordedData["BestS3Time"],
 
                     // Session info
                     ["bestSessionTime"] = TelemetryHelpers.GetBestSessionTime(telemetry),

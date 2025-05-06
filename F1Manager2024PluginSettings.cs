@@ -16,8 +16,9 @@ namespace F1Manager2024Plugin
                             "Medium", "Medium", "Medium",
                             "Hard", "Hard",
                             "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
-                            "Wet", "Wet"};
-        public double SavedVersion { get; set; } = 0.6;
+                            "Wet", "Wet",
+                            "Not-Set", "Not-Set"};
+        public double SavedVersion { get; set; } = 1.0;
 
         public static F1Manager2024PluginSettings GetDefaults()
         {
@@ -28,11 +29,12 @@ namespace F1Manager2024Plugin
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
                 CustomTireEnum =
-            new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
-                            "Medium", "Medium", "Medium",
-                            "Hard", "Hard",
-                            "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
-                            "Wet", "Wet"},
+                    new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
+                                    "Medium", "Medium", "Medium",
+                                    "Hard", "Hard",
+                                    "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
+                                    "Wet", "Wet",
+                                    "Not-Set", "Not-Set"},
                 CustomTeamName = "MyTeam",
                 CustomTeamColor = "#FFFFFF",
             };

@@ -140,6 +140,12 @@ namespace F1Manager2024Plugin
                     ["fuelMode"] = TelemetryHelpers.GetFuelMode(telemetry.Car[i].fuelMode) ?? "",
                     ["ersMode"] = TelemetryHelpers.GetERSMode(telemetry.Car[i].ersMode) ?? "",
                     ["drsMode"] = TelemetryHelpers.GetDRSMode(telemetry.Car[i].Driver.drsMode) ?? "",
+                    ["ersAssist"] = Convert.ToBoolean(telemetry.Car[i].Driver.ERSAssist),
+                    ["driveCleanAir"] = Convert.ToBoolean(telemetry.Car[i].Driver.DriveCleanAir),
+                    ["avoidHighKerbs"] = Convert.ToBoolean(telemetry.Car[i].Driver.AvoidHighKerbs),
+                    ["dontFightTeammate"] = Convert.ToBoolean(telemetry.Car[i].Driver.DontFightTeammate),
+                    ["overtakeAggression"] = TelemetryHelpers.GetOvertakeMode(telemetry.Car[i].Driver.OvertakeAggression),
+                    ["defendApproach"] = TelemetryHelpers.GetDefendMode(telemetry.Car[i].Driver.DefendApproach),
 
                     // Timings
                     ["currentLapTime"] = telemetry.Car[i].Driver.currentLapTime,

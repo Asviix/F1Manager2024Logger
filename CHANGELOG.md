@@ -28,6 +28,12 @@
 - Added Best Sector Times of the Session. ([`7d0453d`](https://github.com/Asviix/F1Manager2024Logger/commit/7d0453d3cf9e2691956456f6cc8d00fb747d56dd))
 - Added Custom Team Colors. ([`80b8fe9`](https://github.com/Asviix/F1Manager2024Logger/commit/80b8fe9dc5bab27eea0e6f180378656981e347ba))
 - Added Custom Tire Enum Mapping. ([`17519ad`](https://github.com/Asviix/F1Manager2024Logger/commit/17519adeb2fbabad8a01ade0427c1f24fc91b557))
+- Added ERS Battle Assist Mode.
+- Added Overtake Aggression. ([``]())
+- Added Defend Approach.
+- Added Drive in Clean Air Mode.
+- Added Avoid High Risk Kerbs Mode.
+- Added Don't Fight Teammate Mode.
 
 ## BETA 0.5 - Everything is easier!
 

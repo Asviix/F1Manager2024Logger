@@ -154,6 +154,12 @@ namespace F1Manager2024Plugin
         public int gear;
         public int position;
         public int drsMode;
+        public int ERSAssist;
+        public int OvertakeAggression;
+        public int DefendApproach;
+        public int DriveCleanAir;
+        public int AvoidHighKerbs;
+        public int DontFightTeammate;
         public float driverBestLap;
         public float currentLapTime;
         public float lastLapTime;

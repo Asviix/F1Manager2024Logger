@@ -210,6 +210,12 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_FuelMode", GetType(), typeof(string), "Fuel Mode");
                 pluginManager.AddProperty($"{name}_ERSMode", GetType(), typeof(string), "ERS Mode");
                 pluginManager.AddProperty($"{name}_DRSMode", GetType(), typeof(string), "DRS Mode");
+                pluginManager.AddProperty($"{name}_ERSAssist", GetType(), typeof(string), "DRS Battle Assist");
+                pluginManager.AddProperty($"{name}_OvertakeAggression", GetType(), typeof(string), "Overtake Aggression");
+                pluginManager.AddProperty($"{name}_DefendApproach", GetType(), typeof(string), "Defend Approach");
+                pluginManager.AddProperty($"{name}_DriveCleanAir", GetType(), typeof(string), "Drive in Clean Air");
+                pluginManager.AddProperty($"{name}_AvoidHighKerbs", GetType(), typeof(string), "Avoid High Risk Kerbs");
+                pluginManager.AddProperty($"{name}_DontFightTeammate", GetType(), typeof(string), "Don't Fight Teammate");
 
                 // Components
                 pluginManager.AddProperty($"{name}_EngineTemp", GetType(), typeof(float), "Engine Temp");
@@ -593,6 +599,12 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_FuelMode", TelemetryHelpers.GetFuelMode(car.fuelMode));
                 UpdateValue($"{name}_ERSMode", TelemetryHelpers.GetERSMode(car.ersMode));
                 UpdateValue($"{name}_DRSMode", TelemetryHelpers.GetDRSMode(car.Driver.drsMode));
+                UpdateValue($"{name}_ERSAssist", Convert.ToBoolean(car.Driver.ERSAssist));
+                UpdateValue($"{name}_OvertakeAggression", TelemetryHelpers.GetOvertakeMode(car.Driver.OvertakeAggression));
+                UpdateValue($"{name}_DefendApproach", TelemetryHelpers.GetDefendMode(car.Driver.DefendApproach));
+                UpdateValue($"{name}_DriveCleanAir", Convert.ToBoolean(car.Driver.DriveCleanAir));
+                UpdateValue($"{name}_AvoidHighKerbs", Convert.ToBoolean(car.Driver.AvoidHighKerbs));
+                UpdateValue($"{name}_DontFightTeammate", Convert.ToBoolean(car.Driver.DontFightTeammate));
                 // Components
                 UpdateValue($"{name}_EngineTemp", car.engineTemp);
                 UpdateValue($"{name}_EngineDeg", car.engineWear);
@@ -942,6 +954,12 @@ namespace F1Manager2024Plugin
                             FuelMode = TelemetryHelpers.GetFuelMode(t.Value.Car[i].fuelMode),
                             ERSMode = TelemetryHelpers.GetERSMode(t.Value.Car[i].ersMode),
                             DRSMode = TelemetryHelpers.GetDRSMode(t.Value.Car[i].Driver.drsMode),
+                            ERSAssist = Convert.ToBoolean(t.Value.Car[i].Driver.ERSAssist),
+                            DriveCleanAir = Convert.ToBoolean(t.Value.Car[i].Driver.DriveCleanAir),
+                            AvoidHighKerbs = Convert.ToBoolean(t.Value.Car[i].Driver.AvoidHighKerbs),
+                            DontFightTeammate = Convert.ToBoolean(t.Value.Car[i].Driver.DontFightTeammate),
+                            OvertakeAggression = TelemetryHelpers.GetOvertakeMode(t.Value.Car[i].Driver.OvertakeAggression),
+                            DefendApproach = TelemetryHelpers.GetDefendMode(t.Value.Car[i].Driver.DefendApproach),
                             EngineTemp = t.Value.Car[i].engineTemp,
                             EngineWear = t.Value.Car[i].engineWear,
                             GearboxWear = t.Value.Car[i].gearboxWear,

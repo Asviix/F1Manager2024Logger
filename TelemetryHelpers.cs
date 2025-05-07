@@ -965,6 +965,30 @@ namespace F1Manager2024Plugin
             };
         }
 
+        // Returns the Overtake Aggression Mode based on ID.
+        public static string GetOvertakeMode(int overtakeMode)
+        {
+            return overtakeMode switch
+            {
+                0 => "Low",
+                1 => "Medium",
+                2 => "High",
+                _ => "Unknown"
+            };
+        }
+
+        // Returns the Defend Approach Mode based on ID.
+        public static string GetDefendMode(int defendMode)
+        {
+            return defendMode switch
+            {
+                0 => "Rarely Defend",
+                1 => "Neutral",
+                2 => "Always Defend",
+                _ => "Unknown"
+            };
+        }
+
         // Returns the name of the car Currently behind the driver in [i] position
         public static string GetNameOfCarBehind(int position, int i, string[] carNames, int CarsOnGrid)
         {

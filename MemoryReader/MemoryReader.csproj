@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <!-- Add these for better single-file behavior -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Include Memory.dll as content to ensure it gets published -->
+    <Content Include="..\..\Build_x64\Memory.dll" Link="Memory.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Use PackageReference for Windows Forms instead of direct reference -->
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.0-preview.3.25174.1" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0-preview.3.25173.2" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.0-preview.3.25171.5" />
+    
+    <!-- Add these if you're using memory-mapped files -->
+    <PackageReference Include="System.IO.MemoryMappedFiles" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Memory">
+      <HintPath>..\..\Build_x64\Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Windows.Forms.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+<ItemGroup>
+	<Content Include="icon.ico">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+</ItemGroup>
+
+  <!-- This ensures native DLLs are properly included in the single file -->
+  <ItemGroup>
+    <Content Update="**\*.dll" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

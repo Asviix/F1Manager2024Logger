@@ -28,7 +28,7 @@ using System.Threading;
 
 namespace F1Manager2024Plugin
 {
-    [PluginDescription("Plots telemetry from F1 Manager 2024 via memory-mapped file")]
+    [PluginDescription("Makes F1 Manager 2024 Data available in SimHub !")]
     [PluginName("F1 Manager 2024 Telemetry Plotter")]
     [PluginAuthor("Thomas DEFRANCE")]
     public class F1ManagerPlotter : IPlugin, IWPFSettingsV2

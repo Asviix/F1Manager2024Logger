@@ -139,7 +139,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY /Y /R "$(TargetDir)\$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"</PostBuildEvent>
+    <PostBuildEvent>XCOPY /Y /R "$(TargetDir)$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25" &amp;&amp; XCOPY /Y /R "$(TargetDir)$(TargetName)*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -210,12 +210,12 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_FuelMode", GetType(), typeof(string), "Fuel Mode");
                 pluginManager.AddProperty($"{name}_ERSMode", GetType(), typeof(string), "ERS Mode");
                 pluginManager.AddProperty($"{name}_DRSMode", GetType(), typeof(string), "DRS Mode");
-                pluginManager.AddProperty($"{name}_ERSAssist", GetType(), typeof(string), "DRS Battle Assist");
+                pluginManager.AddProperty($"{name}_ERSAssist", GetType(), typeof(bool), "DRS Battle Assist");
                 pluginManager.AddProperty($"{name}_OvertakeAggression", GetType(), typeof(string), "Overtake Aggression");
                 pluginManager.AddProperty($"{name}_DefendApproach", GetType(), typeof(string), "Defend Approach");
-                pluginManager.AddProperty($"{name}_DriveCleanAir", GetType(), typeof(string), "Drive in Clean Air");
-                pluginManager.AddProperty($"{name}_AvoidHighKerbs", GetType(), typeof(string), "Avoid High Risk Kerbs");
-                pluginManager.AddProperty($"{name}_DontFightTeammate", GetType(), typeof(string), "Don't Fight Teammate");
+                pluginManager.AddProperty($"{name}_DriveCleanAir", GetType(), typeof(bool), "Drive in Clean Air");
+                pluginManager.AddProperty($"{name}_AvoidHighKerbs", GetType(), typeof(bool), "Avoid High Risk Kerbs");
+                pluginManager.AddProperty($"{name}_DontFightTeammate", GetType(), typeof(bool), "Don't Fight Teammate");
 
                 // Components
                 pluginManager.AddProperty($"{name}_EngineTemp", GetType(), typeof(float), "Engine Temp");
@@ -694,6 +694,12 @@ namespace F1Manager2024Plugin
             UpdateValue($"{carName}_EngineDeg", 0f);
             UpdateValue($"{carName}_GearboxDeg", 0f);
             UpdateValue($"{carName}_ERSDeg", 0f);
+            UpdateValue($"{carName}_ERSAssist", false);
+            UpdateValue($"{carName}_OvertakeAggression", null);
+            UpdateValue($"{carName}_DefendApproach", null);
+            UpdateValue($"{carName}_DriveCleanAir", false);
+            UpdateValue($"{carName}_AvoidHighKerbs", false);
+            UpdateValue($"{carName}_DontFightTeammate", false);
 
             // Opponents Data
             UpdateValue($"{carName}_NameOfCarBehind", null);

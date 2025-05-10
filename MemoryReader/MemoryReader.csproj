@@ -13,6 +13,7 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
     <DebugType>embedded</DebugType>
+	<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,6 +55,9 @@
   <!-- This ensures native DLLs are properly included in the single file -->
   <ItemGroup>
     <Content Update="**\*.dll" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Release\net9.0-windows\win-x64\" />
   </ItemGroup>
 
 </Project>

@@ -2,21 +2,48 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.MemoryMappedFiles;
+using System.Linq.Expressions;
+using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
+using System.Speech.Synthesis.TtsEngine;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
 using Memory;
 
 namespace MemoryReader
 {
     class Program
     {
+
         const string ProcessName = "F1Manager24";
         const long MinMemoryUsage = 1024 * 1024 * 100; // 100MB
         const string MemoryMapName = "F1ManagerTelemetry";
         const int DriverCount = 22;
         const int UpdateRateHz = 5000; // 5000Hz
 
+        const string PluginName = "F1Manager2024Plugin.dll";
+        const string PDBName = "F1Manager2024Plugin.pdb";
+        const string SimHubEnvVar = "SIMHUB_INSTALL_PATH";
+        const string SimHubProcessName = "SimHubWPF";
+        const string SimHubExeName = "SimHubWPF.exe";
+
+        public static readonly List<string[]> _menuItems = new()
+        {
+            new[] { "Start" },
+            new[] { "Properties", "Documentation", "GitHub" },
+            new[] { "Discord", "Overtake" },
+            new[] { "Exit" }
+        };
+
+        public static (int row, int col) _cursor = (0, 0);
+
+
+        #region Constants
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct Telemetry
         {
@@ -111,181 +138,147 @@ namespace MemoryReader
             public int weather;
             public float waterOnTrack;
         }
+        #endregion
 
-        public static class SimHubPluginInstaller
+        private static readonly Mem _mem = new();
+        private static bool _isRunning = true;
+
+        static async Task Main(string[] args)
         {
-            const string PluginName = "F1Manager2024Plugin.dll";
-            const string PDBName = "F1Manager2024Plugin.pdb";
-            const string SimHubEnvVar = "SIMHUB_INSTALL_PATH";
-            const string SimHubProcessName = "SimHubWPF";
-            const string SimHubExeName = "SimHubWPF.exe";
+            Console.Title = "Memory Reader";
 
-            public static void EnsurePluginInstalled()
+            var updateChecker = new GitHubUpdateChecker();
+            bool hasUpdate = await updateChecker.CheckForUpdates();
+            while (_isRunning)
             {
-                try
+                Console.Clear();
+                Console.CursorVisible = false;
+                DisplayMenuHeader(hasUpdate);
+
+                var input = Console.ReadKey(true).Key;
+
+                switch (input)
                 {
-                    string simHubPath = GetSimHubPath();
-                    if (simHubPath == null)
-                    {
-                        Console.WriteLine("SimHub installation not found");
-                        return;
-                    }
+                    case ConsoleKey.UpArrow:
+                        _cursor.row = Math.Max(0, _cursor.row - 1);
+                        // Ensure column stays within bounds for new row
+                        _cursor.col = Math.Min(_cursor.col, _menuItems[_cursor.row].Length - 1);
+                        break;
 
-                    // Kill SimHub process if running
-                    KillSimHubProcess();
+                    case ConsoleKey.DownArrow:
+                        _cursor.row = Math.Min(_menuItems.Count - 1, _cursor.row + 1);
+                        // Ensure column stays within bounds for new row
+                        _cursor.col = Math.Min(_cursor.col, _menuItems[_cursor.row].Length - 1);
+                        break;
 
-                    bool shouldCopy = false;
+                    case ConsoleKey.LeftArrow:
+                        _cursor.col = Math.Max(0, _cursor.col - 1);
+                        break;
 
-                    string destPluginPath = Path.Combine(simHubPath, PluginName);
-                    string destPDBPath = Path.Combine(simHubPath, PDBName);
-                    string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
-                    string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
-                    string sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
+                    case ConsoleKey.RightArrow:
+                        _cursor.col = Math.Min(_menuItems[_cursor.row].Length - 1, _cursor.col + 1);
+                        break;
 
-                    if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
-                    {
-                        Console.WriteLine($"Source plugin file not found at: {sourcePluginPath}");
-                        return;
-                    }
-
-                    if (File.Exists(destPluginPath) && File.Exists(destPDBPath))
-                    {
-                        string destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
-                        if (sourceVersion != destVersion)
-                        {
-                            Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
-                            shouldCopy = true;
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Plugin not found in SimHub installation, copying...");
-                        shouldCopy = true;
-                    }
-
-                    if (shouldCopy)
-                    {
-                        try
-                        {
-                            // Force overwrite the file
-                            File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                            Thread.Sleep(500);
-                            File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                            Console.WriteLine($"Successfully installed plugin to: {destPluginPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error copying plugin: {ex.Message}");
-                            // Try again after a short delay in case of file locks
-                            Thread.Sleep(500);
-                            File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                            File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                            Console.WriteLine($"Successfully installed plugin on second attempt: {destPluginPath}");
-                        }
-                    }
-
-                    // Start SimHub
-                    StartSimHub(simHubPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error installing plugin: {ex.ToString()}");
+                    case ConsoleKey.Enter:
+                        ExecuteSelectedOption();
+                        break;
                 }
             }
 
-            private static bool KillSimHubProcess()
+            Console.WriteLine("\nSuccessfully stopped, you can close this window.");
+            Console.Read();
+        }
+
+        private static void DisplayMenuHeader(bool hasUpdate)
+        {
+            Console.Clear();
+
+            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   |", ("|", ConsoleColor.DarkRed), (@"  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  |", ("|", ConsoleColor.DarkRed), (@" |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ |", ("|", ConsoleColor.DarkRed), (@" | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _||", ("|", ConsoleColor.DarkRed), (@" |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _|", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  |", ("|", ConsoleColor.DarkRed), (@" |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       |", ("|", ConsoleColor.DarkRed), (@"         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      |", ("|", ConsoleColor.DarkRed), (@"        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      |", ("|", ConsoleColor.DarkRed), (@"        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      |", ("|", ConsoleColor.DarkRed), (@"         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"| - [EXIT]                                                                           |", ("|", ConsoleColor.DarkRed), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+
+            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.0");
+            if (hasUpdate)
             {
-                try
-                {
-                    Process[] processes = Process.GetProcessesByName(SimHubProcessName);
-                    if (processes.Length == 0) return false;
-
-                    Console.WriteLine($"Found {processes.Length} SimHub process(es), attempting to close...");
-
-                    foreach (Process process in processes)
-                    {
-                        try
-                        {
-                            process.Kill();
-                            Thread.Sleep(2000); // Wait up to 5 seconds for process to exit
-                            Console.WriteLine($"Successfully closed SimHub process (PID: {process.Id})");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error closing SimHub process (PID: {process.Id}): {ex.Message}");
-                        }
-                    }
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error checking for SimHub processes: {ex.Message}");
-                    return false;
-                }
+                MultiColorConsole.WriteCenteredColored($"A new version is available!", ("A new version is available!", ConsoleColor.Red));
             }
-
-            private static void StartSimHub(string simHubPath)
+            else
             {
-                try
-                {
-                    string simHubExePath = Path.Combine(simHubPath, SimHubExeName);
-                    if (!File.Exists(simHubExePath))
-                    {
-                        Console.WriteLine($"SimHub executable not found at: {simHubExePath}");
-                        Thread.Sleep(1000);
-                        return;
-                    }
-
-                    Process.Start(simHubExePath);
-                    Console.WriteLine("Successfully started SimHub");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error starting SimHub: {ex.Message}");
-                }
+                MultiColorConsole.WriteCenteredColored($"You are using the latest version.");
             }
+            Console.WriteLine();
+            MultiColorConsole.WriteCenteredColored($"Press the arrow keys to navigate, [ENTER] to select an option.");
+            Console.WriteLine();
+            MultiColorConsole.WriteCenteredColored($"Copyright Asviix 2025", ("Copyright Asviix 2025", ConsoleColor.DarkGray));
+        }
 
-            private static string? GetSimHubPath()
+        static void ExecuteSelectedOption()
+        {
+            string selected = _menuItems[_cursor.row][_cursor.col];
+            switch (selected)
             {
-                // 1. Check environment variable
-                string envPath = Environment.GetEnvironmentVariable(SimHubEnvVar, EnvironmentVariableTarget.User);
-                if (!string.IsNullOrEmpty(envPath)) return envPath;
+                case "Start":
+                    StartTelemetryReader();
+                    break;
 
-                // 2. Check common installation paths
-                string[] commonPaths = [
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SimHub"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "SimHub"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SimHub")
-                ];
+                case "Documentation": case "Properties":
+                    OpenDocumentation();
+                    break;
 
-                foreach (var path in commonPaths)
-                {
-                    if (Directory.Exists(path)) return path;
-                }
+                case "GitHub":
+                    OpenGitHub();
+                    break;
 
-                return null;
+                case "Discord":
+                    OpenDiscord();
+                    break;
+                
+                case "Overtake":
+                    OpenOvertake();
+                    break;
+
+                case "Exit":
+                    _isRunning = false;
+                    break;
             }
         }
 
-        private static readonly Mem _mem = new();
-
-        static void Main()
+        private static void StartTelemetryReader()
         {
-            Console.Title = "F1 Manager 2024 Memory Reader";
-            Console.WriteLine("F1ManagerTelemetryWriter starting...");
+            Console.Clear();
+            Console.WriteLine("Starting telemetry reader...\n");
 
+            EnsurePluginInstalled();
             Thread.Sleep(1000);
 
-            SimHubPluginInstaller.EnsurePluginInstalled();
-
-            Thread.Sleep(1000);
-
-            while (!AttachToHighMemoryProcess())
+            if (!AttachToHighMemoryProcess())
             {
-                Thread.Sleep(1000);
+                Console.WriteLine("\nFailed to attach to process. Returning to menu...");
+                Thread.Sleep(2000);
+                return;
             }
 
-            Console.WriteLine($"Attached to F1Manager24 process (ID: {_mem.GetProcIdFromName(ProcessName)})");
+            Console.WriteLine($"\nAttached to F1Manager24 process");
 
             using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
             using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
@@ -293,10 +286,11 @@ namespace MemoryReader
             byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
             int delay = 1000 / UpdateRateHz;
 
-            Console.WriteLine("----------\nMemory Map Created, Data is being sent to SimHub.\n----------");
-            Console.WriteLine("To Exit, press \"CTRL+C\" or Close to window.");
+            Console.WriteLine("\n----------\nMemory Map Created, Data is being sent to SimHub.\n----------");
+            Console.WriteLine("Press any key to stop and return to menu...");
 
-            while (true)
+            // Run until key is pressed
+            while (!Console.KeyAvailable)
             {
                 Telemetry telemetry = ReadTelemetry();
 
@@ -307,10 +301,92 @@ namespace MemoryReader
 
                 Thread.Sleep(delay);
             }
+
+            // Clear the key that was pressed
+            Console.ReadKey(true);
+        }
+
+        private static void OpenDocumentation()
+        {
+            string propertiesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "F1 Manager 2024 Telemetry Properties Reference.pdf");
+            string documentationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "F1 Manager 2024 Logger.pdf");
+
+            try
+            {
+                string selected = _menuItems[_cursor.row][_cursor.col];
+                switch (selected)
+                {
+                    case "Properties":
+                        if (File.Exists(propertiesPath))
+                        {
+                            Process.Start(new ProcessStartInfo(propertiesPath) { UseShellExecute = true });
+                        }
+                        else
+                        {
+                            Console.WriteLine("Properties file not found.");
+                        }
+                        break;
+                    case "Documentation":
+                        if (File.Exists(documentationPath))
+                        {
+                            Process.Start(new ProcessStartInfo(documentationPath) { UseShellExecute = true });
+                        }
+                        else
+                        {
+                            Console.WriteLine("Documentation file not found.");
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error opening documentation: {ex.Message}");
+            }
+        }
+
+        private static void OpenGitHub()
+        {
+            string url = "https://github.com/Asviix/F1Manager2024Logger";
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error opening GitHub: {ex.Message}");
+            }
+        }
+
+        private static void OpenDiscord()
+        {
+            string url = "https://discord.gg/gTMQJUNDxk";
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error opening Discord: {ex.Message}");
+            }
+        }
+
+        private static void OpenOvertake()
+        {
+            string url = "https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/";
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error opening Overtake: {ex.Message}");
+            }
         }
 
         static Telemetry ReadTelemetry()
         {
+
             var telemetry = new Telemetry
             {
                 Car = new CarTelemetry[DriverCount]
@@ -458,6 +534,283 @@ namespace MemoryReader
             {
                 Console.WriteLine($"Error attaching to process: {ex.Message}");
                 return false;
+            }
+        }
+
+        public static void EnsurePluginInstalled()
+        {
+            try
+            {
+                string simHubPath = GetSimHubPath();
+                if (simHubPath == null)
+                {
+                    Console.WriteLine("SimHub installation not found");
+                    return;
+                }
+
+                // Kill SimHub process if running
+                KillSimHubProcess();
+
+                bool shouldCopy = false;
+
+                string destPluginPath = Path.Combine(simHubPath, PluginName);
+                string destPDBPath = Path.Combine(simHubPath, PDBName);
+                string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
+                string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
+                string sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
+
+                if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
+                {
+                    Console.WriteLine($"Source plugin file not found at: {sourcePluginPath}");
+                    return;
+                }
+
+                if (File.Exists(destPluginPath) && File.Exists(destPDBPath))
+                {
+                    string destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
+                    if (sourceVersion != destVersion)
+                    {
+                        Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
+                        shouldCopy = true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Plugin not found in SimHub installation, copying...");
+                    shouldCopy = true;
+                }
+
+                if (shouldCopy)
+                {
+                    try
+                    {
+                        // Force overwrite the file
+                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
+                        Thread.Sleep(500);
+                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
+                        Console.WriteLine($"Successfully installed plugin to: {destPluginPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error copying plugin: {ex.Message}");
+                        // Try again after a short delay in case of file locks
+                        Thread.Sleep(500);
+                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
+                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
+                        Console.WriteLine($"Successfully installed plugin on second attempt: {destPluginPath}");
+                    }
+                }
+
+                // Start SimHub
+                //StartSimHub(simHubPath);
+                //DON'T FORGET TO UNCOMMENT THIS LINE
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error installing plugin: {ex.ToString()}");
+            }
+        }
+
+        private static bool KillSimHubProcess()
+        {
+            try
+            {
+                Process[] processes = Process.GetProcessesByName(SimHubProcessName);
+                if (processes.Length == 0) return false;
+
+                Console.WriteLine($"Found {processes.Length} SimHub process(es), attempting to close...");
+
+                foreach (Process process in processes)
+                {
+                    try
+                    {
+                        process.Kill();
+                        Thread.Sleep(2000); // Wait up to 5 seconds for process to exit
+                        Console.WriteLine($"Successfully closed SimHub process (PID: {process.Id})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error closing SimHub process (PID: {process.Id}): {ex.Message}");
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking for SimHub processes: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static void StartSimHub(string simHubPath)
+        {
+            try
+            {
+                string simHubExePath = Path.Combine(simHubPath, SimHubExeName);
+                if (!File.Exists(simHubExePath))
+                {
+                    Console.WriteLine($"SimHub executable not found at: {simHubExePath}");
+                    Thread.Sleep(1000);
+                    return;
+                }
+
+                Process.Start(simHubExePath);
+                Console.WriteLine("Successfully started SimHub");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error starting SimHub: {ex.Message}");
+            }
+        }
+
+        private static string? GetSimHubPath()
+        {
+            // 1. Check environment variable
+            string envPath = Environment.GetEnvironmentVariable(SimHubEnvVar, EnvironmentVariableTarget.User);
+            if (!string.IsNullOrEmpty(envPath)) return envPath;
+
+            // 2. Check common installation paths
+            string[] commonPaths = [
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SimHub"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "SimHub"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SimHub")
+            ];
+
+            foreach (var path in commonPaths)
+            {
+                if (Directory.Exists(path)) return path;
+            }
+
+            return null;
+        }
+
+        public static class MultiColorConsole
+        {
+            public static void WriteCenteredColored(string text, params (string text, ConsoleColor color)[] coloredParts)
+            {
+                int consoleWidth = Console.WindowWidth;
+                int totalLength = text.Length;
+                int startPos = (consoleWidth - totalLength) / 2;
+
+                if (startPos < 0) startPos = 0;
+
+                Console.SetCursorPosition(startPos, Console.CursorTop);
+
+                int currentIndex = 0;
+                foreach (var part in coloredParts)
+                {
+                    // Write any uncolored text before this part
+                    if (currentIndex < text.IndexOf(part.text, currentIndex))
+                    {
+                        Console.Write(text.Substring(currentIndex, text.IndexOf(part.text, currentIndex) - currentIndex));
+                    }
+
+                    // Write the colored part
+                    Console.ForegroundColor = part.color;
+                    Console.Write(part.text);
+                    Console.ResetColor();
+
+                    currentIndex = text.IndexOf(part.text, currentIndex) + part.text.Length;
+                }
+
+                // Write any remaining text
+                if (currentIndex < text.Length)
+                {
+                    Console.Write(text.Substring(currentIndex));
+                }
+
+                Console.WriteLine();
+            }
+        }
+    }
+
+    class GitHubUpdateChecker
+    {
+        private const string CurrentVersion = "0.4";
+        private const string RepoUrl = "https://github.com/Asviix/F1Manager2024Logger";
+
+        public async Task<bool> CheckForUpdates()
+        {
+            try
+            {
+                var latestVersion = await GetLatestVersion();
+
+                if (IsVersionNewer(latestVersion))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return true;
+            }
+        }
+
+        private async Task<string> GetLatestVersion()
+        {
+            using var httpClient = new HttpClient();
+
+            // GitHub requires a User-Agent header
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "MyAppUpdateChecker");
+
+            // Get the Atom feed for releases
+            var atomFeed = await httpClient.GetStringAsync($"{RepoUrl}/releases.atom");
+
+            // Parse the XML to get the latest version
+            var doc = XDocument.Parse(atomFeed);
+            var ns = XNamespace.Get("http://www.w3.org/2005/Atom");
+
+            // The first entry contains the latest release
+            var latestEntry = doc.Root.Element(ns + "entry");
+            if (latestEntry == null)
+                throw new Exception("No releases found in Atom feed");
+
+            // The title contains the version (format: "Release v1.2.3")
+            var title = latestEntry.Element(ns + "title")?.Value;
+            if (string.IsNullOrWhiteSpace(title))
+                throw new Exception("Could not parse release version");
+
+            // Extract version number (handles formats like "v1.2.3" or "Release 1.2.3")
+            return ExtractVersionFromTitle(title);
+        }
+
+        private string ExtractVersionFromTitle(string title)
+        {
+            // Handle different title formats:
+            // "Release v1.2.3"
+            // "v1.2.3"
+            // "1.2.3"
+
+            // Find the first sequence that looks like a version number
+            var start = title.IndexOf('v') + 1;
+            if (start == 0) start = title.IndexOf(' ') + 1;
+            if (start < 0) start = 0;
+
+            // Take everything from the version start to the end or next space
+            var end = title.IndexOf(' ', start);
+            if (end < 0) end = title.Length;
+
+            return title[start..end].Trim();
+        }
+
+        private bool IsVersionNewer(string latestVersion)
+        {
+            try
+            {
+                // Normalize versions by removing 'v' prefix
+                var current = Version.Parse(CurrentVersion.Substring(latestVersion.IndexOf('_')));
+                var latest = Version.Parse(latestVersion.Substring(latestVersion.IndexOf('_')));
+                return latest > current;
+            }
+            catch
+            {
+                // Fallback to string comparison if version parsing fails
+                return string.CompareOrdinal(latestVersion, CurrentVersion) > 0;
             }
         }
     }

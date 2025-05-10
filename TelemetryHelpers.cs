@@ -946,7 +946,7 @@ namespace F1Manager2024Plugin
             {
                 0 => "Neutral",
                 1 => "Harvest",
-                2 => "Standard",
+                2 => "Deploy",
                 3 => "Top Up",
                 _ => "Unknown"
             };
@@ -970,9 +970,9 @@ namespace F1Manager2024Plugin
         {
             return overtakeMode switch
             {
-                0 => "Low",
+                0 => "High",
                 1 => "Medium",
-                2 => "High",
+                2 => "Low",
                 _ => "Unknown"
             };
         }
@@ -982,9 +982,9 @@ namespace F1Manager2024Plugin
         {
             return defendMode switch
             {
-                0 => "Rarely Defend",
+                0 => "Always",
                 1 => "Neutral",
-                2 => "Always Defend",
+                2 => "Rarely",
                 _ => "Unknown"
             };
         }

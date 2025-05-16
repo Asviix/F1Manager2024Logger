@@ -1,16 +1,22 @@
-﻿using System.Security.Permissions;
-using System.Security.Policy;
-
-namespace F1Manager2024Plugin
+﻿namespace F1Manager2024Plugin
 {
     public class F1Manager2024PluginSettings
     {
         public bool ExporterEnabled { get; set; } = false;
         public string ExporterPath { get; set; } = null;
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
+        public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string CustomTeamName { get; set; } = "MyTeam";
-        public double SavedVersion { get; set; } = 0.5;
-        public double RequiredVersion { get; set; } = 0.5;
+        public string CustomTeamColor { get; set; } = "#FFFFFF";
+        public int pointScheme { get; set; } = 1;
+        public string[] CustomTireEnum { get; set; } = 
+            new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
+                            "Medium", "Medium", "Medium",
+                            "Hard", "Hard",
+                            "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
+                            "Wet", "Wet",
+                            "Not-Set", "Not-Set"};
+        public double SavedVersion { get; set; } = 1.0;
 
         public static F1Manager2024PluginSettings GetDefaults()
         {
@@ -19,8 +25,17 @@ namespace F1Manager2024Plugin
                 ExporterEnabled = false,
                 ExporterPath = null,
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
+                TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
+                pointScheme = 1,
+                CustomTireEnum =
+                    new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
+                                    "Medium", "Medium", "Medium",
+                                    "Hard", "Hard",
+                                    "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
+                                    "Wet", "Wet",
+                                    "Not-Set", "Not-Set"},
                 CustomTeamName = "MyTeam",
-                SavedVersion = 0.5
+                CustomTeamColor = "#FFFFFF",
             };
         }
     }

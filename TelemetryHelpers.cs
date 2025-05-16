@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SimHub.Plugins;
-using SimHub.Plugins.DataPlugins.ShakeItV3.UI.OutputSettings.Vibration;
 
 namespace F1Manager2024Plugin
 {
@@ -82,6 +77,135 @@ namespace F1Manager2024Plugin
                 26 => 5419f,
                 _ => 0f
             };
+        }
+
+        // Returns the number of turns in a track based on ID.
+        public static int GetTrackTurns(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0,
+                1 => 14,
+                2 => 15,
+                3 => 16,
+                4 => 20,
+                5 => 14,
+                6 => 19,
+                7 => 14,
+                8 => 15,
+                9 => 10,
+                10 => 18,
+                11 => 27,
+                12 => 14,
+                13 => 19,
+                14 => 11,
+                15 => 19,
+                16 => 18,
+                17 => 18,
+                18 => 17,
+                19 => 20,
+                20 => 15,
+                21 => 16,
+                22 => 19,
+                23 => 14,
+                24 => 19,
+                25 => 17,
+                26 => 16,
+                _ => 0
+            };
+        }
+
+        // Returns the distance in meters from the start-finish lines to the Speed Trap.
+        public static float GetSpeedTrapDistance(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0f,
+                1 => 231.402594f,
+                2 => 554.268687f,
+                3 => 4472.886543f,
+                4 => 5142.278267f,
+                5 => 599.251425f,
+                6 => 1859.776249f,
+                7 => 3550.89665f,
+                8 => 2580.680579f,
+                9 => 2014.860737f,
+                10 => 4858.272171f,
+                11 => 5301.036909f,
+                12 => 315.89929f,
+                13 => 1222.67089f,
+                14 => 664.830088f,
+                15 => 241.944879f,
+                16 => 1070.783823f,
+                17 => 5047.793003f,
+                18 => 957.583701f,
+                19 => 3552.430392f,
+                20 => 262.152169f,
+                21 => 2480.84897f,
+                22 => 4579.952002f,
+                23 => 570.120918f,
+                24 => 4197.11918f,
+                25 => 5018.287971f,
+                26 => 599.526241f,
+                _ => 0f
+            };
+        }
+
+        // Returns to average Pit Lane Time Loss based on ID.
+        public static float GetAveragePitLaneLoss(int trackId)
+        {
+            return trackId switch
+            {
+                0 => 0f,
+                1 => 19f,
+                2 => 23f,
+                3 => 25f,
+                4 => 19f,
+                5 => 23f,
+                6 => 20f,
+                7 => 22f,
+                8 => 0f,
+                9 => 22f,
+                10 => 22f,
+                11 => 20f,
+                12 => 21f,
+                13 => 17f,
+                14 => 25f,
+                15 => 28f,
+                16 => 0f,
+                17 => 23f,
+                18 => 25f,
+                19 => 21f,
+                20 => 23f,
+                21 => 21f,
+                22 => 21f,
+                23 => 21f,
+                24 => 29f,
+                25 => 17f,
+                26 => 24f,
+                _ => 0f
+            };
+        }
+
+        // Returns the estimated position after pitting.
+        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        {
+            if (telemetry.Session.sessionType is not 6 or 7) return 0;
+
+            if (!F1ManagerPlotter.GapsToLeader.TryGetValue(position, out float currentGapToLeader))
+            {
+                return position;
+            }
+
+            float pitLaneLoss = GetAveragePitLaneLoss(telemetry.Session.trackId);
+            float estimatedGapAfterPit = currentGapToLeader + pitLaneLoss;
+
+            int carsToPass = F1ManagerPlotter.GapsToLeader.Count(kv =>
+            kv.Key != position &&
+            kv.Value > currentGapToLeader &&
+            kv.Value <= estimatedGapAfterPit);
+
+            return Math.Min(position + 1 + carsToPass, CarsOnGrid);
         }
 
         // Returns the number of laps based on ID.
@@ -227,13 +351,13 @@ namespace F1Manager2024Plugin
                 3 => "Cloudy",
                 4 => "Light Rain",
                 5 => "Moderate Rain",
-                6 => "Heavy Rain",
+                16 => "Heavy Rain",
                 _ => "Unknown"
             };
         }
 
         // Returns 3 values, TimeRemaining, LapsRemaining and Mixed depending on what track and session type that session is.
-        public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, int CarsOnGrid)
+        public static (float TimeRemaining, float LapsRemaining, float Mixed) GetSessionRemaining(Telemetry telemetry, string[] carNames)
         {
             int sessionType = telemetry.Session.sessionType;
             int trackId = telemetry.Session.trackId;
@@ -243,7 +367,7 @@ namespace F1Manager2024Plugin
             if (sessionType == 6 || sessionType == 7)
             {
                 // Looks for the car in first position (Laps update based on the leader's position)
-                for (int j = 0; j < CarsOnGrid; j++)
+                for (int j = 0; j < carNames.Length; j++)
                 {
                     if (telemetry.Car[j].Driver.position == 0)
                     {
@@ -264,6 +388,88 @@ namespace F1Manager2024Plugin
                 float timeRemaining =   sessionDuration - telemetry.Session.timeElapsed;
                 return (timeRemaining, 0, timeRemaining);
             }
+        }
+
+        // Returns the best lap time of the session.
+        public static float GetBestSessionTime(Telemetry telemetry)
+        {
+            try
+            {
+                // Get all valid lap times (greater than 0)
+                var validLapTimes = F1ManagerPlotter.CarBestLapTimes
+                    .Where(kv => kv.Value > 0)
+                    .Select(kv => kv.Value)
+                    .ToList();
+
+                if (!validLapTimes.Any())
+                {
+                    // Fallback to P1's best lap if dictionary is empty
+                    var p1Car = telemetry.Car.FirstOrDefault(c => c.Driver.position == 0);
+                    return p1Car.Driver.driverBestLap;
+                }
+
+                return validLapTimes.Min();
+            }
+            catch
+            {
+                // Fallback to P1's best lap if there's an error
+                var p1Car = telemetry.Car.FirstOrDefault(c => c.Driver.position == 0);
+                return p1Car.Driver.driverBestLap;
+            }
+        }
+
+        // Returns the points gains based on position and session type.
+        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024PluginSettings Settings)
+        {
+            // No points if position is invalid (<= 0 or beyond F1's point system)
+            if (position <= 0 || position > 22)
+                return 0;
+
+            int[] pointTableScheme1 = { 0, 25, 18, 15, 12, 10, 8, 6, 4, 2, 1 }; // Positions 1-10
+            int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
+            int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
+
+            int[] pointTable = Settings.pointScheme switch
+            {
+                1 => pointTableScheme1,
+                2 => pointTableScheme2,
+                3 => pointTableScheme3,
+                _ => pointTableScheme1 // Default to F1 points
+            };
+
+            int basePoints = 0;
+
+            if (sessionId == 6) // Race
+            {
+                // Only award points for positions covered by the point table
+                if (position < pointTable.Length)
+                    basePoints = pointTable[position];
+                else
+                    basePoints = 0; // Positions 11+ get 0
+            }
+            else if (sessionId == 7) // Sprint
+            {
+                basePoints = position switch
+                {
+                    1 => 8,
+                    2 => 7,
+                    3 => 6,
+                    4 => 5,
+                    5 => 4,
+                    6 => 3,
+                    7 => 2,
+                    8 => 1,
+                    _ => 0 // Positions 9+ get 0
+                };
+            }
+
+            // +1 point for fastest lap (only if in top 10)
+            if ((sessionId is 6 or 7) && isFastest && position <= 10)
+            {
+                basePoints += 1;
+            }
+
+            return basePoints;
         }
 
         // Returns the Driver's First Name based on ID.
@@ -648,12 +854,40 @@ namespace F1Manager2024Plugin
             };
         }
 
-        // Returns the PitStop State based on ID.
-        public static string GetPitStopStatus(int pitStop)
+        // Returns the Team's Color based on ID.
+        public static string GetTeamColor(int teamId, F1Manager2024PluginSettings Settings)
         {
+            if (Settings.CustomTeamColor != null && teamId == 32) return Settings.CustomTeamColor;
+
+            return teamId switch
+            {
+                1 => "#e80030",
+                2 => "#ff8300",
+                3 => "#3974c7",
+                4 => "#2af4d3",
+                5 => "#0095cd",
+                6 => "#67c5ff",
+                7 => "#b8bcbf",
+                8 => "#6994ff",
+                9 => "#55e355",
+                10 => "#249b74",
+                32 => "#FFFFFF",
+                _ => "#FFFFFF",
+            };
+        }
+
+        // Returns the PitStop State based on ID.
+        public static string GetPitStopStatus(int pitStop, int sessionType)
+        {
+            string None = "None";
+            if (sessionType is 6 or 7)
+            {
+                None = "On Track";
+            }
+
             return pitStop switch
             {
-                0 => "None",
+                0 => None,
                 1 => "Requested",
                 2 => "Entering",
                 3 => "Queuing",
@@ -663,25 +897,21 @@ namespace F1Manager2024Plugin
                 7 => "Jack Up",
                 8 => "Releasing",
                 9 => "Car Setup",
-                10 => "Pit Stop Approach",
-                11 => "Pit Stop Penalty",
-                12 => "Waiting for Release",
+                10 => "Approach",
+                11 => "Penalty",
+                12 => "Releasing",
                 _ => "Unknown"
             };
         }
 
         // Returns the Tire Compound based on ID.
-        public static string GetTireCompound(int compound)
+        public static string GetTireCompound(int compound, F1Manager2024PluginSettings Settings)
         {
-            return compound switch
+            if (compound >= 0 && compound < Settings.CustomTireEnum.Length)
             {
-                0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 => "Soft",
-                8 or 9 or 10 => "Medium",
-                11 or 12 => "Hard",
-                13 or 14 or 15 or 16 or 17 => "Intermediated",
-                18 or 19 => "Wet",
-                _ => "Unknown"
-            };
+                return Settings.CustomTireEnum[compound];
+            }
+            return "Unknown";
         }
 
         // Returns the Pace Mode based on ID.
@@ -717,7 +947,7 @@ namespace F1Manager2024Plugin
             {
                 0 => "Neutral",
                 1 => "Harvest",
-                2 => "Standard",
+                2 => "Deploy",
                 3 => "Top Up",
                 _ => "Unknown"
             };
@@ -732,6 +962,30 @@ namespace F1Manager2024Plugin
                 1 => "Detected",
                 2 => "Enabled",
                 3 => "Active",
+                _ => "Unknown"
+            };
+        }
+
+        // Returns the Overtake Aggression Mode based on ID.
+        public static string GetOvertakeMode(int overtakeMode)
+        {
+            return overtakeMode switch
+            {
+                0 => "High",
+                1 => "Medium",
+                2 => "Low",
+                _ => "Unknown"
+            };
+        }
+
+        // Returns the Defend Approach Mode based on ID.
+        public static string GetDefendMode(int defendMode)
+        {
+            return defendMode switch
+            {
+                0 => "Always",
+                1 => "Neutral",
+                2 => "Rarely",
                 _ => "Unknown"
             };
         }
@@ -753,7 +1007,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the name of the car Currently ahead the driver in [i] position
-        public static string GetNameOfCarAhead(int position, int i, string[] carNames, int CarsOnGrid)
+        public static string GetNameOfCarAhead(int position, int i, string[] carNames)
         {
             if (position == 0) return carNames[i];
 
@@ -800,7 +1054,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the gap of the car ahead of the driver in [i] position
-        public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapInFront(Telemetry telemetry, int position, int i, string[] carNames)
         {
             // Handle first position cases
             if (position == 0)
@@ -836,7 +1090,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the gap to the leader of the driver in [i] position
-        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static float GetGapLeader(Telemetry telemetry, int position, int i, string[] carNames)
         {
             // Handle first position cases
             if (position == 0)
@@ -851,7 +1105,7 @@ namespace F1Manager2024Plugin
 
                     if (string.IsNullOrEmpty(carLeader)) return 0f;
 
-                // Find the index of the car behind
+                // Find the index of the lead car
                 int behindIndex = Array.IndexOf(carNames, carLeader);
                 if (behindIndex == -1) return 0f;
 

@@ -1,10 +1,9 @@
-/src/LoggingTable.CT
-/src/F1Manager_Telemetry
 .vs/
 obj/
 bin/
 /CustomDialog.xaml
 /CustomDialog.xaml.cs
+/importdata.py
 
 # Prerequisites
 *.d

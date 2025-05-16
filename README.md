@@ -61,6 +61,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Thanks to the F1 Manager community for feedback and testing
 - Inspired by similar tools for other racing games
+- FastF1 ([GitHub](https://github.com/theOehrly/Fast-F1)) for providing such precious data to interpolate into the game!
 
 ## Donations
 

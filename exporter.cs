@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime;
 using Newtonsoft.Json.Linq;
-using SimHub.Plugins;
 
 namespace F1Manager2024Plugin
 {
     public class Exporter
     {
-        private readonly Dictionary<string, string> _driverFilePaths = new Dictionary<string, string>();
-        private readonly Dictionary<string, bool> _headersWritten = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _driverFilePaths = new();
+        private readonly Dictionary<string, bool> _headersWritten = new();
 
         public readonly string[] carNames = new string[]
         {
@@ -31,19 +29,19 @@ namespace F1Manager2024Plugin
         public int CarsOnGrid = 22;
 
         // Exports Data to CSV Files depending on the chosen settings.
-        public void ExportData(PluginManager pluginManager, string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData)
+        public void ExportData(string carName, Telemetry telemetry, int i, F1Manager2024PluginSettings Settings, string _lastRecordedData, float BestS1, float BestS2, float BestS3)
         {
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
             {
-                string trackName = TelemetryHelpers.GetTrackName(telemetry.Session.trackId);
-                string sessionType = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType);
+                string trackName = TelemetryHelpers.GetTrackName(telemetry.Session.trackId) ?? "UnknownTrack";
+                string sessionType = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType) ?? "UnknownSession";
 
                 string basePath = Settings.ExporterPath ?? Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "F1ManagerTelemetry");
 
-                string sessionFolder = Path.Combine(basePath, "exported_data", $"{trackName} {sessionType}");
+                string sessionFolder = Path.Combine(basePath, "exported_data", trackName, sessionType);
                 string carFolder = Path.Combine(sessionFolder, String.Join(" ", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId), TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId)));
 
                 // Set the number of cars on the grid.
@@ -61,9 +59,10 @@ namespace F1Manager2024Plugin
                 // Initialize file path for this driver if not exists
                 if (!_driverFilePaths.ContainsKey(carName))
                 {
-                    string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_{timestamp}.csv");
-                    _headersWritten[carName] = false;
+                    string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                    string path = Path.Combine(carFolder, $"{timestamp}_{carName}_Telemetry_{trackName}_{sessionType}.csv");
+                    _driverFilePaths[carName] = path;
+                    _headersWritten[carName] = File.Exists(path) && new FileInfo(path).Length > 0;
                 }
 
                 string filePath = _driverFilePaths[carName];
@@ -79,26 +78,26 @@ namespace F1Manager2024Plugin
                     ["trackName"] = TelemetryHelpers.GetTrackName(telemetry.Session.trackId) ?? "",
                     ["sessionType"] = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType) ?? "",
                     ["timeElapsed"] = telemetry.Session.timeElapsed,
-                    ["Laps/Time Remaining"] = TelemetryHelpers.GetSessionRemaining(telemetry, CarsOnGrid).Mixed,
+                    ["Laps/Time Remaining"] = TelemetryHelpers.GetSessionRemaining(telemetry, carNames).Mixed,
 
                     // Driver info
                     ["driverNumber"] = telemetry.Car[i].Driver.driverNumber,
                     ["driverFirstName"] = TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId) ?? "",
                     ["driverLastName"] = TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId) ?? "",
                     ["teamName"] = TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings) ?? "",
-                    ["pitstopStatus"] = TelemetryHelpers.GetPitStopStatus(telemetry.Car[i].pitStopStatus) ?? "",
+                    ["pitstopStatus"] = TelemetryHelpers.GetPitStopStatus(telemetry.Car[i].pitStopStatus, telemetry.Session.sessionType) ?? "",
                     ["currentLap"] = telemetry.Car[i].currentLap + 1, // Adjust for index
-                    ["turnNumber"] = telemetry.Car[i].Driver.turnNumber,
+                    ["turnNumber"] = lastRecordedData["LastTurnNumber"],
                     ["distanceTravelled"] = telemetry.Car[i].Driver.distanceTravelled,
                     ["position"] = telemetry.Car[i].Driver.position + 1, // Adjust for 0-based index
-                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
-                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
+                    ["gapToLeader"] = TelemetryHelpers.GetGapLeader(telemetry, telemetry.Car[i].Driver.position, i, carNames),
+                    ["carInFront"] = TelemetryHelpers.GetNameOfCarAhead(telemetry.Car[i].Driver.position, i, carNames),
+                    ["gapInFront"] = TelemetryHelpers.GetGapInFront(telemetry, telemetry.Car[i].Driver.position, i, carNames),
                     ["carBehind"] = TelemetryHelpers.GetNameOfCarBehind(telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
                     ["gapBehind"] = TelemetryHelpers.GetGapBehind(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid),
 
                     // Tyres
-                    ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound) ?? "",
+                    ["compound"] = TelemetryHelpers.GetTireCompound(telemetry.Car[i].tireCompound, Settings) ?? "",
                     ["tire_age"] = (telemetry.Car[i].currentLap + 1) - (int)lastRecordedData["LastTireChangeLap"],
                     ["flSurfaceTemp"] = telemetry.Car[i].flSurfaceTemp,
                     ["flTemp"] = telemetry.Car[i].flTemp,
@@ -119,6 +118,7 @@ namespace F1Manager2024Plugin
 
                     // Car telemetry
                     ["speed"] = telemetry.Car[i].Driver.speed,
+                    ["SpeedST"] = lastRecordedData["SpeedST"],
                     ["rpm"] = telemetry.Car[i].Driver.rpm,
                     ["gear"] = telemetry.Car[i].Driver.gear,
 
@@ -140,36 +140,47 @@ namespace F1Manager2024Plugin
                     ["fuelMode"] = TelemetryHelpers.GetFuelMode(telemetry.Car[i].fuelMode) ?? "",
                     ["ersMode"] = TelemetryHelpers.GetERSMode(telemetry.Car[i].ersMode) ?? "",
                     ["drsMode"] = TelemetryHelpers.GetDRSMode(telemetry.Car[i].Driver.drsMode) ?? "",
+                    ["ersAssist"] = Convert.ToBoolean(telemetry.Car[i].Driver.ERSAssist),
+                    ["driveCleanAir"] = Convert.ToBoolean(telemetry.Car[i].Driver.DriveCleanAir),
+                    ["avoidHighKerbs"] = Convert.ToBoolean(telemetry.Car[i].Driver.AvoidHighKerbs),
+                    ["dontFightTeammate"] = Convert.ToBoolean(telemetry.Car[i].Driver.DontFightTeammate),
+                    ["overtakeAggression"] = TelemetryHelpers.GetOvertakeMode(telemetry.Car[i].Driver.OvertakeAggression),
+                    ["defendApproach"] = TelemetryHelpers.GetDefendMode(telemetry.Car[i].Driver.DefendApproach),
 
                     // Timings
                     ["currentLapTime"] = telemetry.Car[i].Driver.currentLapTime,
                     ["driverBestLap"] = telemetry.Car[i].Driver.driverBestLap,
                     ["lastLapTime"] = telemetry.Car[i].Driver.lastLapTime,
-                    ["lastS1Time"] = telemetry.Car[i].Driver.lastS1Time,
-                    ["lastS2Time"] = telemetry.Car[i].Driver.lastS2Time,
-                    ["lastS3Time"] = telemetry.Car[i].Driver.lastS3Time,
+                    ["lastS1Time"] = lastRecordedData["S1Time"],
+                    ["driverBestS1Time"] = lastRecordedData["BestS1Time"],
+                    ["lastS2Time"] = lastRecordedData["S2Time"],
+                    ["driverBestS2Time"] = lastRecordedData["BestS2Time"],
+                    ["lastS3Time"] = lastRecordedData["S3Time"],
+                    ["driverBestS3Time"] = lastRecordedData["BestS3Time"],
 
                     // Session info
-                    ["bestSessionTime"] = telemetry.Session.bestSessionTime,
+                    ["bestSessionTime"] = TelemetryHelpers.GetBestSessionTime(telemetry),
+                    ["bestS1Time"] = BestS1,
+                    ["bestS2Time"] = BestS2,
+                    ["bestS3Time"] = BestS3,
                     ["rubber"] = telemetry.Session.rubber,
                     ["airTemp"] = telemetry.Session.Weather.airTemp,
                     ["trackTemp"] = telemetry.Session.Weather.trackTemp,
-                    ["weather"] = TelemetryHelpers.GetWeather(telemetry.Session.Weather.weather) ?? ""
+                    ["weather"] = TelemetryHelpers.GetWeather(telemetry.Session.Weather.weather) ?? "",
+                    ["waterOnTrack"] = telemetry.Session.Weather.waterOnTrack
                 };
 
                 // Write to CSV
-                using (var writer = new StreamWriter(filePath, true))
+                using var writer = new StreamWriter(filePath, true);
+                if (!headersWritten)
                 {
-                    if (!headersWritten)
-                    {
-                        // Write headers in the specified order
-                        writer.WriteLine(string.Join(",", telemetryData.Keys));
-                        _headersWritten[carName] = true;
-                    }
-
-                    // Write values in the same order as headers
-                    writer.WriteLine(string.Join(",", telemetryData.Values.Select(v => EscapeCsvValue(v?.ToString()))));
+                    // Write headers in the specified order
+                    writer.WriteLine(string.Join(",", telemetryData.Keys));
+                    _headersWritten[carName] = true;
                 }
+
+                // Write values in the same order as headers
+                writer.WriteLine(string.Join(",", telemetryData.Values.Select(v => EscapeCsvValue(v?.ToString()))));
             }
             catch (Exception ex)
             {

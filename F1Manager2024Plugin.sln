@@ -5,7 +5,7 @@ VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "F1Manager2024Plugin", "F1Manager2024Plugin.csproj", "{833040C9-FE5E-4CCF-B21D-71979E049B6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryReader", "..\MemoryReader\MemoryReader.csproj", "{970575DD-7D53-1E35-EDA7-21D04A9F04FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryReader", "MemoryReader\MemoryReader.csproj", "{C9937916-B286-A0DB-1EE7-219F990466B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{970575DD-7D53-1E35-EDA7-21D04A9F04FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{970575DD-7D53-1E35-EDA7-21D04A9F04FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{970575DD-7D53-1E35-EDA7-21D04A9F04FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{970575DD-7D53-1E35-EDA7-21D04A9F04FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9937916-B286-A0DB-1EE7-219F990466B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9937916-B286-A0DB-1EE7-219F990466B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9937916-B286-A0DB-1EE7-219F990466B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9937916-B286-A0DB-1EE7-219F990466B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

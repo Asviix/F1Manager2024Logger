@@ -298,8 +298,8 @@ namespace MemoryReader
 
         private static void OpenDocumentation()
         {
-            string propertiesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "F1 Manager 2024 Telemetry Properties Reference.pdf");
-            string documentationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "F1 Manager 2024 Logger.pdf");
+            string propertiesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Properties.pdf");
+            string documentationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Documentation.pdf");
 
             try
             {

@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading.Tasks;
-using SimHub.Plugins;
-using SimHub.Plugins.DataPlugins.ShakeItV3.UI.OutputSettings.Vibration;
-using static F1Manager2024Plugin.F1ManagerPlotter;
 
 namespace F1Manager2024Plugin
 {
@@ -426,27 +419,35 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024PluginSettings Settings)
         {
-            int basePoints = 0;
-            if (sessionId is 6)
+            // No points if position is invalid (<= 0 or beyond F1's point system)
+            if (position <= 0 || position > 22)
+                return 0;
+
+            int[] pointTableScheme1 = { 0, 25, 18, 15, 12, 10, 8, 6, 4, 2, 1 }; // Positions 1-10
+            int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
+            int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
+
+            int[] pointTable = Settings.pointScheme switch
             {
-                basePoints = position switch
-                {
-                    1 => 25,
-                    2 => 18,
-                    3 => 15,
-                    4 => 12,
-                    5 => 10,
-                    6 => 8,
-                    7 => 6,
-                    8 => 4,
-                    9 => 2,
-                    10 => 1,
-                    _ => 0
-                };
+                1 => pointTableScheme1,
+                2 => pointTableScheme2,
+                3 => pointTableScheme3,
+                _ => pointTableScheme1 // Default to F1 points
+            };
+
+            int basePoints = 0;
+
+            if (sessionId == 6) // Race
+            {
+                // Only award points for positions covered by the point table
+                if (position < pointTable.Length)
+                    basePoints = pointTable[position];
+                else
+                    basePoints = 0; // Positions 11+ get 0
             }
-            else if (sessionId is 7)
+            else if (sessionId == 7) // Sprint
             {
                 basePoints = position switch
                 {
@@ -458,16 +459,16 @@ namespace F1Manager2024Plugin
                     6 => 3,
                     7 => 2,
                     8 => 1,
-                    9 => 0,
-                    10 => 0,
-                    _ => 0
+                    _ => 0 // Positions 9+ get 0
                 };
             }
 
-            if ((sessionId is 6 or 7) && isFastest is true)
+            // +1 point for fastest lap (only if in top 10)
+            if ((sessionId is 6 or 7) && isFastest && position <= 10)
             {
                 basePoints += 1;
             }
+
             return basePoints;
         }
 

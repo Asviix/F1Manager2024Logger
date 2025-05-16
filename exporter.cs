@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime;
 using Newtonsoft.Json.Linq;
-using SimHub.Plugins;
 
 namespace F1Manager2024Plugin
 {
@@ -36,8 +34,8 @@ namespace F1Manager2024Plugin
             if (!Settings.ExporterEnabled || !Settings.TrackedDrivers.Contains(carName)) return; // Return if Exporter isn't Enabled of car isn't Tracked.
             try
             {
-                string trackName = TelemetryHelpers.GetTrackName(telemetry.Session.trackId);
-                string sessionType = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType);
+                string trackName = TelemetryHelpers.GetTrackName(telemetry.Session.trackId) ?? "UnknownTrack";
+                string sessionType = TelemetryHelpers.GetSessionType(telemetry.Session.sessionType) ?? "UnknownSession";
 
                 string basePath = Settings.ExporterPath ?? Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -61,8 +59,10 @@ namespace F1Manager2024Plugin
                 // Initialize file path for this driver if not exists
                 if (!_driverFilePaths.ContainsKey(carName))
                 {
-                    _driverFilePaths[carName] = Path.Combine(carFolder, $"{carName}_Telemetry_{trackName}_{sessionType}.csv");
-                    _headersWritten[carName] = false;
+                    string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                    string path = Path.Combine(carFolder, $"{timestamp}_{carName}_Telemetry_{trackName}_{sessionType}.csv");
+                    _driverFilePaths[carName] = path;
+                    _headersWritten[carName] = File.Exists(path) && new FileInfo(path).Length > 0;
                 }
 
                 string filePath = _driverFilePaths[carName];

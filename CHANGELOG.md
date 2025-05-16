@@ -17,6 +17,7 @@
 - Fixed Best Session Time not returning the correct data. ([`e490bb7`](https://github.com/Asviix/F1Manager2024Logger/commit/e490bb7468acb3ccc2fef9bb19e7ae105171ba01))
 - Change CSV Formatting and naming scheme. ([`df14dd8`](https://github.com/Asviix/F1Manager2024Logger/commit/df14dd811eb98e159f5c38e4478cb188f243eddc))
 - Updated the way a new version is checked. ([`90e43a9`](https://github.com/Asviix/F1Manager2024Logger/commit/90e43a9132056b777219754e335570f1ccaece8e))
+- Changed the Menus of the memory reader. ([`49f2802`](https://github.com/Asviix/49f280244b945f064044217f0ecdd8a7bcdc583c))
 
 ### Added
 - Added Best Sector Times. ([`e6339e5`](https://github.com/Asviix/F1Manager2024Logger/commit/e6339e5ecdda9229053540f2dd854e011434bb88))
@@ -33,7 +34,7 @@
 - Added Defend Approach. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
 - Added Drive in Clean Air Mode. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
 - Added Avoid High Risk Kerbs Mode. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
-- Added Don't Fight Teammate Mode. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
+- Added Don't Fight Teammate Mode. ([`600cbdc`](https://github.com/Asviix/F1Manager2024Logger/commit/600cbdc41c98a231199916e390bf6cf97fbd5e42))
 
 ## BETA 0.5 - Everything is easier!
 

@@ -4,13 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using Microsoft.Win32;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
-using System.Windows.Forms;
-using System.Linq.Expressions;
-using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
-using log4net.Plugin;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
@@ -150,6 +145,26 @@ namespace F1Manager2024Plugin
             _tireValueUpdateTimer.Start();
         }
 
+        private void InitializePointsSchemeSelection()
+        {
+            // Set the correct radio button based on current setting
+            switch (Plugin.Settings.pointScheme)
+            {
+                case 1:
+                    PointsScheme1Radio.IsChecked = true;
+                    break;
+                case 2:
+                    PointsScheme2Radio.IsChecked = true;
+                    break;
+                case 3:
+                    PointsScheme3Radio.IsChecked = true;
+                    break;
+                default:
+                    PointsScheme1Radio.IsChecked = true;
+                    break;
+            }
+        }
+
         private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
         {
             return new List<TeamDrivers>
@@ -237,6 +252,7 @@ namespace F1Manager2024Plugin
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
             InitializeTireMapping();
+            InitializePointsSchemeSelection();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
@@ -481,6 +497,24 @@ namespace F1Manager2024Plugin
         {
             get { return (System.Windows.Media.Brush)GetValue(TeamColorBrushProperty); }
             set { SetValue(TeamColorBrushProperty, value); }
+        }
+
+        private void PointsScheme_Checked(object sender, RoutedEventArgs e)
+        {
+            if (Plugin == null) return;
+
+            if (sender == PointsScheme1Radio)
+            {
+                Plugin.Settings.pointScheme = 1;
+            }
+            else if (sender == PointsScheme2Radio)
+            {
+                Plugin.Settings.pointScheme = 2;
+            }
+            else if (sender == PointsScheme3Radio)
+            {
+                Plugin.Settings.pointScheme = 3;
+            }
         }
 
         private void UpdateCurrentTireValue(object sender, EventArgs e)

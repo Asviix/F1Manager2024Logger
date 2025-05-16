@@ -1,7 +1,4 @@
-﻿using System.Security.Permissions;
-using System.Security.Policy;
-
-namespace F1Manager2024Plugin
+﻿namespace F1Manager2024Plugin
 {
     public class F1Manager2024PluginSettings
     {
@@ -11,6 +8,7 @@ namespace F1Manager2024Plugin
         public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string CustomTeamName { get; set; } = "MyTeam";
         public string CustomTeamColor { get; set; } = "#FFFFFF";
+        public int pointScheme { get; set; } = 1;
         public string[] CustomTireEnum { get; set; } = 
             new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                             "Medium", "Medium", "Medium",
@@ -28,6 +26,7 @@ namespace F1Manager2024Plugin
                 ExporterPath = null,
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
+                pointScheme = 1,
                 CustomTireEnum =
                     new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                                     "Medium", "Medium", "Medium",

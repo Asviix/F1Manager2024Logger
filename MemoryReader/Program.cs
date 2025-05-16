@@ -1,17 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.MemoryMappedFiles;
-using System.Linq.Expressions;
-using System.Net.Http;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Policy;
-using System.Speech.Synthesis.TtsEngine;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using Memory;
 
@@ -28,6 +17,7 @@ namespace MemoryReader
 
         const string PluginName = "F1Manager2024Plugin.dll";
         const string PDBName = "F1Manager2024Plugin.pdb";
+        const string configName = "F1Manager2024Plugin.dll.config";
         const string SimHubEnvVar = "SIMHUB_INSTALL_PATH";
         const string SimHubProcessName = "SimHubWPF";
         const string SimHubExeName = "SimHubWPF.exe";
@@ -555,8 +545,10 @@ namespace MemoryReader
 
                 string destPluginPath = Path.Combine(simHubPath, PluginName);
                 string destPDBPath = Path.Combine(simHubPath, PDBName);
+                string destConfigPath = Path.Combine(simHubPath, configName);
                 string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
                 string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
+                string sourceConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName);
                 string sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
 
                 if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
@@ -588,6 +580,8 @@ namespace MemoryReader
                         File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
                         Thread.Sleep(500);
                         File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
+                        Thread.Sleep(500);
+                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
                         Console.WriteLine($"Successfully installed plugin to: {destPluginPath}");
                     }
                     catch (Exception ex)
@@ -597,13 +591,13 @@ namespace MemoryReader
                         Thread.Sleep(500);
                         File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
                         File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
+                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
                         Console.WriteLine($"Successfully installed plugin on second attempt: {destPluginPath}");
                     }
                 }
 
                 // Start SimHub
-                //StartSimHub(simHubPath);
-                //DON'T FORGET TO UNCOMMENT THIS LINE
+                StartSimHub(simHubPath);
             }
             catch (Exception ex)
             {
@@ -726,7 +720,7 @@ namespace MemoryReader
 
     class GitHubUpdateChecker
     {
-        private const string CurrentVersion = "0.4";
+        private const string CurrentVersion = "1.0";
         private const string RepoUrl = "https://github.com/Asviix/F1Manager2024Logger";
 
         public async Task<bool> CheckForUpdates()

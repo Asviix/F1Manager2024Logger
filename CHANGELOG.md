@@ -35,7 +35,7 @@
 - Added Drive in Clean Air Mode. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
 - Added Avoid High Risk Kerbs Mode. ([`c26ac7a`](https://github.com/Asviix/F1Manager2024Logger/commit/c26ac7aa1ec7f16840e18f4a56924d34a8e7eaa3))
 - Added Don't Fight Teammate Mode. ([`600cbdc`](https://github.com/Asviix/F1Manager2024Logger/commit/600cbdc41c98a231199916e390bf6cf97fbd5e42))
-- Added Different Point Schemes. ([`10a4b91`])(https://github.com/Asviix/F1Manager2024Logger/commit/10a4b9160adf8c3a3d5130964ede65ff4d1bfc8e)
+- Added Different Point Schemes. ([`10a4b91`]https://github.com/Asviix/F1Manager2024Logger/commit/10a4b9160adf8c3a3d5130964ede65ff4d1bfc8e))
 
 ## BETA 0.5 - Everything is easier!
 

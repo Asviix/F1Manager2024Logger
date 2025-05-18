@@ -27,7 +27,7 @@ namespace F1Manager2024Plugin
         private readonly object _dataLock = new();
         public Telemetry _lastData;
 
-        private readonly float ExpectedCarValue = 8021.86f;
+        private readonly float ExpectedCarValue = 8021.86328f;
         private int CarsOnGrid = 22;
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
@@ -258,7 +258,8 @@ namespace F1Manager2024Plugin
             }
         }
 
-        // Helper Methods
+        #region Helper Methods
+
         // Last Recorded Data used by the LapOrTurnChanged Method.
         public class LastRecordedData
         {
@@ -1024,5 +1025,7 @@ namespace F1Manager2024Plugin
             // Save settings
             this.SaveCommonSettings("GeneralSettings", Settings);
         }
+
+        #endregion
     }
 }

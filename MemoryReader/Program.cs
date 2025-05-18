@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -194,29 +194,29 @@ namespace MemoryReader
         {
             Console.Clear();
 
-            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   |", ("|", ConsoleColor.DarkRed), (@"  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  |", ("|", ConsoleColor.DarkRed), (@" |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ |", ("|", ConsoleColor.DarkRed), (@" | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _||", ("|", ConsoleColor.DarkRed), (@" |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _|", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  |", ("|", ConsoleColor.DarkRed), (@" |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       |", ("|", ConsoleColor.DarkRed), (@"         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      |", ("|", ConsoleColor.DarkRed), (@"        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      |", ("|", ConsoleColor.DarkRed), (@"        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      |", ("|", ConsoleColor.DarkRed), (@"         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [EXIT]                                                                           |", ("|", ConsoleColor.DarkRed), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   |", ("|", ConsoleColor.DarkRed), (@"  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  |", ("|", ConsoleColor.DarkRed), (@" |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ |", ("|", ConsoleColor.DarkRed), (@" | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _||", ("|", ConsoleColor.DarkRed), (@" |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _|", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  |", ("|", ConsoleColor.DarkRed), (@" |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       |", ("|", ConsoleColor.DarkRed), (@"         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      |", ("|", ConsoleColor.DarkRed), (@"        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      |", ("|", ConsoleColor.DarkRed), (@"        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      |", ("|", ConsoleColor.DarkRed), (@"         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [EXIT]                                                                           |", ("|", ConsoleColor.DarkRed), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
 
             MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.0");
             if (hasUpdate)
@@ -264,30 +264,52 @@ namespace MemoryReader
             }
         }
 
+        private static void DisplayTelemetryHeader(string status)
+        {
+            const int boxWidth = 66;
+            string statusLine = $"| Status: {status}".PadRight(boxWidth) + "|";
+
+            Console.Clear();
+
+            MultiColorConsole.WriteCenteredColored($@"+-----------------------------------------------------------------+", ("+-----------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|      _____ _____ _     _____ __  __ _____ _____ ______   __     |", ("|", ConsoleColor.DarkRed), (@"      _____ _____ _     _____ __  __ _____ _____ ______   __     ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|     |_   _| ____| |   | ____|  \/  | ____|_   _|  _ \ \ / /     |", ("|", ConsoleColor.DarkRed), (@"     |_   _| ____| |   | ____|  \/  | ____|_   _|  _ \ \ / /     ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       | | |  _| | |   |  _| | |\/| |  _|   | | | |_) \ V /      |", ("|", ConsoleColor.DarkRed), (@"       | | |  _| | |   |  _| | |\/| |  _|   | | | |_) \ V /      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       | | | |___| |___| |___| |  | | |___  | | |  _ < | |       |", ("|", ConsoleColor.DarkRed), (@"       | | | |___| |___| |___| |  | | |___  | | |  _ < | |       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       |_| |_____|_____|_____|_|  |_|_____| |_| |_| \_\|_|       |", ("|", ConsoleColor.DarkRed), (@"       |_| |_____|_____|_____|_|  |_|_____| |_| |_| \_\|_|       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|               ____  _____    _    ____  _____ ____              |", ("|", ConsoleColor.DarkRed), (@"               ____  _____    _    ____  _____ ____              ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |  _ \| ____|  / \  |  _ \| ____|  _ \             |", ("|", ConsoleColor.DarkRed), (@"              |  _ \| ____|  / \  |  _ \| ____|  _ \             ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              | |_) |  _|   / _ \ | | | |  _| | |_) |            |", ("|", ConsoleColor.DarkRed), (@"              | |_) |  _|   / _ \ | | | |  _| | |_) |            ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |  _ <| |___ / ___ \| |_| | |___|  _ <             |", ("|", ConsoleColor.DarkRed), (@"              |  _ <| |___ / ___ \| |_| | |___|  _ <             ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |_| \_\_____/_/   \_\____/|_____|_| \_\            |", ("|", ConsoleColor.DarkRed), (@"              |_| \_\_____/_/   \_\____/|_____|_| \_\            ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                 |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(statusLine, ("|", ConsoleColor.DarkRed), ($"Status: {status}", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                 |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+-----------------------------------------------------------------+", ("+-----------------------------------------------------------------+", ConsoleColor.DarkRed));
+        }
+
         private static void StartTelemetryReader()
         {
-            Console.Clear();
-            Console.WriteLine("Starting telemetry reader...\n");
+            DisplayTelemetryHeader("Starting...");
 
             EnsurePluginInstalled();
             Thread.Sleep(1000);
 
             if (!AttachToHighMemoryProcess())
             {
-                Console.WriteLine("\nFailed to attach to process. Returning to menu...");
+                DisplayTelemetryHeader("Failed to attach to process");
                 Thread.Sleep(2000);
                 return;
             }
 
-            Console.WriteLine($"\nAttached to F1Manager24 process");
+            DisplayTelemetryHeader("Connected to process");
             using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
             using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
             byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
             int delay = 1000 / UpdateRateHz;
 
-            Console.WriteLine("\n----------\nMemory Map Created, Data is being sent to SimHub.\n----------");
-            Console.WriteLine("Press any key to stop and return to menu...");
+            DisplayTelemetryHeader("Connected to game, press any key to stop telemetry...");
 
             // Run until key is pressed
             while (!Console.KeyAvailable)

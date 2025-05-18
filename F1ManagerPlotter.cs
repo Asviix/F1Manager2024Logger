@@ -258,7 +258,8 @@ namespace F1Manager2024Plugin
             }
         }
 
-        // Helper Methods
+        #region Helper Methods
+
         // Last Recorded Data used by the LapOrTurnChanged Method.
         public class LastRecordedData
         {
@@ -1024,5 +1025,7 @@ namespace F1Manager2024Plugin
             // Save settings
             this.SaveCommonSettings("GeneralSettings", Settings);
         }
+
+        #endregion
     }
 }

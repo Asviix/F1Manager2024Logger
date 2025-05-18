@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -753,7 +753,7 @@ namespace MemoryReader
 
     class GitHubUpdateChecker
     {
-        private const string CurrentVersion = "1.0";
+        private const string CurrentVersion = "1.1";
         private const string RepoUrl = "https://github.com/Asviix/F1Manager2024Logger";
 
         public async Task<bool> CheckForUpdates()

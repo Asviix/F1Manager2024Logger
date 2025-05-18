@@ -1,8 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Windows.Forms;
 using System.Xml.Linq;
-using Memory;
 
 namespace MemoryReader
 {
@@ -130,12 +135,18 @@ namespace MemoryReader
         }
         #endregion
 
-        private static readonly Mem _mem = new();
+        private static readonly MemoryReader _mem = new();
         private static bool _isRunning = true;
 
         static async Task Main(string[] args)
         {
             Console.Title = "Memory Reader";
+
+            if (!OperatingSystem.IsWindows())
+            {
+                Console.WriteLine("This code is only supported on Windows.");
+                throw new PlatformNotSupportedException("This code is only supported on Windows.");
+            }
 
             var updateChecker = new GitHubUpdateChecker();
             bool hasUpdate = await updateChecker.CheckForUpdates();
@@ -269,7 +280,6 @@ namespace MemoryReader
             }
 
             Console.WriteLine($"\nAttached to F1Manager24 process");
-
             using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
             using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
@@ -528,7 +538,8 @@ namespace MemoryReader
                 }
 
                 Console.WriteLine($"Found target process (PID: {targetProcess.Id}, Memory: {targetProcess.WorkingSet64 / 1024 / 1024}MB)");
-                return _mem.OpenProcess(targetProcess.Id);
+                _mem.OpenProcess(targetProcess.Id);
+                return true;
             }
             catch (Exception ex)
             {
@@ -541,7 +552,7 @@ namespace MemoryReader
         {
             try
             {
-                string simHubPath = GetSimHubPath();
+                string? simHubPath = GetSimHubPath();
                 if (simHubPath == null)
                 {
                     Console.WriteLine("SimHub installation not found");
@@ -559,7 +570,7 @@ namespace MemoryReader
                 string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
                 string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
                 string sourceConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName);
-                string sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
+                string? sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
 
                 if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
                 {
@@ -569,7 +580,7 @@ namespace MemoryReader
 
                 if (File.Exists(destPluginPath) && File.Exists(destPDBPath))
                 {
-                    string destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
+                    string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
                     if (sourceVersion != destVersion)
                     {
                         Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
@@ -670,7 +681,7 @@ namespace MemoryReader
         private static string? GetSimHubPath()
         {
             // 1. Check environment variable
-            string envPath = Environment.GetEnvironmentVariable(SimHubEnvVar, EnvironmentVariableTarget.User);
+            string? envPath = Environment.GetEnvironmentVariable(SimHubEnvVar, EnvironmentVariableTarget.User);
             if (!string.IsNullOrEmpty(envPath)) return envPath;
 
             // 2. Check common installation paths
@@ -749,7 +760,7 @@ namespace MemoryReader
                 }
 
             }
-            catch (Exception ex)
+            catch
             {
                 return true;
             }
@@ -770,7 +781,11 @@ namespace MemoryReader
             var ns = XNamespace.Get("http://www.w3.org/2005/Atom");
 
             // The first entry contains the latest release
-            var latestEntry = doc.Root.Element(ns + "entry");
+            var latestEntry = doc.Root?.Element(ns + "entry");
+            if (latestEntry == null)
+            {
+                throw new Exception("No releases found in Atom feed");
+            }
             if (latestEntry == null)
                 throw new Exception("No releases found in Atom feed");
 
@@ -816,6 +831,297 @@ namespace MemoryReader
                 // Fallback to string comparison if version parsing fails
                 return string.CompareOrdinal(latestVersion, CurrentVersion) > 0;
             }
+        }
+    }
+
+    public class Proc
+    {
+        public Process? Process { get; set; }
+        public IntPtr Handle { get; set; }
+        public bool Is64Bit { get; set; }
+        public ProcessModule? MainModule { get; set; }
+    }
+
+    public class MemoryReader: IDisposable
+    {
+
+        public Proc mProc = new Proc();
+
+        private IntPtr _processHandle = IntPtr.Zero;
+        private bool _disposed = false;
+
+        // Windows API imports
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(
+            UInt32 dwDesiredAccess,
+            bool bInheritHandle,
+            Int32 dwProcessId
+            );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, [Out] byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, [Out] byte[] lpBuffer, UIntPtr nSize, out ulong lpNumberOfBytesRead);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, [Out] IntPtr lpBuffer, UIntPtr nSize, out ulong lpNumberOfBytesRead);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32")]
+        public static extern bool IsWow64Process(IntPtr hProcess, out bool lpSystemInfo);
+
+        // Process access rights needed
+        private const int PROCESS_VM_READ = 0x0010;
+        private const int PROCESS_QUERY_INFORMATION = 0x0400;
+
+        public IntPtr GetModuleAddressByName(string name)
+        {
+            // Ensure mProc.Process is not null before accessing its Modules property
+            if (mProc.Process == null)
+            {
+                throw new InvalidOperationException("Process is not initialized.");
+            }
+
+            // Use SingleOrDefault safely by checking for null before accessing BaseAddress
+            var module = mProc.Process.Modules.Cast<ProcessModule>()
+                .SingleOrDefault(m => string.Equals(m.ModuleName, name, StringComparison.OrdinalIgnoreCase));
+
+            return module == null ? throw new InvalidOperationException($"Module with name '{name}' not found.") : module.BaseAddress;
+        }
+
+        public UIntPtr GetCode(string name, int size = 16)
+        {
+            string theCode = "";
+            theCode = name;
+
+            if (String.IsNullOrEmpty(theCode))
+                return UIntPtr.Zero;
+
+            // remove spaces
+            if (theCode.Contains(" "))
+                theCode.Replace(" ", String.Empty);
+
+            string newOffsets = theCode;
+            if (theCode.Contains("+"))
+                newOffsets = theCode.Substring(theCode.IndexOf('+') + 1);
+
+            byte[] memoryAddress = new byte[size];
+
+            if (!theCode.Contains("+") && !theCode.Contains(","))
+            {
+                try
+                {
+                    return new UIntPtr(Convert.ToUInt64(theCode, 16));
+                }
+                catch
+                {
+                    Console.WriteLine("Error in GetCode(). Failed to read address " + theCode);
+                    return UIntPtr.Zero;
+                }
+            }
+
+            if (newOffsets.Contains(','))
+            {
+                List<Int64> offsetsList = new List<Int64>();
+
+                string[] newerOffsets = newOffsets.Split(',');
+                foreach (string oldOffsets in newerOffsets)
+                {
+                    string test = oldOffsets;
+                    if (oldOffsets.Contains("0x")) test = oldOffsets.Replace("0x", "");
+                    Int64 preParse = 0;
+                    if (!oldOffsets.Contains("-"))
+                        preParse = Int64.Parse(test, NumberStyles.AllowHexSpecifier);
+                    else
+                    {
+                        test = test.Replace("-", "");
+                        preParse = Int64.Parse(test, NumberStyles.AllowHexSpecifier);
+                        preParse = preParse * -1;
+                    }
+                    offsetsList.Add(preParse);
+                }
+                Int64[] offsets = offsetsList.ToArray();
+
+                bool mainBase = (theCode.ToLower().Contains("base") || theCode.ToLower().Contains("main")) && !theCode.ToLower().Contains(".dll") && !theCode.ToLower().Contains(".exe");
+
+                if (mainBase)
+                    // Updated line to handle possible null reference for mProc.MainModule
+                    if (mProc.MainModule != null)
+                    {
+                        ReadProcessMemory(mProc.Handle, (UIntPtr)((Int64)mProc.MainModule.BaseAddress + offsets[0]), memoryAddress, (UIntPtr)size, IntPtr.Zero);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("MainModule is null. Ensure the process is properly initialized.");
+                    }
+                else if (!mainBase && theCode.Contains("+"))
+                {
+                    string[] moduleName = theCode.Split('+');
+                    IntPtr altModule = IntPtr.Zero;
+                    if (!moduleName[0].ToLower().Contains(".dll") && !moduleName[0].ToLower().Contains(".exe") && !moduleName[0].ToLower().Contains(".bin"))
+                        altModule = (IntPtr)Int64.Parse(moduleName[0], System.Globalization.NumberStyles.HexNumber);
+                    else
+                    {
+                        try
+                        {
+                            altModule = GetModuleAddressByName(moduleName[0]);
+                        }
+                        catch
+                        {
+                            Debug.WriteLine("Module " + moduleName[0] + " was not found in module list!");
+                            //Debug.WriteLine("Modules: " + string.Join(",", mProc.Modules));
+                        }
+                    }
+                    ReadProcessMemory(mProc.Handle, (UIntPtr)((Int64)altModule + offsets[0]), memoryAddress, (UIntPtr)size, IntPtr.Zero);
+                }
+                else // no offsets
+                    ReadProcessMemory(mProc.Handle, (UIntPtr)(offsets[0]), memoryAddress, (UIntPtr)size, IntPtr.Zero);
+
+                Int64 num1 = BitConverter.ToInt64(memoryAddress, 0);
+
+                UIntPtr base1 = (UIntPtr)0;
+
+                for (int i = 1; i < offsets.Length; i++)
+                {
+                    base1 = new UIntPtr(Convert.ToUInt64(num1 + offsets[i]));
+                    ReadProcessMemory(mProc.Handle, base1, memoryAddress, (UIntPtr)size, IntPtr.Zero);
+                    num1 = BitConverter.ToInt64(memoryAddress, 0);
+                }
+                return base1;
+            }
+            else
+            {
+                Int64 trueCode = Convert.ToInt64(newOffsets, 16);
+                IntPtr altModule = IntPtr.Zero;
+
+                bool mainBase = (theCode.ToLower().Contains("base") || theCode.ToLower().Contains("main")) && !theCode.ToLower().Contains(".dll") && !theCode.ToLower().Contains(".exe");
+
+                if (mainBase)
+                    if (mProc.MainModule != null)
+                    {
+                        altModule = mProc.MainModule.BaseAddress;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("MainModule is null. Ensure the process is properly initialized.");
+                    }
+                else if (!mainBase && theCode.Contains("+"))
+                {
+                    string[] moduleName = theCode.Split('+');
+                    if (!moduleName[0].ToLower().Contains(".dll") && !moduleName[0].ToLower().Contains(".exe") && !moduleName[0].ToLower().Contains(".bin"))
+                    {
+                        string theAddr = moduleName[0];
+                        if (theAddr.Contains("0x")) theAddr = theAddr.Replace("0x", "");
+                        altModule = (IntPtr)Int64.Parse(theAddr, NumberStyles.HexNumber);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            altModule = GetModuleAddressByName(moduleName[0]);
+                        }
+                        catch
+                        {
+                            Debug.WriteLine("Module " + moduleName[0] + " was not found in module list!");
+                            //Debug.WriteLine("Modules: " + string.Join(",", mProc.Modules));
+                        }
+                    }
+                }
+                else
+                    altModule = GetModuleAddressByName(theCode.Split('+')[0]);
+                return (UIntPtr)((Int64)altModule + trueCode);
+            }
+        }
+
+        public void OpenProcess(int processId)
+        {
+            mProc.Process = Process.GetProcessById(processId);
+
+            mProc.Handle = OpenProcess(0x1F0FFF, true, processId);
+
+            mProc.Is64Bit = Environment.Is64BitOperatingSystem && (IsWow64Process(mProc.Handle, out bool retVal) && !retVal);
+
+            mProc.MainModule = mProc.Process.MainModule;
+        }
+
+        public int ReadByte(string code)
+        {
+            byte[] memoryTiny = new byte[1];
+
+            UIntPtr theCode = GetCode(code);
+            if (theCode != UIntPtr.Zero && theCode.ToUInt64() >= 0x10000)
+            {
+                if (ReadProcessMemory(mProc.Handle, theCode, memoryTiny, (UIntPtr)1, IntPtr.Zero))
+                    return memoryTiny[0];
+
+                return 0;
+            }
+
+            return 0;
+        }
+
+        public int ReadInt(string code)
+        {
+            byte[] memory = new byte[4];
+            UIntPtr theCode = GetCode(code);
+            if (theCode == UIntPtr.Zero || theCode.ToUInt64() < 0x10000)
+                return 0;
+
+            if (ReadProcessMemory(mProc.Handle, theCode, memory, (UIntPtr)4, IntPtr.Zero))
+                return BitConverter.ToInt32(memory, 0);
+            else
+                return 0;
+        }
+
+        public float ReadFloat(string code, bool round = false)
+        {
+            byte[] memory = new byte[4];
+
+            UIntPtr theCode = GetCode(code);
+            if (theCode == UIntPtr.Zero || theCode.ToUInt64() < 0x10000)
+                return 0;
+
+            try
+            {
+                if (ReadProcessMemory(mProc.Handle, theCode, memory, (UIntPtr)4, IntPtr.Zero))
+                {
+                    float address = BitConverter.ToSingle(memory, 0);
+                    float returnValue = (float)address;
+                    if (round)
+                        returnValue = (float)Math.Round(address, 2);
+                    return returnValue;
+                }
+                else
+                    return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Free managed resources
+                }
+                _disposed = true;
+            }
+        }
+
+        ~MemoryReader()
+        {
+            Dispose(false);
         }
     }
 }

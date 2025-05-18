@@ -14,6 +14,7 @@
     <TrimMode>partial</TrimMode>
     <DebugType>embedded</DebugType>
 	<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

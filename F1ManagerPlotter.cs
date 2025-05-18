@@ -27,7 +27,7 @@ namespace F1Manager2024Plugin
         private readonly object _dataLock = new();
         public Telemetry _lastData;
 
-        private readonly float ExpectedCarValue = 8021.86f;
+        private readonly float ExpectedCarValue = 8021.86328f;
         private int CarsOnGrid = 22;
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);

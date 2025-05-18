@@ -414,23 +414,34 @@ namespace MemoryReader
                 Car = new CarTelemetry[DriverCount]
             };
 
-            string carBasePtr = "F1Manager24.exe+0x798F570,0x150,0x3E8,0x130,0x0,0x28";
-            string gameObjPtr = "F1Manager24.exe+0x0798F570,0x150,0x448";
+            string baseAddress;
+            string SteamBaseAddress = "0x798F570";
+            string EpicBaseAddress = "0x079F53F0";
+
+            float SteamTestValue = _mem.ReadFloat($"F1Manager24.exe+{SteamBaseAddress},0x150,0x3E8,0x130,0x0,0x28,0x0", round: false);
+            float EpicTestValue = _mem.ReadFloat($"F1Manager24.exe+{EpicBaseAddress},0x150,0x3E8,0x130,0x0,0x28,0x0", round: false);
+
+            if (SteamTestValue == 8021.863281f)
+            {
+                baseAddress = SteamBaseAddress;
+            }
+            else if (EpicTestValue == 8214.523438f)
+            {
+                baseAddress = EpicBaseAddress;
+            }
+            else
+            {
+                return telemetry;
+            }
+
+            string carBasePtr = $"F1Manager24.exe+{baseAddress},0x150,0x3E8,0x130,0x0,0x28";
+            string gameObjPtr = $"F1Manager24.exe+{baseAddress},0x150,0x448";
+
+            telemetry.carFloatValue = _mem.ReadFloat(carBasePtr + ",0x0", round: false);
 
             for (int i = 0; i < DriverCount; i++)
             {
                 int carOffset = 0x10D8 * i;
-
-                try
-                {
-                    telemetry.carFloatValue = _mem.ReadFloat(carBasePtr + ",0x0");
-                }
-                catch {
-                    telemetry.carFloatValue = 0f;
-                    return telemetry; ;
-                }
-
-                if (telemetry.carFloatValue != 8021.86328f) return telemetry;
 
                 telemetry.Car[i].driverPos = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x710):X}");
                 telemetry.Car[i].currentLap = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x7E4):X}");

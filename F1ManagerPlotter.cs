@@ -27,7 +27,8 @@ namespace F1Manager2024Plugin
         private readonly object _dataLock = new();
         public Telemetry _lastData;
 
-        private readonly float ExpectedCarValue = 8021.86328f;
+        private readonly float ExpectedCarValueSteam = 8021.863281f;
+        private readonly float ExpectedCarValueEpic = 8214.523438f;
         private int CarsOnGrid = 22;
 
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
@@ -243,7 +244,7 @@ namespace F1Manager2024Plugin
             lock (_dataLock)
             {
 
-                if (telemetry.carFloatValue != ExpectedCarValue) { UpdateStatus(true, false, "Game not in Session."); return; }
+                if (telemetry.carFloatValue != ExpectedCarValueSteam && telemetry.carFloatValue != ExpectedCarValueEpic) { UpdateStatus(true, false, "Game not in Session."); return; }
                 try
                 {
                     _lastData = telemetry;
@@ -809,7 +810,7 @@ namespace F1Manager2024Plugin
         private void UpdateHistoricalData(string carName, Telemetry telemetry, int i, int CarsOnGrid)
         {
             // Check for session reset
-            if (telemetry.carFloatValue != ExpectedCarValue)
+            if (telemetry.carFloatValue != ExpectedCarValueSteam && telemetry.carFloatValue != ExpectedCarValueEpic)
             {
                 ClearAllHistory();
             }

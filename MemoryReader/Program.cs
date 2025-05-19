@@ -27,13 +27,13 @@ namespace MemoryReader
         const string SimHubProcessName = "SimHubWPF";
         const string SimHubExeName = "SimHubWPF.exe";
 
-        public static readonly List<string[]> _menuItems = new()
-        {
-            new[] { "Start" },
-            new[] { "Properties", "Documentation", "GitHub" },
-            new[] { "Discord", "Overtake" },
-            new[] { "Exit" }
-        };
+        public static readonly List<string[]> _menuItems =
+        [
+            ["Start"],
+            ["Properties", "Documentation", "GitHub"],
+            ["Discord", "Overtake"],
+            ["Exit"]
+        ];
 
         public static (int row, int col) _cursor = (0, 0);
 
@@ -138,7 +138,7 @@ namespace MemoryReader
         private static readonly MemoryReader _mem = new();
         private static bool _isRunning = true;
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             Console.Title = "Memory Reader";
 
@@ -651,7 +651,12 @@ namespace MemoryReader
                             try
                             {
                                 // Ensure directory exists
-                                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+                                if (destPath is null)
+                                    throw new ArgumentNullException(nameof(destPath));
+
+                                string? directory = Path.GetDirectoryName(destPath);
+                                if (directory is not null)
+                                    Directory.CreateDirectory(directory);
 
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);

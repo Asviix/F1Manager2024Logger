@@ -27,7 +27,7 @@ namespace F1Manager2024Plugin
             0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00 // Another "None" with length prefix
         };
 
-        private static string? _lastMd5Hash;
+        private static string _lastMd5Hash;
         private static DateTime _lastCheckTime = DateTime.MinValue;
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(5); // Check every 5 seconds
 
@@ -116,7 +116,7 @@ namespace F1Manager2024Plugin
             {
                 throw new InvalidDataException("Save file truncated at compressed size field");
             }
-            int compressedSize = BitConverter.ToInt32(fileBytes, position);
+            _ = BitConverter.ToInt32(fileBytes, position);
             position += 4;
 
             // Read the three database sizes
@@ -166,16 +166,14 @@ namespace F1Manager2024Plugin
         private static byte[] DecompressData(byte[] compressedData)
         {
             // ZLib format requires skipping the first 2 bytes (header) for .NET's DeflateStream
-            using (var outputStream = new MemoryStream())
+            using var outputStream = new MemoryStream();
+            // Create a new stream without the first 2 bytes
+            using (var compressedStream = new MemoryStream(compressedData, 2, compressedData.Length - 2))
+            using (var decompressionStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
             {
-                // Create a new stream without the first 2 bytes
-                using (var compressedStream = new MemoryStream(compressedData, 2, compressedData.Length - 2))
-                using (var decompressionStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
-                {
-                    decompressionStream.CopyTo(outputStream);
-                }
-                return outputStream.ToArray();
+                decompressionStream.CopyTo(outputStream);
             }
+            return outputStream.ToArray();
         }
 
         private static int ByteArrayIndexOf(byte[] source, byte[] pattern)
@@ -208,7 +206,7 @@ namespace F1Manager2024Plugin
         /// <param name="logger">Optional logging action</param>
         /// <returns>List of results in specified type</returns>
 
-        public static System.Collections.Generic.List<T> ExecuteSql<T>(string sqlCommand, object? parameters = null, Action<string>? logger = null)
+        public static System.Collections.Generic.List<T> ExecuteSql<T>(string sqlCommand, object parameters = null, Action<string> logger = null)
         {
             string basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string dbPath = Path.Combine(basePath, "F1Manager24", "Saved", "SaveGames", "Unpacked", "main.db");
@@ -221,16 +219,14 @@ namespace F1Manager2024Plugin
 
             try
             {
-                using (var connection = new SQLiteConnection($"Data Source={dbPath};Version=3;"))
-                {
-                    connection.Open();
-                    logger?.Invoke($"Executing SQL: {sqlCommand}");
+                using var connection = new SQLiteConnection($"Data Source={dbPath};Version=3;");
+                connection.Open();
+                logger?.Invoke($"Executing SQL: {sqlCommand}");
 
-                    var result = connection.Query<T>(sqlCommand, parameters).ToList();
-                    logger?.Invoke($"Returned {result.Count} rows of type {typeof(T).Name}");
+                var result = connection.Query<T>(sqlCommand, parameters).ToList();
+                logger?.Invoke($"Returned {result.Count} rows of type {typeof(T).Name}");
 
-                    return result;
-                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -247,7 +243,7 @@ namespace F1Manager2024Plugin
         /// <param name="parameters">Optional parameters</param>
         /// <param name="logger">Optional logging action</param>
         /// <returns>Single result value</returns>
-        public static T ExecuteScalar<T>(string sqlCommand, object? parameters = null, Action<string>? logger = null)
+        public static T ExecuteScalar<T>(string sqlCommand, object parameters = null, Action<string> logger = null)
         {
             string basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string dbPath = Path.Combine(basePath, "F1Manager24", "Saved", "SaveGames", "Unpacked", "main.db");
@@ -260,21 +256,19 @@ namespace F1Manager2024Plugin
 
             try
             {
-                using (var connection = new SQLiteConnection($"Data Source={dbPath};Version=3;"))
+                using var connection = new SQLiteConnection($"Data Source={dbPath};Version=3;");
+                connection.Open();
+                logger?.Invoke($"Executing SQL (scalar): {sqlCommand}");
+
+                var result = connection.ExecuteScalar<T>(sqlCommand, parameters);
+                logger?.Invoke($"Returned scalar value of type {typeof(T).Name}");
+
+                if (result == null && !default(T)!.Equals(null))
                 {
-                    connection.Open();
-                    logger?.Invoke($"Executing SQL (scalar): {sqlCommand}");
-
-                    var result = connection.ExecuteScalar<T>(sqlCommand, parameters);
-                    logger?.Invoke($"Returned scalar value of type {typeof(T).Name}");
-
-                    if (result == null && !default(T)!.Equals(null))
-                    {
-                        throw new InvalidOperationException("Query returned null for a non-nullable type.");
-                    }
-
-                    return result!;
+                    throw new InvalidOperationException("Query returned null for a non-nullable type.");
                 }
+
+                return result!;
             }
             catch (Exception ex)
             {
@@ -286,8 +280,8 @@ namespace F1Manager2024Plugin
 
     public class SaveDataCache
     {
-        private static readonly object _cacheLock = new object();
-        private static ConcurrentDictionary<string, object> _cachedValues = new();
+        private static readonly object _cacheLock = new();
+        private static readonly ConcurrentDictionary<string, object> _cachedValues = new();
 
         public static class CachedValues
         {
@@ -326,7 +320,7 @@ namespace F1Manager2024Plugin
             }
         }
 
-        public static T GetCachedValue<T>(string key, T? defaultValue = default)
+        public static T GetCachedValue<T>(string key, T defaultValue = default)
         {
             if (_cachedValues.TryGetValue(key, out var value))
             {

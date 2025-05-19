@@ -188,7 +188,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the estimated position after pitting.
-        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int CarsOnGrid)
         {
             if (telemetry.Session.sessionType is not 6 or 7) return 0;
 

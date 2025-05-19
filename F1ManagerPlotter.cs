@@ -298,7 +298,7 @@ namespace F1Manager2024Plugin
             public int SpeedST { get; set; }
             public bool SpeedSTRecorded { get; set; }
 
-            public void UpdateSTSpeed(int speed, int lap, float distance, float STDistance)
+            public void UpdateSTSpeed(int speed, float distance, float STDistance)
             {
                 if (distance > (STDistance - 240) && distance < (STDistance + 240) && SpeedSTRecorded == false)
                 {
@@ -487,13 +487,13 @@ namespace F1Manager2024Plugin
 
                 if ((session.sessionType is 6 or 7) && (car.pitStopStatus is 6 || car.Driver.rpm == 0))
                 {
-                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    ResetProperties(telemetry, i, name);
                     continue;
                 }
 
                 if ((session.sessionType is not 6 or 7) && (car.Driver.driverId == 0))
                 {
-                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    ResetProperties(telemetry, i, name);
                     continue;
                 }
 
@@ -522,13 +522,13 @@ namespace F1Manager2024Plugin
 
 
                 _lastRecordedData[name].UpdateSectorTimes(car.Driver.lastS1Time, car.Driver.lastS2Time, car.Driver.lastS3Time);
-                _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
+                _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
                 UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
-                UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, CarsOnGrid));
                 // Status
                 UpdateValue($"{name}_TurnNumber", _lastRecordedData[name].LastTurnNumber);
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
@@ -602,7 +602,7 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void ResetProperties(Telemetry telemetry, int i, string carName, int rpm)
+        private void ResetProperties(Telemetry telemetry, int i, string carName)
         {
             int position = telemetry.Car[i].Driver.position + 1;
 

@@ -293,11 +293,13 @@ namespace MemoryReader
         public static class Queries
         {
             public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
+            public const string FastestLapPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'FastestLapBonusPoint'";
         }
 
         public static class CachedValues
         {
             public static int PointScheme => SaveDataCache.GetCachedValue<int>("PointScheme");
+            public static int FastestLapPoint => SaveDataCache.GetCachedValue<int>("FastestLapPoint");
         }
 
         public static void UpdateCache()

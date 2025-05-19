@@ -192,5 +192,6 @@ namespace F1Manager2024Plugin
     public struct SaveData
     {
         public int pointScheme;
+        public int fastestLapPoint;
     }
 }

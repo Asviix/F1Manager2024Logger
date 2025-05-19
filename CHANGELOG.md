@@ -6,7 +6,8 @@
 - Moved away from the Memory.DLL Library. ([`d705fb5`](https://github.com/Asviix/F1Manager2024Logger/commit/d705fb5927843d68a56154d8a628bd7d993e3d0e))
 - Changed the menu when the Telemetry Reader is running. ([`12b1132`](https://github.com/Asviix/F1Manager2024Logger/commit/12b113227bb8ff80752d790ef66376795547f613))
 - Point Schemes will now be read from the savefile, no need for user input. ([`6709134`](https://github.com/Asviix/F1Manager2024Logger/commit/67091343e853e39d1f4abb4db11e64415df39074))
-- Fastest Lap Point addition will now be read from the savefile. ([``]())
+- Fastest Lap Point addition will now be read from the savefile. ([`1237c32`](https://github.com/Asviix/F1Manager2024Logger/commit/1237c32a4683d2a57788971a06a7cbfd42a719b6))
+- Point for Pole Position will now be read from the savefile. ([``]())
 
 ## RELEASE 1.0
 

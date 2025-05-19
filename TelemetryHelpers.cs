@@ -419,7 +419,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024PluginSettings Settings)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest, int pointScheme)
         {
             // No points if position is invalid (<= 0 or beyond F1's point system)
             if (position <= 0 || position > 22)
@@ -429,7 +429,7 @@ namespace F1Manager2024Plugin
             int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
             int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
 
-            int[] pointTable = Settings.pointScheme switch
+            int[] pointTable = pointScheme switch
             {
                 1 => pointTableScheme1,
                 2 => pointTableScheme2,

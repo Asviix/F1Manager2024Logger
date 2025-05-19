@@ -95,6 +95,7 @@ namespace F1Manager2024Plugin
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Telemetry
     {
+        public SaveData SaveData;
         public SessionTelemetry Session;
         public int cameraFocus;
         public float carFloatValue;
@@ -185,5 +186,11 @@ namespace F1Manager2024Plugin
         public float trackTemp;
         public int weather;
         public float waterOnTrack;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SaveData
+    {
+        public int pointScheme;
     }
 }

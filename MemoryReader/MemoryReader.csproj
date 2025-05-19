@@ -21,15 +21,13 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <!-- Include Memory.dll as content to ensure it gets published -->
-    <Content Include="..\..\Build_x64\Memory.dll" Link="Memory.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <!-- Use PackageReference for Windows Forms instead of direct reference -->
+    <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.0-preview.3.25174.1" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.0-preview.3.25173.2" />
     <PackageReference Include="System.Security.Permissions" Version="10.0.0-preview.3.25171.5" />
     
@@ -39,9 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Memory">
-      <HintPath>..\..\Build_x64\Memory.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Windows.Forms.dll</HintPath>
     </Reference>

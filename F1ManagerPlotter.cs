@@ -5,9 +5,9 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Concurrent;
-using System.IO;
 using WoteverCommon;
 using WoteverCommon.Extensions;
+using System.IO;
 
 namespace F1Manager2024Plugin
 {
@@ -16,7 +16,7 @@ namespace F1Manager2024Plugin
     [PluginAuthor("Thomas DEFRANCE")]
     public class F1ManagerPlotter : IPlugin, IWPFSettingsV2
     {
-        public double version = 1.0; 
+        public double version = 1.1; 
         public PluginManager PluginManager { get; set; }
 
         public F1Manager2024PluginSettings Settings;
@@ -53,23 +53,34 @@ namespace F1Manager2024Plugin
         // Initialize the Plugin.
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("Starting Plugin");
+            SimHub.Logging.Current.Info("----F1 MANAGER 2024 SIMHUB PLUGIN----");
+            SimHub.Logging.Current.Info("Starting Plugin...");
+
+            // Load Settings
+            SimHub.Logging.Current.Info("Loading Settings...");
+            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings());
+            SimHub.Logging.Current.Info("Settings Loaded.");
+
+            SimHub.Logging.Current.Info("Registering Debug Properties...");
 
             // Register properties for SimHub
             pluginManager.AddProperty("DEBUG_Status_IsMemoryMap_Connected", this.GetType(), false);
             pluginManager.AddProperty("DEBUG_Status_Game_Connected", this.GetType(), false);
             pluginManager.AddProperty("DEBUG_Game_Status", this.GetType(), typeof(string));
 
-            // Load Settings
-            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings());
-            
             // Create new Exporter
+            SimHub.Logging.Current.Info("Creating Exporter...");
             _exporter = new Exporter();
+            SimHub.Logging.Current.Info("Exporter Created.");
 
             // Create new Reader
+            SimHub.Logging.Current.Info("Creating Reader...");
             _mmfReader = new MmfReader();
             _mmfReader.StartReading("F1ManagerTelemetry");
+            SimHub.Logging.Current.Info("Reader Created.");
             _mmfReader.DataReceived += DataReceived;
+
+            SimHub.Logging.Current.Info("Registering Properties...");
 
             #region Init Properties
             // Add Settings Properties
@@ -216,27 +227,8 @@ namespace F1Manager2024Plugin
             }
             #endregion
 
-            // Declare an action which can be called
-            this.AddAction(
-                actionName: "IncrementSpeedWarning",
-                actionStart: (a, b) =>
-                {
-                    SimHub.Logging.Current.Info("Speed warning changed");
-                });
-
-            // Declare an action which can be called
-            this.AddAction(
-                actionName: "DecrementSpeedWarning",
-                actionStart: (a, b) =>
-                {
-                });
-
-            // Declare an input which can be mapped
-            this.AddInputMapping(
-                inputName: "InputPressed",
-                inputPressed: (a, b) => {/* One of the mapped input has been pressed   */},
-                inputReleased: (a, b) => {/* One of the mapped input has been released */}
-            );
+            SimHub.Logging.Current.Info("Started!");
+            SimHub.Logging.Current.Info("----F1 MANAGER 2024 SIMHUB PLUGIN----");
         }
 
         public void DataReceived(Telemetry telemetry)
@@ -528,7 +520,7 @@ namespace F1Manager2024Plugin
                 _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
-                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap, Settings));
+                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap, telemetry.SaveData.pointScheme));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
                 UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));

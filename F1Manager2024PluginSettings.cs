@@ -6,9 +6,9 @@
         public string ExporterPath { get; set; } = null;
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
+        public bool SaveFileFound { get; set; } = false;
         public string CustomTeamName { get; set; } = "MyTeam";
         public string CustomTeamColor { get; set; } = "#FFFFFF";
-        public int pointScheme { get; set; } = 1;
         public string[] CustomTireEnum { get; set; } = 
             new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                             "Medium", "Medium", "Medium",
@@ -16,7 +16,7 @@
                             "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
                             "Wet", "Wet",
                             "Not-Set", "Not-Set"};
-        public double SavedVersion { get; set; } = 1.0;
+        public double SavedVersion { get; set; } = 1.1;
 
         public static F1Manager2024PluginSettings GetDefaults()
         {
@@ -26,7 +26,9 @@
                 ExporterPath = null,
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
-                pointScheme = 1,
+                SaveFileFound = false,
+                CustomTeamName = "MyTeam",
+                CustomTeamColor = "#FFFFFF",
                 CustomTireEnum =
                     new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                                     "Medium", "Medium", "Medium",
@@ -34,8 +36,6 @@
                                     "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
                                     "Wet", "Wet",
                                     "Not-Set", "Not-Set"},
-                CustomTeamName = "MyTeam",
-                CustomTeamColor = "#FFFFFF",
             };
         }
     }

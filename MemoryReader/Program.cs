@@ -1,12 +1,7 @@
-using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Security.Cryptography;
-using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace MemoryReader
@@ -42,6 +37,7 @@ namespace MemoryReader
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct Telemetry
         {
+            public SaveData SaveData;
             public SessionTelemetry Session;
             public int cameraFocus;
             public float carFloatValue;
@@ -133,6 +129,12 @@ namespace MemoryReader
             public int weather;
             public float waterOnTrack;
         }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct SaveData
+        {
+            public int pointScheme;
+        }
         #endregion
 
         private static readonly MemoryReader _mem = new();
@@ -218,7 +220,7 @@ namespace MemoryReader
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
 
-            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.0");
+            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.1");
             if (hasUpdate)
             {
                 MultiColorConsole.WriteCenteredColored($"A new version is available!", ("A new version is available!", ConsoleColor.Red));
@@ -314,6 +316,7 @@ namespace MemoryReader
             // Run until key is pressed
             while (!Console.KeyAvailable)
             {
+                UnrealSaveUnpacker.UnpackSaveFile();
                 Telemetry telemetry = ReadTelemetry();
 
                 GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
@@ -521,6 +524,8 @@ namespace MemoryReader
                 telemetry.Session.Weather.trackTemp = _mem.ReadFloat(weatherPtr + ",0xB0");
                 telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
             }
+
+            telemetry.SaveData.pointScheme = SaveFileQuery.ExecuteScalar<int>("SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'");
             return telemetry;
         }
 

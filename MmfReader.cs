@@ -193,5 +193,6 @@ namespace F1Manager2024Plugin
     {
         public int pointScheme;
         public int fastestLapPoint;
+        public int polePositionPoint;
     }
 }

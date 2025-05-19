@@ -469,6 +469,11 @@ namespace F1Manager2024Plugin
                 basePoints += 1;
             }
 
+            if ((sessionId is 5 or 10) && saveData.polePositionPoint == 1 && isFastest)
+            {
+                basePoints += 1; // +1 point for pole position
+            }
+
             return basePoints;
         }
 

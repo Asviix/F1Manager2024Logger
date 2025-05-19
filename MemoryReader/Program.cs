@@ -135,6 +135,7 @@ namespace MemoryReader
         {
             public int pointScheme;
             public int fastestLapPoint;
+            public int polePositionPoint;
         }
         #endregion
 
@@ -528,6 +529,7 @@ namespace MemoryReader
 
             telemetry.SaveData.pointScheme = SaveDataCache.CachedValues.PointScheme;
             telemetry.SaveData.fastestLapPoint = SaveDataCache.CachedValues.FastestLapPoint;
+            telemetry.SaveData.polePositionPoint = SaveDataCache.CachedValues.PolePositionPoint;
             return telemetry;
         }
 

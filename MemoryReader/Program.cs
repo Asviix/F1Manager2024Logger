@@ -134,6 +134,7 @@ namespace MemoryReader
         struct SaveData
         {
             public int pointScheme;
+            public int fastestLapPoint;
         }
         #endregion
 
@@ -526,6 +527,7 @@ namespace MemoryReader
             }
 
             telemetry.SaveData.pointScheme = SaveDataCache.CachedValues.PointScheme;
+            telemetry.SaveData.fastestLapPoint = SaveDataCache.CachedValues.FastestLapPoint;
             return telemetry;
         }
 

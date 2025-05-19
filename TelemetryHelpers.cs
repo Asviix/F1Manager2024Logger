@@ -419,7 +419,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest, int pointScheme)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024Plugin.SaveData saveData)
         {
             // No points if position is invalid (<= 0 or beyond F1's point system)
             if (position <= 0 || position > 22)
@@ -429,7 +429,7 @@ namespace F1Manager2024Plugin
             int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
             int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
 
-            int[] pointTable = pointScheme switch
+            int[] pointTable = saveData.pointScheme switch
             {
                 1 => pointTableScheme1,
                 2 => pointTableScheme2,
@@ -464,7 +464,7 @@ namespace F1Manager2024Plugin
             }
 
             // +1 point for fastest lap (only if in top 10)
-            if ((sessionId is 6 or 7) && isFastest && position <= 10)
+            if ((sessionId is 6 or 7) && saveData.fastestLapPoint == 1 && isFastest && position <= 10)
             {
                 basePoints += 1;
             }

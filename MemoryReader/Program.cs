@@ -136,6 +136,8 @@ namespace MemoryReader
             public int pointScheme;
             public int fastestLapPoint;
             public int polePositionPoint;
+            public int RaceID;
+            public int LastRaceID;
         }
         #endregion
 
@@ -530,6 +532,8 @@ namespace MemoryReader
             telemetry.SaveData.pointScheme = SaveDataCache.CachedValues.PointScheme;
             telemetry.SaveData.fastestLapPoint = SaveDataCache.CachedValues.FastestLapPoint;
             telemetry.SaveData.polePositionPoint = SaveDataCache.CachedValues.PolePositionPoint;
+            telemetry.SaveData.RaceID = SaveDataCache.CachedValues.CurrentRace;
+            telemetry.SaveData.LastRaceID = SaveDataCache.CachedValues.RaceIdOfLastRace;
             return telemetry;
         }
 

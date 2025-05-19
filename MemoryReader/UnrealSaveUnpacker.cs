@@ -290,18 +290,28 @@ namespace MemoryReader
         private static readonly object _cacheLock = new object();
         private static ConcurrentDictionary<string, object> _cachedValues = new();
 
-        public static class Queries
-        {
-            public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
-            public const string FastestLapPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'FastestLapBonusPoint'";
-            public const string PolePositionPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PolePositionBonusPoint'";
-        }
-
         public static class CachedValues
         {
             public static int PointScheme => SaveDataCache.GetCachedValue<int>("PointScheme");
             public static int FastestLapPoint => SaveDataCache.GetCachedValue<int>("FastestLapPoint");
             public static int PolePositionPoint => SaveDataCache.GetCachedValue<int>("PolePositionPoint");
+            public static int CurrentSeason => SaveDataCache.GetCachedValue<int>("CurrentSeason");
+            public static int CurrentRace => SaveDataCache.GetCachedValue<int>("CurrentRace");
+            public static int RaceIdOfLastRace => SaveDataCache.GetCachedValue<int>("RaceIdOfLastRace");
+        }
+
+        public static class Queries
+        {
+            public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
+            public const string FastestLapPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'FastestLapBonusPoint'";
+            public const string PolePositionPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PolePositionBonusPoint'";
+            public const string CurrentSeason = "SELECT \"CurrentSeason\" FROM \"Player_State\"";
+            public const string CurrentRace = "SELECT \"RaceID\" FROM \"Save_Weekend\"";
+
+            public static string GetRaceIdOfLastRaceQuery()
+            {
+                return $"SELECT \"RaceID\" FROM \"Races\" WHERE \"SeasonID\" = '{CachedValues.CurrentSeason}' ORDER BY \"RaceID\" DESC LIMIT 1";
+            }
         }
 
         public static void UpdateCache()
@@ -309,6 +319,11 @@ namespace MemoryReader
             lock (_cacheLock)
             {
                 _cachedValues["PointScheme"] = SaveFileQuery.ExecuteScalar<int>(Queries.PointScheme);
+                _cachedValues["FastestLapPoint"] = SaveFileQuery.ExecuteScalar<int>(Queries.FastestLapPoint);
+                _cachedValues["PolePositionPoint"] = SaveFileQuery.ExecuteScalar<int>(Queries.PolePositionPoint);
+                _cachedValues["CurrentSeason"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentSeason);
+                _cachedValues["CurrentRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentRace);
+                _cachedValues["RaceIdOfLastRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.GetRaceIdOfLastRaceQuery());
             }
         }
 

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Security.Cryptography;
 using Dapper;
 
@@ -81,6 +83,8 @@ namespace MemoryReader
 
                 ExtractChunk1(fileBytes, dbSectionOffset, outputDirectory);
                 ExtractDatabases(fileBytes, dbSectionOffset, outputDirectory);
+
+                SaveDataCache.UpdateCache();
             }
         }
 
@@ -265,7 +269,12 @@ namespace MemoryReader
                     var result = connection.ExecuteScalar<T>(sqlCommand, parameters);
                     logger?.Invoke($"Returned scalar value of type {typeof(T).Name}");
 
-                    return result;
+                    if (result == null && !default(T)!.Equals(null))
+                    {
+                        throw new InvalidOperationException("Query returned null for a non-nullable type.");
+                    }
+
+                    return result!;
                 }
             }
             catch (Exception ex)
@@ -273,6 +282,45 @@ namespace MemoryReader
                 logger?.Invoke($"SQL execution failed: {ex.Message}");
                 throw new InvalidOperationException("SQL command execution failed", ex);
             }
+        }
+    }
+
+    public class SaveDataCache
+    {
+        private static readonly object _cacheLock = new object();
+        private static ConcurrentDictionary<string, object> _cachedValues = new();
+
+        public static class Queries
+        {
+            public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
+        }
+
+        public static class CachedValues
+        {
+            public static int PointScheme => SaveDataCache.GetCachedValue<int>("PointScheme");
+        }
+
+        public static void UpdateCache()
+        {
+            lock (_cacheLock)
+            {
+                _cachedValues["PointScheme"] = SaveFileQuery.ExecuteScalar<int>(Queries.PointScheme);
+            }
+        }
+
+        public static T GetCachedValue<T>(string key, T? defaultValue = default)
+        {
+            if (_cachedValues.TryGetValue(key, out var value))
+            {
+                return (T)value;
+            }
+
+            if (defaultValue == null && !default(T)!.Equals(null))
+            {
+                throw new InvalidOperationException($"No cached value found for key '{key}' and no default value provided.");
+            }
+
+            return defaultValue!;
         }
     }
 }

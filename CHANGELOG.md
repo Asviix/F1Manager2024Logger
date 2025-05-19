@@ -4,7 +4,7 @@
 
 ### Changed
 - Moved away from the Memory.DLL Library. ([`d705fb5`](https://github.com/Asviix/F1Manager2024Logger/commit/d705fb5927843d68a56154d8a628bd7d993e3d0e))
-- Changed the menu when the Telemetry Reader is running. ([``]())
+- Changed the menu when the Telemetry Reader is running. ([`12b1132`](https://github.com/Asviix/F1Manager2024Logger/commit/12b113227bb8ff80752d790ef66376795547f613))
 
 ## RELEASE 1.0
 

@@ -525,7 +525,7 @@ namespace MemoryReader
                 telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
             }
 
-            telemetry.SaveData.pointScheme = SaveFileQuery.ExecuteScalar<int>("SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'");
+            telemetry.SaveData.pointScheme = SaveDataCache.CachedValues.PointScheme;
             return telemetry;
         }
 

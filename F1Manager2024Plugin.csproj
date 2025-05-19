@@ -42,6 +42,9 @@
     <Reference Include="AvalonDock.Themes.VS2013">
       <HintPath>$(SIMHUB_INSTALL_PATH)\AvalonDock.Themes.VS2013.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dapper.2.1.66\lib\net461\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -148,6 +151,7 @@
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="TelemetryHelpers.cs" />
+    <Compile Include="UnrealSaveUnpacker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
@@ -175,7 +179,23 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY /Y /R "$(TargetDir)$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25" &amp;&amp; XCOPY /Y /R "$(TargetDir)$(TargetName)*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"</PostBuildEvent>
+    <PostBuildEvent>:: 1. Copy main plugin files (existing)
+XCOPY /Y /R "$(TargetDir)$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)$(TargetName)*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+
+:: 2. Copy SQLite and Dapper DLLs (new additions)
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.EF6.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.Linq.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)Dapper.dll" "%25SIMHUB_INSTALL_PATH%25"
+
+:: 3. Copy native SQLite.Interop.dll (x86/x64 if needed)
+XCOPY /Y /R "$(TargetDir)x86\SQLite.Interop.dll" "%25SIMHUB_INSTALL_PATH%25"
+
+:: 4. Copy same files to your local debug folder
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+XCOPY /Y /R "$(TargetDir)Dapper.dll" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+XCOPY /Y /R "$(TargetDir)x86\SQLite.Interop.dll" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -419,7 +419,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024Plugin.SaveData saveData)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest)
         {
             // No points if position is invalid (<= 0 or beyond F1's point system)
             if (position <= 0 || position > 22)
@@ -429,7 +429,7 @@ namespace F1Manager2024Plugin
             int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
             int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
 
-            int[] pointTable = saveData.pointScheme switch
+            int[] pointTable = SaveDataCache.CachedValues.PointScheme switch
             {
                 1 => pointTableScheme1,
                 2 => pointTableScheme2,
@@ -464,17 +464,17 @@ namespace F1Manager2024Plugin
             }
 
             // +1 point for fastest lap (only if in top 10)
-            if ((sessionId is 6 or 7) && saveData.fastestLapPoint == 1 && isFastest && position <= 10)
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.FastestLapPoint == 1 && isFastest && position <= 10)
             {
                 basePoints += 1;
             }
 
-            if ((sessionId is 6 or 7) && saveData.LastRaceID == saveData.RaceID)
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.RaceIdOfLastRace == SaveDataCache.CachedValues.CurrentRace)
             {
                 basePoints *= 2;
             }
 
-            if ((sessionId is 5 or 10) && saveData.polePositionPoint == 1 && isFastest)
+            if ((sessionId is 5 or 10) && SaveDataCache.CachedValues.PolePositionPoint == 1 && isFastest)
             {
                 basePoints += 1; // +1 point for pole position
             }

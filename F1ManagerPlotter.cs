@@ -7,7 +7,6 @@ using System.Linq;
 using System.Collections.Concurrent;
 using WoteverCommon;
 using WoteverCommon.Extensions;
-using System.IO;
 
 namespace F1Manager2024Plugin
 {
@@ -60,6 +59,10 @@ namespace F1Manager2024Plugin
             SimHub.Logging.Current.Info("Loading Settings...");
             Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings());
             SimHub.Logging.Current.Info("Settings Loaded.");
+
+            SimHub.Logging.Current.Info("Unpacking Save File...");
+            UnrealSaveUnpacker.UnpackSaveFile();
+            SimHub.Logging.Current.Info("Save File Unpacked.");
 
             SimHub.Logging.Current.Info("Registering Debug Properties...");
 
@@ -239,6 +242,8 @@ namespace F1Manager2024Plugin
                 if (telemetry.carFloatValue != ExpectedCarValueSteam && telemetry.carFloatValue != ExpectedCarValueEpic) { UpdateStatus(true, false, "Game not in Session."); return; }
                 try
                 {
+                    UnrealSaveUnpacker.UnpackSaveFile();
+
                     _lastData = telemetry;
 
                     UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
@@ -520,7 +525,7 @@ namespace F1Manager2024Plugin
                 _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
-                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap, telemetry.SaveData));
+                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
                 UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));

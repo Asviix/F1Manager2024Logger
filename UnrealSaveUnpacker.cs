@@ -5,11 +5,10 @@ using System.Data.SQLite;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Security.Cryptography;
 using Dapper;
 
-namespace MemoryReader
+namespace F1Manager2024Plugin
 {
     /// <summary>
     /// Provides functionality to unpack Unreal Engine save files containing compressed database segments

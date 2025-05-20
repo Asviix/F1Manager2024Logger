@@ -73,152 +73,63 @@ namespace F1Manager2024Plugin
         private void InitializeDriverSelection()
         {
             var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
+            var teamNames = Plugin?.GetDriversTeamNames() ?? new Dictionary<string, string>();
 
             // Create a deep copy for Dashboard Tracker
-            var teamsDash = CreateTeamsList(driverNames);
-            var teamsExporter = CreateTeamsList(driverNames); // Separate list for Exporter
-
-            if (Plugin.Settings.CustomTeamName.Length > 0)
-            {
-                teamsDash.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
-                teamsExporter.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
-            }
-            else
-            {
-                teamsDash.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
-                teamsExporter.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
-            }
+            var teamsDash = CreateTeamsList(driverNames, teamNames);
+            var teamsExporter = CreateTeamsList(driverNames, teamNames); // Separate list for Exporter
 
             DriversListBox.ItemsSource = teamsExporter;
             DriversListBoxDash.ItemsSource = teamsDash; // Different source for dashboard
         }
 
-        private void InitializeTireMapping()
-        {
-            // Get driver names with real names
-            var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
-            var drivers = new List<DriverDisplayItem>();
-
-            foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
-            {
-                drivers.Add(new DriverDisplayItem
-                {
-                    InternalName = team.Driver1.Name,
-                    DisplayName = GetDisplayName(team.Driver1.Name, driverNames)
-                });
-                drivers.Add(new DriverDisplayItem
-                {
-                    InternalName = team.Driver2.Name,
-                    DisplayName = GetDisplayName(team.Driver2.Name, driverNames)
-                });
-            }
-
-            // Set up combo box
-            TireMappingDriverComboBox.DisplayMemberPath = "DisplayName";
-            TireMappingDriverComboBox.SelectedValuePath = "InternalName";
-            TireMappingDriverComboBox.ItemsSource = drivers;
-
-            // Select first driver by default if available
-            if (drivers.Count > 0)
-            {
-                TireMappingDriverComboBox.SelectedIndex = 0;
-            }
-
-            // Initialize tire mapping controls
-            var tireMappings = new List<TireMappingItem>();
-            for (int i = 0; i < Plugin.Settings.CustomTireEnum.Length; i++)
-            {
-                tireMappings.Add(new TireMappingItem
-                {
-                    Index = i,
-                    SelectedTireType = Plugin.Settings.CustomTireEnum[i]
-                });
-            }
-            TireMappingItemsControl.ItemsSource = tireMappings;
-
-            // Start timer for real-time updates
-            _tireValueUpdateTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(1000)
-            };
-            _tireValueUpdateTimer.Tick += UpdateCurrentTireValue;
-            _tireValueUpdateTimer.Start();
-        }
-
-        private void InitializePointsSchemeSelection()
-        {
-            // Set the correct radio button based on current setting
-            switch (Plugin.Settings.pointScheme)
-            {
-                case 1:
-                    PointsScheme1Radio.IsChecked = true;
-                    break;
-                case 2:
-                    PointsScheme2Radio.IsChecked = true;
-                    break;
-                case 3:
-                    PointsScheme3Radio.IsChecked = true;
-                    break;
-                default:
-                    PointsScheme1Radio.IsChecked = true;
-                    break;
-            }
-        }
-
-        private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
+        private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames, Dictionary<string, string> teamNames)
         {
             return new List<TeamDrivers>
             {
-                new() { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari",
+                new() { TeamName = "Ferrari", BeautifiedTeamName = GetTeamDisplayName("Ferrari1", teamNames),
                 Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames) },
                 Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames) }},
 
-                new() { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
+                new() { TeamName = "McLaren", BeautifiedTeamName = GetTeamDisplayName("McLaren1", teamNames),
                 Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "McLaren2", DisplayName = GetDisplayName("McLaren2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
+                new() { TeamName = "Red Bull", BeautifiedTeamName = GetTeamDisplayName("RedBull1", teamNames),
                 Driver1 = new DriverSelection { Name = "RedBull1", DisplayName = GetDisplayName("RedBull1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RedBull2", DisplayName = GetDisplayName("RedBull2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
+                new() { TeamName = "Mercedes", BeautifiedTeamName = GetTeamDisplayName("Mercedes1", teamNames),
                 Driver1 = new DriverSelection { Name = "Mercedes1", DisplayName = GetDisplayName("Mercedes1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Mercedes2", DisplayName = GetDisplayName("Mercedes2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
+                new() { TeamName = "Alpine", BeautifiedTeamName = GetTeamDisplayName("Alpine1", teamNames),
                 Driver1 = new DriverSelection { Name = "Alpine1", DisplayName = GetDisplayName("Alpine1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Alpine2", DisplayName = GetDisplayName("Alpine2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
+                new() { TeamName = "Williams", BeautifiedTeamName = GetTeamDisplayName("Williams1", teamNames),
                 Driver1 = new DriverSelection { Name = "Williams1", DisplayName = GetDisplayName("Williams1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Williams2", DisplayName = GetDisplayName("Williams2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
+                new() { TeamName = "HAAS", BeautifiedTeamName = GetTeamDisplayName("Haas1", teamNames),
                 Driver1 = new DriverSelection { Name = "Haas1", DisplayName = GetDisplayName("Haas1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Haas2", DisplayName = GetDisplayName("Haas2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
+                new() { TeamName = "Racing Bulls", BeautifiedTeamName = GetTeamDisplayName("RacingBulls1", teamNames),
                 Driver1 = new DriverSelection { Name = "RacingBulls1", DisplayName = GetDisplayName("RacingBulls1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RacingBulls2", DisplayName = GetDisplayName("RacingBulls2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
+                new() { TeamName = "Kick Sauber", BeautifiedTeamName = GetTeamDisplayName("KickSauber1", teamNames),
                 Driver1 = new DriverSelection { Name = "KickSauber1", DisplayName = GetDisplayName("KickSauber1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "KickSauber2", DisplayName = GetDisplayName("KickSauber2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
+                new() { TeamName = "Aston Martin", BeautifiedTeamName = GetTeamDisplayName("AstonMartin1", teamNames),
                 Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
-            };
-        }
 
-        private TeamDrivers CreateMyTeamEntry(Dictionary<string, (string, string)> driverNames, string teamName)
-        {
-            return new TeamDrivers
-            {
-                TeamName = "MyTeam",
-                BeautifiedTeamName = teamName,
-                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames) },
-                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames) }
+                new() { TeamName = "Custom Team", BeautifiedTeamName = GetTeamDisplayName("MyTeam1", teamNames),
+                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false } },
             };
         }
 
@@ -241,6 +152,16 @@ namespace F1Manager2024Plugin
             return internalName;
         }
 
+        private string GetTeamDisplayName(string internalName, Dictionary<string, string> teamNames)
+        {
+            if (teamNames.TryGetValue(internalName, out var name))
+            {
+                return name;
+            }
+            // Fallback to internal name if no team info found
+            return internalName;
+        }
+
         // Main constructor with plugin parameter
         public SettingsControl(F1ManagerPlotter plugin) : this()
         {
@@ -251,15 +172,12 @@ namespace F1Manager2024Plugin
         {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
-            InitializeTireMapping();
-            InitializePointsSchemeSelection();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
             {
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
-                CustomTeamInput.Text = plugin.Settings.CustomTeamName ?? "MyTeam";
 
                 if (plugin.Settings.TrackedDrivers != null)
                 {
@@ -288,34 +206,6 @@ namespace F1Manager2024Plugin
                     DriversTextBox.Text = selectedDrivers.Any()
                         ? string.Join(", ", selectedDrivers)
                         : "No drivers selected";
-                }
-
-                // Init Custom Team Name
-                if (plugin.Settings.CustomTeamName != null)
-                {
-                    CustomTeamInput.Text = plugin.Settings.CustomTeamName;
-                }
-
-                // Initialize team color
-                if (!string.IsNullOrEmpty(plugin.Settings.CustomTeamColor))
-                {
-                    try
-                    {
-                        var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(plugin.Settings.CustomTeamColor);
-                        TeamColorBrush = new System.Windows.Media.SolidColorBrush(color);
-                        ColorHexText.Text = plugin.Settings.CustomTeamColor;
-                    }
-                    catch
-                    {
-                        // Default color if parsing fails
-                        TeamColorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                        ColorHexText.Text = "#FFFFFF";
-                    }
-                }
-                else
-                {
-                    TeamColorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                    ColorHexText.Text = "#FFFFFF";
                 }
             }
         }
@@ -457,141 +347,6 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void ColorPickerButton_Click(object sender, RoutedEventArgs e)
-        {
-            var colorDialog = new System.Windows.Forms.ColorDialog
-            {
-                AllowFullOpen = true,
-                AnyColor = true,
-                FullOpen = true
-            };
-
-            // Set current color if one exists
-            if (!string.IsNullOrEmpty(Plugin.Settings.CustomTeamColor))
-            {
-                try
-                {
-                    var currentColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(Plugin.Settings.CustomTeamColor);
-                    colorDialog.Color = System.Drawing.Color.FromArgb(currentColor.A, currentColor.R, currentColor.G, currentColor.B);
-                }
-                catch
-                {
-                    // If there's an error parsing the color, just use default
-                }
-            }
-
-            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                var selectedColor = System.Windows.Media.Color.FromArgb(
-                    colorDialog.Color.A,
-                    colorDialog.Color.R,
-                    colorDialog.Color.G,
-                    colorDialog.Color.B);
-
-                TeamColorBrush = new System.Windows.Media.SolidColorBrush(selectedColor);
-                ColorHexText.Text = $"#{selectedColor.R:X2}{selectedColor.G:X2}{selectedColor.B:X2}";
-            }
-        }
-
-        public System.Windows.Media.Brush TeamColorBrush
-        {
-            get { return (System.Windows.Media.Brush)GetValue(TeamColorBrushProperty); }
-            set { SetValue(TeamColorBrushProperty, value); }
-        }
-
-        private void PointsScheme_Checked(object sender, RoutedEventArgs e)
-        {
-            if (Plugin == null) return;
-
-            if (sender == PointsScheme1Radio)
-            {
-                Plugin.Settings.pointScheme = 1;
-            }
-            else if (sender == PointsScheme2Radio)
-            {
-                Plugin.Settings.pointScheme = 2;
-            }
-            else if (sender == PointsScheme3Radio)
-            {
-                Plugin.Settings.pointScheme = 3;
-            }
-        }
-
-        private void UpdateCurrentTireValue(object sender, EventArgs e)
-        {
-            if (TireMappingDriverComboBox.SelectedValue is string selectedDriver && Plugin != null)
-            {
-                // Find the driver in the telemetry data
-                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
-                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
-                {
-                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
-                }
-                else
-                {
-                    CurrentTireByteValueText.Text = "N/A";
-                }
-            }
-        }
-
-        private void TireMappingDriverComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (TireMappingDriverComboBox.SelectedItem is string selectedDriver && Plugin != null)
-            {
-                // Find the driver in the telemetry data
-                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
-                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
-                {
-                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
-                }
-                else
-                {
-                    CurrentTireByteValueText.Text = "N/A";
-                }
-                UpdateCurrentTireValue(null, EventArgs.Empty);
-            }
-        }
-
-        private void ResetTireMappingButton_Click(object sender, RoutedEventArgs e)
-        {
-            var defaults = F1Manager2024PluginSettings.GetDefaults();
-
-            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
-            {
-                int i = 0;
-                foreach (var item in tireMappings)
-                {
-                    item.SelectedTireType = defaults.CustomTireEnum[i++];
-                }
-            }
-
-            // Also reset the settings
-            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
-        }
-
-        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
-        {
-            if (CustomTeamInput.Text.Length == 0)
-            {
-                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
-            }
-
-            // Save tire mappings
-            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
-            {
-                Plugin.Settings.CustomTireEnum = tireMappings.Select(x => x.SelectedTireType).ToArray();
-            }
-
-            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
-            Plugin.Settings.CustomTeamColor = ColorHexText.Text;
-            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-            Plugin.ReloadSettings(Plugin.Settings);
-
-            InitializeUI(Plugin);
-        }
-
         private void HistoricalDataDelete_Click(object sender, RoutedEventArgs e)
         {
             Plugin.ClearAllHistory();
@@ -619,19 +374,19 @@ namespace F1Manager2024Plugin
 
         private void OpenHelpLinks(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is System.Windows.Controls.TextBlock textBlock && !string.IsNullOrWhiteSpace(textBlock.Text))
+            if (sender is System.Windows.Controls.TextBlock textBlock && textBlock.Tag is string url)
             {
                 try
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                     {
-                        FileName = textBlock.Text,
+                        FileName = url,
                         UseShellExecute = true
                     });
                 }
                 catch (Exception ex)
                 {
-                    SHMessageBox.Show($"Failed to open the URL: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SHMessageBox.Show($"Failed to open the link: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -660,13 +415,18 @@ namespace F1Manager2024Plugin
             DependencyProperty.Register("TeamColorBrush", typeof(System.Windows.Media.Brush), typeof(SettingsControl),
             new PropertyMetadata(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)));
 
-        private async void CheckNewVersion(object sender, RoutedEventArgs e)
+        private async void PageLoadEvent(object sender, RoutedEventArgs e)
         {
             if (Plugin.Settings.SavedVersion != Plugin.version)
             {
                 ResetSettingsToDefault();
 
                 await SHMessageBox.Show("New Version detected, settings have been reset to default.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            if (!Plugin.Settings.SaveFileFound)
+            {
+                await SHMessageBox.Show("Save file not found. Please create a save-game first.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             InitializeUI(Plugin);
@@ -679,9 +439,6 @@ namespace F1Manager2024Plugin
             Plugin.Settings.ExporterPath = defaults.ExporterPath;
             Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
             Plugin.Settings.TrackedDriversDashboard = defaults.TrackedDriversDashboard;
-            Plugin.Settings.CustomTeamName = defaults.CustomTeamName;
-            Plugin.Settings.CustomTeamColor = defaults.CustomTeamColor;
-            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
             Plugin.Settings.SavedVersion = Plugin.version;
 
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
@@ -696,8 +453,6 @@ namespace F1Manager2024Plugin
                 team.Driver2.IsSelected = defaults.TrackedDrivers.Contains(team.Driver2.Name);
             }
             DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
-
-            CustomTeamInput.Text = "MyTeam";
         }
     }
 }

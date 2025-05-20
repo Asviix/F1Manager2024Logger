@@ -5,9 +5,9 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Concurrent;
-using System.IO;
 using WoteverCommon;
 using WoteverCommon.Extensions;
+using System.Windows.Navigation;
 
 namespace F1Manager2024Plugin
 {
@@ -16,7 +16,7 @@ namespace F1Manager2024Plugin
     [PluginAuthor("Thomas DEFRANCE")]
     public class F1ManagerPlotter : IPlugin, IWPFSettingsV2
     {
-        public double version = 1.0; 
+        public double version = 1.1; 
         public PluginManager PluginManager { get; set; }
 
         public F1Manager2024PluginSettings Settings;
@@ -53,23 +53,38 @@ namespace F1Manager2024Plugin
         // Initialize the Plugin.
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("Starting Plugin");
+            SimHub.Logging.Current.Info("----F1 MANAGER 2024 SIMHUB PLUGIN----");
+            SimHub.Logging.Current.Info("Starting Plugin...");
+
+            // Load Settings
+            SimHub.Logging.Current.Info("Loading Settings...");
+            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings());
+            SimHub.Logging.Current.Info("Settings Loaded.");
+
+            SimHub.Logging.Current.Info("Unpacking Save File...");
+            UnrealSaveUnpacker.UnpackSaveFile();
+            SimHub.Logging.Current.Info("Save File Unpacked.");
+
+            SimHub.Logging.Current.Info("Registering Debug Properties...");
 
             // Register properties for SimHub
             pluginManager.AddProperty("DEBUG_Status_IsMemoryMap_Connected", this.GetType(), false);
             pluginManager.AddProperty("DEBUG_Status_Game_Connected", this.GetType(), false);
             pluginManager.AddProperty("DEBUG_Game_Status", this.GetType(), typeof(string));
 
-            // Load Settings
-            Settings = this.ReadCommonSettings<F1Manager2024PluginSettings>("GeneralSettings", () => new F1Manager2024PluginSettings());
-            
             // Create new Exporter
+            SimHub.Logging.Current.Info("Creating Exporter...");
             _exporter = new Exporter();
+            SimHub.Logging.Current.Info("Exporter Created.");
 
             // Create new Reader
+            SimHub.Logging.Current.Info("Creating Reader...");
             _mmfReader = new MmfReader();
             _mmfReader.StartReading("F1ManagerTelemetry");
+            SimHub.Logging.Current.Info("Reader Created.");
             _mmfReader.DataReceived += DataReceived;
+
+            SimHub.Logging.Current.Info("Registering Properties...");
 
             #region Init Properties
             // Add Settings Properties
@@ -137,6 +152,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_DriverNumber", GetType(), typeof(int), "Driver Number");
                 pluginManager.AddProperty($"{name}_DriverFirstName", GetType(), typeof(string), "Driver First Name");
                 pluginManager.AddProperty($"{name}_DriverLastName", GetType(), typeof(string), "Driver Last Name");
+                pluginManager.AddProperty($"{name}_DriverCode", GetType(), typeof(string), "Driver Code");
                 pluginManager.AddProperty($"{name}_DriverTeamName", GetType(), typeof(string), "Name of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_DriverTeamColor", GetType(), typeof(string), "Color of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_PitStopStatus", GetType(), typeof(string), "Pit Stop Status");
@@ -216,27 +232,8 @@ namespace F1Manager2024Plugin
             }
             #endregion
 
-            // Declare an action which can be called
-            this.AddAction(
-                actionName: "IncrementSpeedWarning",
-                actionStart: (a, b) =>
-                {
-                    SimHub.Logging.Current.Info("Speed warning changed");
-                });
-
-            // Declare an action which can be called
-            this.AddAction(
-                actionName: "DecrementSpeedWarning",
-                actionStart: (a, b) =>
-                {
-                });
-
-            // Declare an input which can be mapped
-            this.AddInputMapping(
-                inputName: "InputPressed",
-                inputPressed: (a, b) => {/* One of the mapped input has been pressed   */},
-                inputReleased: (a, b) => {/* One of the mapped input has been released */}
-            );
+            SimHub.Logging.Current.Info("Started!");
+            SimHub.Logging.Current.Info("----F1 MANAGER 2024 SIMHUB PLUGIN----");
         }
 
         public void DataReceived(Telemetry telemetry)
@@ -247,6 +244,8 @@ namespace F1Manager2024Plugin
                 if (telemetry.carFloatValue != ExpectedCarValueSteam && telemetry.carFloatValue != ExpectedCarValueEpic) { UpdateStatus(true, false, "Game not in Session."); return; }
                 try
                 {
+                    UnrealSaveUnpacker.UnpackSaveFile();
+
                     _lastData = telemetry;
 
                     UpdateProperties(_lastData, _lastDataTime, _lastTimeElapsed);
@@ -301,7 +300,7 @@ namespace F1Manager2024Plugin
             public int SpeedST { get; set; }
             public bool SpeedSTRecorded { get; set; }
 
-            public void UpdateSTSpeed(int speed, int lap, float distance, float STDistance)
+            public void UpdateSTSpeed(int speed, float distance, float STDistance)
             {
                 if (distance > (STDistance - 240) && distance < (STDistance + 240) && SpeedSTRecorded == false)
                 {
@@ -373,6 +372,24 @@ namespace F1Manager2024Plugin
                 var firstName = TelemetryHelpers.GetDriverFirstName(driverId);
                 var lastName = TelemetryHelpers.GetDriverLastName(driverId);
                 result[name] = (firstName, lastName);
+            }
+
+            return result;
+        }
+
+        // GetDriversTeamNames used by the SettingsControl to initialize the driver's list.
+        public Dictionary<string, string> GetDriversTeamNames()
+        {
+            var result = new Dictionary<string, string>();
+
+            if (_lastData.Car == null) return result;
+
+            for (int i = 0; i < _lastData.Car.Length; i++)
+            {
+                var driverId = _lastData.Car[i].Driver.driverId;
+                var name = carNames[i];
+                var teamName = TelemetryHelpers.GetTeamName(driverId);
+                result[name] = teamName;
             }
 
             return result;
@@ -490,13 +507,13 @@ namespace F1Manager2024Plugin
 
                 if ((session.sessionType is 6 or 7) && (car.pitStopStatus is 6 || car.Driver.rpm == 0))
                 {
-                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    ResetProperties(telemetry, i, name);
                     continue;
                 }
 
                 if ((session.sessionType is not 6 or 7) && (car.Driver.driverId == 0))
                 {
-                    ResetProperties(telemetry, i, name, car.Driver.rpm);
+                    ResetProperties(telemetry, i, name);
                     continue;
                 }
 
@@ -525,19 +542,20 @@ namespace F1Manager2024Plugin
 
 
                 _lastRecordedData[name].UpdateSectorTimes(car.Driver.lastS1Time, car.Driver.lastS2Time, car.Driver.lastS3Time);
-                _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.currentLap, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
+                _lastRecordedData[name].UpdateSTSpeed(car.Driver.speed, car.Driver.distanceTravelled, TelemetryHelpers.GetSpeedTrapDistance(session.trackId));
 
                 UpdateValue($"{name}_Position", (car.Driver.position) + 1); // Adjust for 0-based index
-                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap, Settings));
+                UpdateValue($"{name}_PointsGain", TelemetryHelpers.GetPointsGained(car.Driver.position + 1, session.sessionType, TelemetryHelpers.GetBestSessionTime(telemetry) == car.Driver.driverBestLap));
                 UpdateValue($"{name}_DriverNumber", car.Driver.driverNumber);
                 UpdateValue($"{name}_PitStopStatus", TelemetryHelpers.GetPitStopStatus(car.pitStopStatus, session.sessionType));
-                UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, i, carNames, CarsOnGrid));
+                UpdateValue($"{name}_EstimatedPositionAfterPit", TelemetryHelpers.GetEstimatedPositionAfterPit(telemetry, telemetry.Car[i].Driver.position, CarsOnGrid));
                 // Status
                 UpdateValue($"{name}_TurnNumber", _lastRecordedData[name].LastTurnNumber);
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
-                UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
-                UpdateValue($"{name}_DriverTeamColor", TelemetryHelpers.GetTeamColor(car.Driver.teamId, Settings));
+                UpdateValue($"{name}_DriverCode", TelemetryHelpers.GetDriverCode(car.Driver.driverId));
+                UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.driverId));
+                UpdateValue($"{name}_DriverTeamColor", TelemetryHelpers.GetTeamColor(car.Driver.teamId));
                 UpdateValue($"{name}_CurrentLap", (car.currentLap) + 1); // Adjust for Index
                 UpdateValue($"{name}_DistanceTravelled", car.Driver.distanceTravelled);
                 // Timings
@@ -561,7 +579,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_Fuel", car.fuel);
                 UpdateValue($"{name}_FuelDelta", car.fuelDelta);
                 // Tires
-                UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound, Settings));
+                UpdateValue($"{name}_TireCompound", TelemetryHelpers.GetTireCompound(car.tireCompound, i));
                 UpdateValue($"{name}_TireAge", (car.currentLap + 1) - _lastRecordedData[name].LastTireChangeLap);
                 UpdateValue($"{name}_flSurfaceTemp", car.flSurfaceTemp);
                 UpdateValue($"{name}_flTemp", car.flTemp);
@@ -605,7 +623,7 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void ResetProperties(Telemetry telemetry, int i, string carName, int rpm)
+        private void ResetProperties(Telemetry telemetry, int i, string carName)
         {
             int position = telemetry.Car[i].Driver.position + 1;
 
@@ -697,13 +715,15 @@ namespace F1Manager2024Plugin
             {
                 UpdateValue($"{carName}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_DriverLastName", TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId));
-                UpdateValue($"{carName}_DriverTeamName", TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings));
+                UpdateValue($"{carName}_DriverCode", TelemetryHelpers.GetDriverCode(telemetry.Car[i].Driver.driverId));
+                UpdateValue($"{carName}_DriverTeamName", TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_PitStopStatus", "RETIRED");
             }
             else
             {
                 UpdateValue($"{carName}_DriverFirstName", "NOT LOADED");
                 UpdateValue($"{carName}_DriverLastName", "NOT LOADED");
+                UpdateValue($"{carName}_DriverCode", "NOT LOADED");
                 UpdateValue($"{carName}_DriverTeamName", "NOT LOADED");
                 UpdateValue($"{carName}_PitStopStatus", "NOT LOADED");
             }
@@ -900,7 +920,8 @@ namespace F1Manager2024Plugin
                             DriverNumber = t.Value.Car[i].Driver.driverNumber,
                             DriverFirstName = TelemetryHelpers.GetDriverFirstName(t.Value.Car[i].Driver.driverId),
                             DriverLastName = TelemetryHelpers.GetDriverLastName(t.Value.Car[i].Driver.driverId),
-                            TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
+                            DriverCode = TelemetryHelpers.GetDriverCode(t.Value.Car[i].Driver.driverId),
+                            TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.driverId),
                             PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus, t.Value.Session.sessionType),
                             TurnNumber = _lastRecordedData[carName].LastTurnNumber,
                             DistanceTravelled = t.Value.Car[i].Driver.distanceTravelled,
@@ -923,7 +944,7 @@ namespace F1Manager2024Plugin
                             EnergySpent = t.Value.Car[i].energySpent,
                             Fuel = t.Value.Car[i].fuel,
                             FuelDelta = t.Value.Car[i].fuelDelta,
-                            TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound, Settings),
+                            TireCompound = TelemetryHelpers.GetTireCompound(t.Value.Car[i].tireCompound, i),
                             TireAge = (t.Value.Car[i].currentLap + 1) - _lastRecordedData[carName].LastTireChangeLap,
                             FLDeg = t.Value.Car[i].flWear,
                             FLSurfaceTemp = t.Value.Car[i].flSurfaceTemp,

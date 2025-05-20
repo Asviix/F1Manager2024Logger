@@ -1,12 +1,7 @@
-﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Security.Cryptography;
-using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace MemoryReader
@@ -23,17 +18,22 @@ namespace MemoryReader
         const string PluginName = "F1Manager2024Plugin.dll";
         const string PDBName = "F1Manager2024Plugin.pdb";
         const string configName = "F1Manager2024Plugin.dll.config";
+        const string SQLIteInteropName = "SQLite.Interop.dll";
+        const string SystemDataSQLiteName = "System.Data.SQLite.dll";
+        const string SystemDataSQLiteEF6Name = "System.Data.SQLite.EF6.dll";
+        const string SystemDataSQLiteLinqName = "System.Data.SQLite.Linq.dll";
+        const string DapperName = "Dapper.dll";
         const string SimHubEnvVar = "SIMHUB_INSTALL_PATH";
         const string SimHubProcessName = "SimHubWPF";
         const string SimHubExeName = "SimHubWPF.exe";
 
-        public static readonly List<string[]> _menuItems = new()
-        {
-            new[] { "Start" },
-            new[] { "Properties", "Documentation", "GitHub" },
-            new[] { "Discord", "Overtake" },
-            new[] { "Exit" }
-        };
+        public static readonly List<string[]> _menuItems =
+        [
+            ["Start"],
+            ["Properties", "Documentation", "GitHub"],
+            ["Discord", "Overtake"],
+            ["Exit"]
+        ];
 
         public static (int row, int col) _cursor = (0, 0);
 
@@ -138,7 +138,7 @@ namespace MemoryReader
         private static readonly MemoryReader _mem = new();
         private static bool _isRunning = true;
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             Console.Title = "Memory Reader";
 
@@ -194,31 +194,31 @@ namespace MemoryReader
         {
             Console.Clear();
 
-            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   |", ("|", ConsoleColor.DarkRed), (@"  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  |", ("|", ConsoleColor.DarkRed), (@" |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ |", ("|", ConsoleColor.DarkRed), (@" | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _||", ("|", ConsoleColor.DarkRed), (@" |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _|", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  |", ("|", ConsoleColor.DarkRed), (@" |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       |", ("|", ConsoleColor.DarkRed), (@"         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      |", ("|", ConsoleColor.DarkRed), (@"        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      |", ("|", ConsoleColor.DarkRed), (@"        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      |", ("|", ConsoleColor.DarkRed), (@"         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"| - [EXIT]                                                                           |", ("|", ConsoleColor.DarkRed), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored(@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   |", ("|", ConsoleColor.DarkRed), (@"  _____ _   __  __    _    _   _    _    ____ _____ ____    ____   ___ ____  _  _   ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  |", ("|", ConsoleColor.DarkRed), (@" |  ___/ | |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \  |___ \ / _ \___ \| || |  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ |", ("|", ConsoleColor.DarkRed), (@" | |_  | | | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |   __) | | | |__) | || |_ ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _||", ("|", ConsoleColor.DarkRed), (@" |  _| | | | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <   / __/| |_| / __/|__   _|", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  |", ("|", ConsoleColor.DarkRed), (@" |_|__ |_| |_| _|_/_/ _ \_\_| \_/_/   \_\____|_____|_| \_\_|_____|\___/_____|  |_|  ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       |", ("|", ConsoleColor.DarkRed), (@"         ____ ___ __  __ _   _ _   _ ____    ____  _    _   _  ____ ___ _   _       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      |", ("|", ConsoleColor.DarkRed), (@"        / ___|_ _|  \/  | | | | | | | __ )  |  _ \| |  | | | |/ ___|_ _| \ | |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      |", ("|", ConsoleColor.DarkRed), (@"        \___ \| || |\/| | |_| | | | |  _ \  | |_) | |  | | | | |  _ | ||  \| |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      |", ("|", ConsoleColor.DarkRed), (@"         ___) | || |  | |  _  | |_| | |_) | |  __/| |__| |_| | |_| || || |\  |      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"| - [EXIT]                                                                           |", ("|", ConsoleColor.DarkRed), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
 
-            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.0");
+            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.1");
             if (hasUpdate)
             {
                 MultiColorConsole.WriteCenteredColored($"A new version is available!", ("A new version is available!", ConsoleColor.Red));
@@ -264,30 +264,52 @@ namespace MemoryReader
             }
         }
 
+        private static void DisplayTelemetryHeader(string status)
+        {
+            const int boxWidth = 66;
+            string statusLine = $"| Status: {status}".PadRight(boxWidth) + "|";
+
+            Console.Clear();
+
+            MultiColorConsole.WriteCenteredColored($@"+-----------------------------------------------------------------+", ("+-----------------------------------------------------------------+", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|      _____ _____ _     _____ __  __ _____ _____ ______   __     |", ("|", ConsoleColor.DarkRed), (@"      _____ _____ _     _____ __  __ _____ _____ ______   __     ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|     |_   _| ____| |   | ____|  \/  | ____|_   _|  _ \ \ / /     |", ("|", ConsoleColor.DarkRed), (@"     |_   _| ____| |   | ____|  \/  | ____|_   _|  _ \ \ / /     ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       | | |  _| | |   |  _| | |\/| |  _|   | | | |_) \ V /      |", ("|", ConsoleColor.DarkRed), (@"       | | |  _| | |   |  _| | |\/| |  _|   | | | |_) \ V /      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       | | | |___| |___| |___| |  | | |___  | | |  _ < | |       |", ("|", ConsoleColor.DarkRed), (@"       | | | |___| |___| |___| |  | | |___  | | |  _ < | |       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|       |_| |_____|_____|_____|_|  |_|_____| |_| |_| \_\|_|       |", ("|", ConsoleColor.DarkRed), (@"       |_| |_____|_____|_____|_|  |_|_____| |_| |_| \_\|_|       ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|               ____  _____    _    ____  _____ ____              |", ("|", ConsoleColor.DarkRed), (@"               ____  _____    _    ____  _____ ____              ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |  _ \| ____|  / \  |  _ \| ____|  _ \             |", ("|", ConsoleColor.DarkRed), (@"              |  _ \| ____|  / \  |  _ \| ____|  _ \             ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              | |_) |  _|   / _ \ | | | |  _| | |_) |            |", ("|", ConsoleColor.DarkRed), (@"              | |_) |  _|   / _ \ | | | |  _| | |_) |            ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |  _ <| |___ / ___ \| |_| | |___|  _ <             |", ("|", ConsoleColor.DarkRed), (@"              |  _ <| |___ / ___ \| |_| | |___|  _ <             ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|              |_| \_\_____/_/   \_\____/|_____|_| \_\            |", ("|", ConsoleColor.DarkRed), (@"              |_| \_\_____/_/   \_\____/|_____|_| \_\            ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                 |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored(statusLine, ("|", ConsoleColor.DarkRed), ($"Status: {status}", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                                                                 |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"+-----------------------------------------------------------------+", ("+-----------------------------------------------------------------+", ConsoleColor.DarkRed));
+        }
+
         private static void StartTelemetryReader()
         {
-            Console.Clear();
-            Console.WriteLine("Starting telemetry reader...\n");
+            DisplayTelemetryHeader("Starting...");
 
             EnsurePluginInstalled();
             Thread.Sleep(1000);
 
             if (!AttachToHighMemoryProcess())
             {
-                Console.WriteLine("\nFailed to attach to process. Returning to menu...");
+                DisplayTelemetryHeader("Failed to attach to process");
                 Thread.Sleep(2000);
                 return;
             }
 
-            Console.WriteLine($"\nAttached to F1Manager24 process");
+            DisplayTelemetryHeader("Connected to process");
             using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
             using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
             byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
             int delay = 1000 / UpdateRateHz;
 
-            Console.WriteLine("\n----------\nMemory Map Created, Data is being sent to SimHub.\n----------");
-            Console.WriteLine("Press any key to stop and return to menu...");
+            DisplayTelemetryHeader("Connected to game, press any key to stop telemetry...");
 
             // Run until key is pressed
             while (!Console.KeyAvailable)
@@ -386,6 +408,7 @@ namespace MemoryReader
 
         static Telemetry ReadTelemetry()
         {
+
             var telemetry = new Telemetry
             {
                 Car = new CarTelemetry[DriverCount]
@@ -402,7 +425,7 @@ namespace MemoryReader
             {
                 baseAddress = SteamBaseAddress;
             }
-            else if (EpicTestValue  == 8214.523438f)
+            else if (EpicTestValue == 8214.523438f)
             {
                 baseAddress = EpicBaseAddress;
             }
@@ -417,87 +440,87 @@ namespace MemoryReader
             telemetry.carFloatValue = _mem.ReadFloat(carBasePtr + ",0x0", round: false);
 
             for (int i = 0; i < DriverCount; i++)
-                {
-                    int carOffset = 0x10D8 * i;
+            {
+                int carOffset = 0x10D8 * i;
 
-                    telemetry.Car[i].driverPos = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x710):X}");
-                    telemetry.Car[i].currentLap = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x7E4):X}");
-                    telemetry.Car[i].pitStopStatus = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0x8A8):X}");
-                    telemetry.Car[i].tireCompound = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF9):X}");
-                    telemetry.Car[i].paceMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF1):X}");
-                    telemetry.Car[i].fuelMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF0):X}");
-                    telemetry.Car[i].ersMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF2):X}");
-                    telemetry.Car[i].Driver.ERSAssist = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF3):X}");
-                    telemetry.Car[i].Driver.OvertakeAggression = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF4):X}");
-                    telemetry.Car[i].Driver.DefendApproach = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF5):X}");
-                    telemetry.Car[i].Driver.DriveCleanAir = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF6):X}");
-                    telemetry.Car[i].Driver.AvoidHighKerbs = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF7):X}");
-                    telemetry.Car[i].Driver.DontFightTeammate = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF8):X}");
+                telemetry.Car[i].driverPos = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x710):X}");
+                telemetry.Car[i].currentLap = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x7E4):X}");
+                telemetry.Car[i].pitStopStatus = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0x8A8):X}");
+                telemetry.Car[i].tireCompound = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF9):X}");
+                telemetry.Car[i].paceMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF1):X}");
+                telemetry.Car[i].fuelMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF0):X}");
+                telemetry.Car[i].ersMode = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF2):X}");
+                telemetry.Car[i].Driver.ERSAssist = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF3):X}");
+                telemetry.Car[i].Driver.OvertakeAggression = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF4):X}");
+                telemetry.Car[i].Driver.DefendApproach = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF5):X}");
+                telemetry.Car[i].Driver.DriveCleanAir = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF6):X}");
+                telemetry.Car[i].Driver.AvoidHighKerbs = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF7):X}");
+                telemetry.Car[i].Driver.DontFightTeammate = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF8):X}");
 
-                    telemetry.Car[i].flSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x97C):X}", round: false);
-                    telemetry.Car[i].flTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x980):X}", round:false);
-                    telemetry.Car[i].frSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x988):X}", round: false);
-                    telemetry.Car[i].frTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x98C):X}", round: false);
-                    telemetry.Car[i].rlSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x994):X}", round: false);
-                    telemetry.Car[i].rlTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x998):X}", round: false);
-                    telemetry.Car[i].rrSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A0):X}", round: false);
-                    telemetry.Car[i].rrTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A4):X}", round: false);
+                telemetry.Car[i].flSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x97C):X}");
+                telemetry.Car[i].flTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x980):X}", round:false);
+                telemetry.Car[i].frSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x988):X}");
+                telemetry.Car[i].frTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x98C):X}");
+                telemetry.Car[i].rlSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x994):X}");
+                telemetry.Car[i].rlTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x998):X}");
+                telemetry.Car[i].rrSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A0):X}");
+                telemetry.Car[i].rrTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A4):X}");
 
-                    telemetry.Car[i].flWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x984):X}", round: false);
-                    telemetry.Car[i].frWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x990):X}", round: false);
-                    telemetry.Car[i].rlWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x99C):X}", round: false);
-                    telemetry.Car[i].rrWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A8):X}", round: false);
+                telemetry.Car[i].flWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x984):X}");
+                telemetry.Car[i].frWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x990):X}");
+                telemetry.Car[i].rlWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x99C):X}");
+                telemetry.Car[i].rrWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A8):X}");
 
-                    telemetry.Car[i].engineTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x77C):X}", round: false);
-                    telemetry.Car[i].engineWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x784):X}", round: false);
-                    telemetry.Car[i].gearboxWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x78C):X}", round: false);
-                    telemetry.Car[i].ersWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x788):X}", round: false);
+                telemetry.Car[i].engineTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x77C):X}");
+                telemetry.Car[i].engineWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x784):X}");
+                telemetry.Car[i].gearboxWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x78C):X}");
+                telemetry.Car[i].ersWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x788):X}");
 
-                    telemetry.Car[i].charge = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x878):X}", round: false);
-                    telemetry.Car[i].energyHarvested = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x884):X}", round: false);
-                    telemetry.Car[i].energySpent = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x888):X}", round: false);
-                    telemetry.Car[i].fuel = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x778):X}", round: false);
-                    telemetry.Car[i].fuelDelta = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x7C8):X}", round: false);
+                telemetry.Car[i].charge = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x878):X}");
+                telemetry.Car[i].energyHarvested = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x884):X}");
+                telemetry.Car[i].energySpent = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x888):X}");
+                telemetry.Car[i].fuel = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x778):X}");
+                telemetry.Car[i].fuelDelta = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x7C8):X}");
 
-                    string driverPtr = carBasePtr + $",0x{(carOffset + 0x708):X}";
+                string driverPtr = carBasePtr + $",0x{(carOffset + 0x708):X}";
 
-                    telemetry.Car[i].Driver.teamId = _mem.ReadByte(driverPtr + ",0x579");
-                    telemetry.Car[i].Driver.driverNumber = _mem.ReadInt(driverPtr + ",0x58C");
-                    telemetry.Car[i].Driver.driverId = _mem.ReadInt(driverPtr + ",0x590");
-                    telemetry.Car[i].Driver.turnNumber = _mem.ReadInt(driverPtr + ",0x530");
-                    telemetry.Car[i].Driver.speed = _mem.ReadInt(driverPtr + ",0x4F0");
-                    telemetry.Car[i].Driver.rpm = _mem.ReadInt(driverPtr + ",0x4EC");
-                    telemetry.Car[i].Driver.gear = _mem.ReadInt(driverPtr + ",0x524");
-                    telemetry.Car[i].Driver.position = _mem.ReadInt(driverPtr + ",0x528");
-                    telemetry.Car[i].Driver.drsMode = _mem.ReadByte(driverPtr + ",0x521");
-                    telemetry.Car[i].Driver.driverBestLap = _mem.ReadFloat(driverPtr + ",0x538", round: false);
-                    telemetry.Car[i].Driver.currentLapTime = _mem.ReadFloat(driverPtr + ",0x544", round: false);
-                    telemetry.Car[i].Driver.lastLapTime = _mem.ReadFloat(driverPtr + ",0x540", round: false);
-                    telemetry.Car[i].Driver.lastS1Time = _mem.ReadFloat(driverPtr + ",0x548", round: false);
-                    telemetry.Car[i].Driver.lastS2Time = _mem.ReadFloat(driverPtr + ",0x550", round: false);
-                    telemetry.Car[i].Driver.lastS3Time = _mem.ReadFloat(driverPtr + ",0x558", round: false);
-                    telemetry.Car[i].Driver.distanceTravelled = _mem.ReadFloat(driverPtr + ",0x87C", round: false);
-                    telemetry.Car[i].Driver.GapToLeader = _mem.ReadFloat(driverPtr + ",0x53C", round: false);
-                    telemetry.Car[i].flBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D0", round: false);
-                    telemetry.Car[i].frBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D4", round: false);
-                    telemetry.Car[i].rlBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D8", round: false);
-                    telemetry.Car[i].rrBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5DC", round: false);
+                telemetry.Car[i].Driver.teamId = _mem.ReadByte(driverPtr + ",0x579");
+                telemetry.Car[i].Driver.driverNumber = _mem.ReadInt(driverPtr + ",0x58C");
+                telemetry.Car[i].Driver.driverId = _mem.ReadInt(driverPtr + ",0x590");
+                telemetry.Car[i].Driver.turnNumber = _mem.ReadInt(driverPtr + ",0x530");
+                telemetry.Car[i].Driver.speed = _mem.ReadInt(driverPtr + ",0x4F0");
+                telemetry.Car[i].Driver.rpm = _mem.ReadInt(driverPtr + ",0x4EC");
+                telemetry.Car[i].Driver.gear = _mem.ReadInt(driverPtr + ",0x524");
+                telemetry.Car[i].Driver.position = _mem.ReadInt(driverPtr + ",0x528");
+                telemetry.Car[i].Driver.drsMode = _mem.ReadByte(driverPtr + ",0x521");
+                telemetry.Car[i].Driver.driverBestLap = _mem.ReadFloat(driverPtr + ",0x538");
+                telemetry.Car[i].Driver.currentLapTime = _mem.ReadFloat(driverPtr + ",0x544");
+                telemetry.Car[i].Driver.lastLapTime = _mem.ReadFloat(driverPtr + ",0x540");
+                telemetry.Car[i].Driver.lastS1Time = _mem.ReadFloat(driverPtr + ",0x548");
+                telemetry.Car[i].Driver.lastS2Time = _mem.ReadFloat(driverPtr + ",0x550");
+                telemetry.Car[i].Driver.lastS3Time = _mem.ReadFloat(driverPtr + ",0x558");
+                telemetry.Car[i].Driver.distanceTravelled = _mem.ReadFloat(driverPtr + ",0x87C");
+                telemetry.Car[i].Driver.GapToLeader = _mem.ReadFloat(driverPtr + ",0x53C");
+                telemetry.Car[i].flBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D0");
+                telemetry.Car[i].frBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D4");
+                telemetry.Car[i].rlBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D8");
+                telemetry.Car[i].rrBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5DC");
 
-                    telemetry.cameraFocus = _mem.ReadInt(gameObjPtr + ",0x23C");
+                telemetry.cameraFocus = _mem.ReadInt(gameObjPtr + ",0x23C");
 
-                    string sessionPtr = gameObjPtr + ",0x260";
+                string sessionPtr = gameObjPtr + ",0x260";
 
-                    telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round:false);
-                    telemetry.Session.rubber = _mem.ReadFloat(sessionPtr + ",0x278", round: false);
-                    telemetry.Session.trackId = _mem.ReadInt(sessionPtr + ",0x228");
-                    telemetry.Session.sessionType = _mem.ReadInt(sessionPtr + ",0x288");
-                    telemetry.Session.Weather.waterOnTrack = _mem.ReadFloat(sessionPtr + ",0xA132C8", round: false);
+                telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round:false);
+                telemetry.Session.rubber = _mem.ReadFloat(sessionPtr + ",0x278");
+                telemetry.Session.trackId = _mem.ReadInt(sessionPtr + ",0x228");
+                telemetry.Session.sessionType = _mem.ReadInt(sessionPtr + ",0x288");
+                telemetry.Session.Weather.waterOnTrack = _mem.ReadFloat(sessionPtr + ",0xA132C8");
 
-                    string weatherPtr = sessionPtr + $",0xA12990";
-                    telemetry.Session.Weather.airTemp = _mem.ReadFloat(weatherPtr + ",0xAC", round: false);
-                    telemetry.Session.Weather.trackTemp = _mem.ReadFloat(weatherPtr + ",0xB0", round: false);
-                    telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
-                }
+                string weatherPtr = sessionPtr + $",0xA12990";
+                telemetry.Session.Weather.airTemp = _mem.ReadFloat(weatherPtr + ",0xAC");
+                telemetry.Session.Weather.trackTemp = _mem.ReadFloat(weatherPtr + ",0xB0");
+                telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
+            }
             return telemetry;
         }
 
@@ -562,58 +585,93 @@ namespace MemoryReader
                 // Kill SimHub process if running
                 KillSimHubProcess();
 
-                bool shouldCopy = false;
+                // Define all required files
+                var requiredFiles = new Dictionary<string, string>
+        {
+            { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
+            { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
+            { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
+            { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
+            { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
+            { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
+            { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
+            { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
+        };
 
-                string destPluginPath = Path.Combine(simHubPath, PluginName);
-                string destPDBPath = Path.Combine(simHubPath, PDBName);
-                string destConfigPath = Path.Combine(simHubPath, configName);
-                string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
-                string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
-                string sourceConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName);
-                string? sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
+                // Check if any files are missing or need updating
+                bool needsCopy = false;
 
-                if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
+                // First check if main plugin needs update
+                if (File.Exists(requiredFiles[PluginName]))
                 {
-                    Console.WriteLine($"Source plugin file not found at: {sourcePluginPath}");
-                    return;
-                }
+                    string? sourceVersion = FileVersionInfo.GetVersionInfo(requiredFiles[PluginName]).FileVersion;
+                    string destPluginPath = Path.Combine(simHubPath, PluginName);
 
-                if (File.Exists(destPluginPath) && File.Exists(destPDBPath))
-                {
-                    string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
-                    if (sourceVersion != destVersion)
+                    if (File.Exists(destPluginPath))
                     {
-                        Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
-                        shouldCopy = true;
+                        string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
+                        if (sourceVersion != destVersion)
+                        {
+                            Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
+                            needsCopy = true;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Plugin not found in SimHub installation");
+                        needsCopy = true;
                     }
                 }
-                else
+
+                // Check if any dependency is missing
+                foreach (var file in requiredFiles)
                 {
-                    Console.WriteLine("Plugin not found in SimHub installation, copying...");
-                    shouldCopy = true;
+                    string destPath = file.Key == SQLIteInteropName
+                        ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
+                        : Path.Combine(simHubPath, file.Key);
+
+                    if (!File.Exists(destPath) && File.Exists(file.Value))
+                    {
+                        Console.WriteLine($"Dependency missing: {file.Key}");
+                        needsCopy = true;
+                        break;
+                    }
                 }
 
-                if (shouldCopy)
+                // Copy all files if needed
+                if (needsCopy)
                 {
-                    try
+                    Console.WriteLine("Copying plugin and dependencies...");
+
+                    foreach (var file in requiredFiles)
                     {
-                        // Force overwrite the file
-                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                        Thread.Sleep(500);
-                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                        Thread.Sleep(500);
-                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
-                        Console.WriteLine($"Successfully installed plugin to: {destPluginPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error copying plugin: {ex.Message}");
-                        // Try again after a short delay in case of file locks
-                        Thread.Sleep(500);
-                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
-                        Console.WriteLine($"Successfully installed plugin on second attempt: {destPluginPath}");
+                        string sourcePath = file.Value;
+                        string destPath = file.Key == SQLIteInteropName
+                            ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
+                            : Path.Combine(simHubPath, file.Key);
+
+                        if (File.Exists(sourcePath))
+                        {
+                            try
+                            {
+                                // Ensure directory exists
+                                string? directory = Path.GetDirectoryName(destPath);
+                                if (directory is not null)
+                                    Directory.CreateDirectory(directory);
+
+                                // Copy with retry logic
+                                RetryFileCopy(sourcePath, destPath);
+                                Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to copy {file.Key}: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Source file not found: {file.Key}");
+                        }
                     }
                 }
 
@@ -622,8 +680,25 @@ namespace MemoryReader
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error installing plugin: {ex.ToString()}");
+                Console.WriteLine($"Error installing plugin: {ex}");
             }
+        }
+
+        private static void RetryFileCopy(string source, string dest, int maxRetries = 3, int delayMs = 500)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    File.Copy(source, dest, overwrite: true);
+                    return;
+                }
+                catch when (i < maxRetries - 1)
+                {
+                    Thread.Sleep(delayMs);
+                }
+            }
+            throw new IOException($"Failed to copy {source} to {dest} after {maxRetries} attempts");
         }
 
         private static bool KillSimHubProcess()
@@ -741,7 +816,7 @@ namespace MemoryReader
 
     class GitHubUpdateChecker
     {
-        private const string CurrentVersion = "1.0";
+        private const string CurrentVersion = "1.1";
         private const string RepoUrl = "https://github.com/Asviix/F1Manager2024Logger";
 
         public async Task<bool> CheckForUpdates()

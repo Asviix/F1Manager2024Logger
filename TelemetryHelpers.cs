@@ -188,7 +188,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the estimated position after pitting.
-        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int CarsOnGrid)
         {
             if (telemetry.Session.sessionType is not 6 or 7) return 0;
 
@@ -419,7 +419,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024PluginSettings Settings)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest)
         {
             // No points if position is invalid (<= 0 or beyond F1's point system)
             if (position <= 0 || position > 22)
@@ -429,7 +429,7 @@ namespace F1Manager2024Plugin
             int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
             int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
 
-            int[] pointTable = Settings.pointScheme switch
+            int[] pointTable = SaveDataCache.CachedValues.PointScheme switch
             {
                 1 => pointTableScheme1,
                 2 => pointTableScheme2,
@@ -464,9 +464,20 @@ namespace F1Manager2024Plugin
             }
 
             // +1 point for fastest lap (only if in top 10)
-            if ((sessionId is 6 or 7) && isFastest && position <= 10)
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.FastestLapPoint == 1 && isFastest && position <= 10)
             {
                 basePoints += 1;
+            }
+
+            // Double the points if it's the last race of the season and the setting is enabled.
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.DoublePointsLastRace == 1 && SaveDataCache.CachedValues.RaceIdOfLastRace == SaveDataCache.CachedValues.CurrentRace)
+            {
+                basePoints *= 2;
+            }
+
+            if ((sessionId is 5 or 10) && SaveDataCache.CachedValues.PolePositionPoint == 1 && isFastest)
+            {
+                basePoints += 1; // +1 point for pole position
             }
 
             return basePoints;
@@ -475,405 +486,49 @@ namespace F1Manager2024Plugin
         // Returns the Driver's First Name based on ID.
         public static string GetDriverFirstName(int driverId)
         {
-            return driverId switch
-            {
-                1 => "Lewis",
-                2 => "Charles",
-                3 => "Alexander",
-                8 => "Valtteri",
-                9 => "Sebastian",
-                10 => "Max",
-                11 => "Carlos",
-                12 => "Lando",
-                13 => "Daniel",
-                14 => "Esteban",
-                15 => "Pierre",
-                16 => "Daniil",
-                17 => "Sergio",
-                18 => "Lance",
-                19 => "Kimi",
-                20 => "Antonio",
-                22 => "Stoffel",
-                23 => "George",
-                24 => "Nicholas",
-                74 => "Mick",
-                76 => "Nyck",
-                77 => "Fernando",
-                78 => "Roy",
-                79 => "Nikita",
-                80 => "Pietro",
-                81 => "Yuki",
-                82 => "Robert",
-                83 => "Nico",
-                85 => "Denis",
-                87 => "Theo",
-                88 => "Ralph",
-                91 => "Jehan",
-                94 => "Marcus",
-                95 => "Liam",
-                96 => "Juri",
-                99 => "Richard",
-                102 => "Oscar",
-                104 => "Marino",
-                105 => "Guanyu",
-                106 => "Felipe",
-                107 => "Frederik",
-                108 => "Alexander",
-                109 => "Juan Manuel",
-                110 => "Amaury",
-                112 => "Laszlo",
-                114 => "Ido",
-                115 => "Kaylen",
-                116 => "Logan",
-                117 => "Enzo",
-                119 => "Roman",
-                120 => "Ayumu",
-                121 => "Jak",
-                123 => "Rafael",
-                125 => "Calan",
-                127 => "Victor",
-                128 => "Caio",
-                130 => "Dennis",
-                131 => "Olli",
-                132 => "Arthur",
-                133 => "Clement",
-                135 => "Jack",
-                140 => "Jake",
-                141 => "Cem",
-                142 => "Oliver",
-                143 => "Gregoire",
-                144 => "Isack",
-                242 => "Zane",
-                243 => "Francesco",
-                244 => "Hunter",
-                245 => "Pepe",
-                246 => "William",
-                247 => "Zak",
-                248 => "Franco",
-                249 => "Reece",
-                250 => "David",
-                251 => "Ayrton",
-                252 => "Kush",
-                253 => "Brad",
-                254 => "Romain",
-                255 => "Kevin",
-                256 => "Pascal",
-                257 => "Felipe",
-                258 => "Michael",
-                259 => "Pedro",
-                260 => "Rubens",
-                263 => "Jack",
-                264 => "Sebastien",
-                265 => "Enzo",
-                267 => "Nazim",
-                268 => "Oliver",
-                269 => "Federico",
-                270 => "David",
-                272 => "Jonny",
-                273 => "Filip",
-                274 => "Zdenek",
-                275 => "Lirim",
-                276 => "David",
-                277 => "Roberto",
-                278 => "Niko",
-                279 => "Gabriel",
-                280 => "Gabriele",
-                281 => "Paul",
-                282 => "Dino",
-                283 => "Mari",
-                284 => "Christian",
-                285 => "Pato",
-                286 => "Nikola",
-                287 => "Tommy",
-                288 => "Oliver",
-                289 => "Leonardo",
-                300 => "Oliver",
-                301 => "Sebastian",
-                302 => "Hugh",
-                303 => "Alejandro",
-                304 => "Nikita",
-                305 => "Taylor",
-                306 => "Sophia",
-                307 => "Roberto",
-                308 => "Piotr",
-                322 => "Luke",
-                351 => "Miguel",
-                359 => "Luc",
-                371 => "Mckenzy",
-                373 => "Arvid",
-                374 => "Sami",
-                375 => "Martinius",
-                376 => "Andrea Kimi",
-                377 => "Ritomo",
-                378 => "Joshua",
-                379 => "Tim",
-                380 => "Noel",
-                381 => "Laurens",
-                382 => "Charlie",
-                383 => "Santiago",
-                384 => "Callum",
-                385 => "Cian",
-                386 => "Joshua",
-                387 => "Kacper",
-                388 => "Matias",
-                389 => "Joseph",
-                390 => "Maxwell",
-                394 => "Tasanapol",
-                398 => "Ryo",
-                399 => "Alexander",
-                400 => "Lena",
-                401 => "Carrie",
-                402 => "Chloe",
-                405 => "Abbi",
-                406 => "Nicola",
-                407 => "Kean",
-                408 => "Jessica",
-                409 => "Tina",
-                410 => "Bianca",
-                411 => "Ugo",
-                413 => "Robert",
-                416 => "James",
-                417 => "Kabir",
-                418 => "Maya",
-                419 => "Aurelia",
-                436 => "Amna",
-                437 => "Hamda",
-                438 => "Emely",
-                439 => "Tuukka",
-                547 => "Hiroko",
-                548 => "Minna",
-                549 => "Jennifer",
-                550 => "Anne-Marie",
-                551 => "Stephanie",
-                552 => "Claudio",
-                553 => "Ludwig",
-                567 => "Waseem",
-                _ => "Unknown"
-            };
+            var drivers = SaveDataCache.CachedValues.DriverNameData;
+            return drivers.FirstOrDefault(d => d.Id == driverId).FirstName;
         }
 
         // Returns the Driver's Last Name based on ID.
         public static string GetDriverLastName(int driverId)
         {
-            return driverId switch
-            {
-                1 => "Hamilton",
-                2 => "Leclerc",
-                3 => "Albon",
-                8 => "Bottas",
-                9 => "Vettel",
-                10 => "Verstappen",
-                11 => "Sainz",
-                12 => "Norris",
-                13 => "Ricciardo",
-                14 => "Ocon",
-                15 => "Gasly",
-                16 => "Kvyat",
-                17 => "Perez",
-                18 => "Stroll",
-                19 => "Raikkonen",
-                20 => "Giovinazzi",
-                22 => "Vandoorne",
-                23 => "Russell",
-                24 => "Latifi",
-                74 => "Schumacher",
-                76 => "de Vries",
-                77 => "Alonso",
-                78 => "Nissany",
-                79 => "Mazepin",
-                80 => "Fittipaldi",
-                81 => "Tsunoda",
-                82 => "Kubica",
-                83 => "Hulkenberg",
-                85 => "Moreau",
-                87 => "Pourchaire",
-                88 => "Boschung",
-                91 => "Daruvala",
-                94 => "Armstrong",
-                95 => "Lawson",
-                96 => "Vips",
-                99 => "Verschoor",
-                102 => "Piastri",
-                104 => "Sato",
-                105 => "Zhou",
-                106 => "Drugovich",
-                107 => "Vesti",
-                108 => "Smolyar",
-                109 => "Correa",
-                110 => "Cordeel",
-                112 => "Toth",
-                114 => "Cohen",
-                115 => "Frederick",
-                116 => "Sargeant",
-                117 => "Fittipaldi",
-                119 => "Stanek",
-                120 => "Iwasa",
-                121 => "Crawford",
-                123 => "Villagomez",
-                125 => "Williams",
-                127 => "Martins",
-                128 => "Collet",
-                130 => "Hauger",
-                131 => "Caldwell",
-                132 => "Leclerc",
-                133 => "Novalak",
-                135 => "Doohan",
-                140 => "Hughes",
-                141 => "Bolukbasi",
-                142 => "Bearman",
-                143 => "Saucy",
-                144 => "Hadjar",
-                242 => "Maloney",
-                243 => "Pizzi",
-                244 => "Yeany",
-                245 => "Marti",
-                246 => "Alatalo",
-                247 => "O'Sullivan",
-                248 => "Colapinto",
-                249 => "Ushijima",
-                250 => "Vidales",
-                251 => "Simmons",
-                252 => "Maini",
-                253 => "Benavides",
-                254 => "Grosjean",
-                255 => "Magnussen",
-                256 => "Wehrlein",
-                257 => "Massa",
-                258 => "Schumacher",
-                259 => "De La Rosa",
-                260 => "Barrichello",
-                263 => "Aitken",
-                264 => "Buemi",
-                265 => "Trulli",
-                267 => "Azman",
-                268 => "Rasmussen",
-                269 => "Malvestiti",
-                270 => "Schumacher",
-                272 => "Edgar",
-                273 => "Ugran",
-                274 => "Chovanec",
-                275 => "Zendeli",
-                276 => "Beckmann",
-                277 => "Merhi",
-                278 => "Kari",
-                279 => "Bortoleto",
-                280 => "Mini",
-                281 => "Aron",
-                282 => "Beganovic",
-                283 => "Boya",
-                284 => "Mansell",
-                285 => "O'Ward",
-                286 => "Tsolov",
-                287 => "Smith",
-                288 => "Goethe",
-                289 => "Fornaroli",
-                300 => "Gray",
-                301 => "Montoya",
-                302 => "Barter",
-                303 => "Garcia",
-                304 => "Bedrin",
-                305 => "Barnard",
-                306 => "Florsch",
-                307 => "Faria",
-                308 => "Wisnicki",
-                322 => "Browning",
-                351 => "Baltazar",
-                359 => "Dupont",
-                371 => "Cresswell",
-                373 => "Lindblad",
-                374 => "Meguetounif",
-                375 => "Stenshorne",
-                376 => "Antonelli",
-                377 => "Miyata",
-                378 => "Durksen",
-                379 => "Tramnitz",
-                380 => "Leon",
-                381 => "van Hoepen",
-                382 => "Wurz",
-                383 => "Ramos",
-                384 => "Voisin",
-                385 => "Shields",
-                386 => "Dufek",
-                387 => "Sztuka",
-                388 => "Zagazeta",
-                389 => "Loake",
-                390 => "Esterson",
-                394 => "Inthraphuvasak",
-                398 => "Hirakawa",
-                399 => "Dunne",
-                400 => "Buhler",
-                401 => "Schreiner",
-                402 => "Chambers",
-                405 => "Pulling",
-                406 => "Lacorte",
-                407 => "Nakamura-Berta",
-                408 => "Hawkins",
-                409 => "Hausmann",
-                410 => "Bustamante",
-                411 => "Ugochukwu",
-                413 => "Shwartzman",
-                416 => "Hedley",
-                417 => "Anurag",
-                418 => "Weug",
-                419 => "Nobels",
-                436 => "Al Qubaisi",
-                437 => "Al Qubaisi",
-                438 => "de Heus",
-                439 => "Taponen",
-                547 => "Ueda",
-                548 => "Bruun",
-                549 => "Randall",
-                550 => "Bertin",
-                551 => "Augar",
-                552 => "Alvarez",
-                553 => "Sommer",
-                567 => "Nazari",
-                _ => "Unknown"
-            };
+            var drivers = SaveDataCache.CachedValues.DriverNameData;
+            return drivers.FirstOrDefault(d => d.Id == driverId).LastName;
+        }
+
+        // Returns the Driver's Code based on ID.
+        public static string GetDriverCode(int driverId)
+        {
+            var drivers = SaveDataCache.CachedValues.DriverNameData;
+            return drivers.FirstOrDefault(d => d.Id == driverId).DriverCode;
         }
 
         // Returns the Team's Name based on ID.
-        public static string GetTeamName(int teamId, F1Manager2024PluginSettings Settings)
+        public static string GetTeamName(int driverId)
         {
-            if (Settings.CustomTeamName != null && teamId == 32) return Settings.CustomTeamName;
-
-            return teamId switch
+            try
             {
-                1 => "Ferrari",
-                2 => "McLaren",
-                3 => "Red Bull Racing",
-                4 => "Mercedes AMG Petronas F1",
-                5 => "Alpine",
-                6 => "Williams Racing",
-                7 => "Haas F1",
-                8 => "Racing Bulls",
-                9 => "Kick Sauber",
-                10 => "Aston Martin",
-                32 => "Custom Team",
-                _ => "Unknown",
-            };
+                var driver = SaveDataCache.CachedValues.DriverNameData.FirstOrDefault(d => d.Id == driverId);
+                if (driver == null)
+                {
+                    return "Unknown Driver";
+                }
+
+                var team = SaveDataCache.CachedValues.F1Teams.FirstOrDefault(t => t.TeamId == driver.TeamID);
+                return team?.TeamName ?? "Unknown Team";
+            }
+            catch
+            {
+                return "Error";
+            }
         }
 
         // Returns the Team's Color based on ID.
-        public static string GetTeamColor(int teamId, F1Manager2024PluginSettings Settings)
+        public static string GetTeamColor(int teamId)
         {
-            if (Settings.CustomTeamColor != null && teamId == 32) return Settings.CustomTeamColor;
-
-            return teamId switch
-            {
-                1 => "#e80030",
-                2 => "#ff8300",
-                3 => "#3974c7",
-                4 => "#2af4d3",
-                5 => "#0095cd",
-                6 => "#67c5ff",
-                7 => "#b8bcbf",
-                8 => "#6994ff",
-                9 => "#55e355",
-                10 => "#249b74",
-                32 => "#FFFFFF",
-                _ => "#FFFFFF",
-            };
+            var teams = SaveDataCache.CachedValues.F1Teams.FirstOrDefault(t => t.TeamId == teamId);
+            return teams.TeamColour;
         }
 
         // Returns the PitStop State based on ID.
@@ -905,13 +560,14 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the Tire Compound based on ID.
-        public static string GetTireCompound(int compound, F1Manager2024PluginSettings Settings)
+        public static string GetTireCompound(int compound, int i)
         {
-            if (compound >= 0 && compound < Settings.CustomTireEnum.Length)
-            {
-                return Settings.CustomTireEnum[compound];
-            }
-            return "Unknown";
+            string[] TyreSets = { "Hard", "Medium", "Soft", "Intermediates", "Wet" };
+
+            var tyre = SaveDataCache.CachedValues.TyreSetData.FirstOrDefault(t => t.TyreSetID == compound && t.CarID == i);
+            var tyreSet = tyre.WeekendTyreType;
+
+            return TyreSets[tyreSet];
         }
 
         // Returns the Pace Mode based on ID.

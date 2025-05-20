@@ -21,10 +21,6 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <!-- Include Memory.dll as content to ensure it gets published -->
-    <Content Include="..\..\Build_x64\Memory.dll" Link="Memory.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -39,9 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Memory">
-      <HintPath>..\..\Build_x64\Memory.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Windows.Forms.dll</HintPath>
     </Reference>

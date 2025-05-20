@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Dapper;
 
@@ -290,6 +292,7 @@ namespace F1Manager2024Plugin
             public string RawFirstName { get; set; }
             public string RawLastName { get; set; }
             public string RawDriverCode { get; set; }
+            public int TeamID { get; set; }
             public string FirstName => ExtractName(RawFirstName);
             public string LastName => ExtractName(RawLastName);
             public string DriverCode => ExtractName(RawDriverCode);
@@ -315,6 +318,79 @@ namespace F1Manager2024Plugin
             }
         }
 
+        public class F1Teams
+        {
+            public int TeamId { get; set; }
+            public string RawTeamName { get; set; }
+            public string TeamName => ExtractTeamName(RawTeamName);
+
+            private static string ExtractTeamName(string resourceString)
+            {
+                if (string.IsNullOrEmpty(resourceString))
+                    return resourceString;
+
+                // Handle custom team format: [STRING_LITERAL:Value=|Peugeot Sport|]
+                if (resourceString.StartsWith("[STRING_LITERAL:Value=|") && resourceString.EndsWith("|]"))
+                {
+                    return resourceString
+                        .Substring("[STRING_LITERAL:Value=|".Length)
+                        .TrimEnd('|', ']');
+                }
+
+                // Handle standard resource format: [TeamName_F1_MercedesAMGPetronasF1]
+                if (resourceString.StartsWith("[") && resourceString.EndsWith("]"))
+                {
+                    var cleanString = resourceString.Trim('[', ']');
+                    var parts = cleanString.Split('_');
+                    var namePart = parts.LastOrDefault() ?? cleanString;
+
+                    // Special cases for known team names
+                    var knownTeams = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["MercedesAMGPetronasF1"] = "Mercedes AMG Petronas F1",
+                        ["McLaren"] = "McLaren"
+                    };
+
+                    if (knownTeams.TryGetValue(namePart, out var formattedName))
+                        return formattedName;
+
+                    // Generic solution for unknown team names
+                    return AddSpacesToTeamName(namePart);
+                }
+
+                // Return as-is if not a special format
+                return resourceString;
+            }
+
+            private static string AddSpacesToTeamName(string name)
+            {
+                if (string.IsNullOrEmpty(name))
+                    return name;
+
+                var sb = new StringBuilder();
+                for (int i = 0; i < name.Length; i++)
+                {
+                    // Skip adding space for first character
+                    if (i > 0 && char.IsUpper(name[i]))
+                    {
+                        // Don't add space if previous character was uppercase (like AMG)
+                        // Unless next character is lowercase (like "F1Team" -> "F1 Team")
+                        bool shouldAddSpace = !char.IsUpper(name[i - 1]) ||
+                                            (i < name.Length - 1 && char.IsLower(name[i + 1]));
+
+                        if (shouldAddSpace)
+                            sb.Append(' ');
+                    }
+                    sb.Append(name[i]);
+                }
+
+                // Special handling for "F1" at the end
+                return sb.ToString()
+                    .Replace("F 1", "F1")  // Fix cases where F1 was split
+                    .Replace(" F1", " F1"); // Ensure consistent spacing
+            }
+        }
+
         public static class CachedValues
         {
             public static int PointScheme => SaveDataCache.GetCachedValue<int>("PointScheme");
@@ -325,6 +401,7 @@ namespace F1Manager2024Plugin
             public static int CurrentRace => SaveDataCache.GetCachedValue<int>("CurrentRace");
             public static int RaceIdOfLastRace => SaveDataCache.GetCachedValue<int>("RaceIdOfLastRace");
             public static List<DriverNameData> DriverNameData => SaveDataCache.GetCachedValue<List<DriverNameData>>("driverNameData");
+            public static List<F1Teams> F1Teams => SaveDataCache.GetCachedValue<List<F1Teams>>("F1Teams");
         }
 
         public static class Queries
@@ -335,7 +412,8 @@ namespace F1Manager2024Plugin
             public const string DoublePointsLastRace = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'DoubleLastRacePoints'";
             public const string CurrentSeason = "SELECT \"CurrentSeason\" FROM \"Player_State\"";
             public const string CurrentRace = "SELECT \"RaceID\" FROM \"Save_Weekend\"";
-            public const string driverNameData = "SELECT \"StaffID\" as \"Id\", \"FirstName\" as \"RawFirstName\", \"LastName\" as \"RawLastName\", \"DriverCode\" as \"RawDriverCode\" FROM \"Staff_DriverData_View\" ORDER BY \"StaffID\" ASC";
+            public const string driverNameData = "SELECT d.\"StaffID\" as \"Id\", d.\"FirstName\" as \"RawFirstName\", d.\"LastName\" as \"RawLastName\", d.\"DriverCode\" as \"RawDriverCode\", c.\"TeamID\" as \"TeamID\" FROM \"Staff_DriverData_View\" d JOIN \"Staff_Contracts_View\" c ON d.\"StaffID\" = c.\"StaffID\" WHERE c.\"Formula\" = '1' ORDER BY d.\"StaffID\" ASC";
+            public const string F1Teams = "SELECT \"TeamID\" as \"TeamId\", \"TeamNameLocKey\" as \"RawTeamName\" FROM \"Teams\" WHERE \"Formula\" = '1' ORDER BY \"TeamID\" ASC";
 
             public static string GetRaceIdOfLastRaceQuery()
             {
@@ -355,6 +433,7 @@ namespace F1Manager2024Plugin
                 _cachedValues["CurrentRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentRace);
                 _cachedValues["RaceIdOfLastRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.GetRaceIdOfLastRaceQuery());
                 _cachedValues["driverNameData"] = SaveFileQuery.ExecuteSql<DriverNameData>(Queries.driverNameData);
+                _cachedValues["F1Teams"] = SaveFileQuery.ExecuteSql<F1Teams>(Queries.F1Teams);
             }
         }
 

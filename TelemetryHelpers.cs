@@ -505,25 +505,23 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the Team's Name based on ID.
-        public static string GetTeamName(int teamId, F1Manager2024PluginSettings Settings)
+        public static string GetTeamName(int driverId, F1Manager2024PluginSettings Settings)
         {
-            if (Settings.CustomTeamName != null && teamId == 32) return Settings.CustomTeamName;
-
-            return teamId switch
+            try
             {
-                1 => "Ferrari",
-                2 => "McLaren",
-                3 => "Red Bull Racing",
-                4 => "Mercedes AMG Petronas F1",
-                5 => "Alpine",
-                6 => "Williams Racing",
-                7 => "Haas F1",
-                8 => "Racing Bulls",
-                9 => "Kick Sauber",
-                10 => "Aston Martin",
-                32 => "Custom Team",
-                _ => "Unknown",
-            };
+                var driver = SaveDataCache.CachedValues.DriverNameData.FirstOrDefault(d => d.Id == driverId);
+                if (driver == null)
+                {
+                    return "Unknown Driver";
+                }
+
+                var team = SaveDataCache.CachedValues.F1Teams.FirstOrDefault(t => t.TeamId == driver.TeamID);
+                return team?.TeamName ?? "Unknown Team";
+            }
+            catch
+            {
+                return "Error";
+            }
         }
 
         // Returns the Team's Color based on ID.

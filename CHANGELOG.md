@@ -8,9 +8,11 @@
 - Point Schemes will now be read from the savefile, no need for user input. ([`6709134`](https://github.com/Asviix/F1Manager2024Logger/commit/67091343e853e39d1f4abb4db11e64415df39074))
 - Fastest Lap Point addition will now be read from the savefile. ([`1237c32`](https://github.com/Asviix/F1Manager2024Logger/commit/1237c32a4683d2a57788971a06a7cbfd42a719b6))
 - Point for Pole Position will now be read from the savefile. ([`f9ee375`](https://github.com/Asviix/F1Manager2024Logger/commit/f9ee375e17900d7c3dc3a49047fe99277ccd636d))
+- Retrived team names from the save file instead of a hard-coded table. ([``]())
 
 ### Added
 - Added Points Doubling for the last Race if enabled. ([`204700c`](https://github.com/Asviix/F1Manager2024Logger/commit/204700c214d9bce2aadf275cc9c16ec3f38ba14d))
+- Added Driver Code. ([`e1f63c1`](https://github.com/Asviix/F1Manager2024Logger/commit/e1f63c18a1426d49546bf46a86aeb37d7ae4d6d8))
 
 ## RELEASE 1.0
 

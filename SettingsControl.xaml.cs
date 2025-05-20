@@ -73,21 +73,11 @@ namespace F1Manager2024Plugin
         private void InitializeDriverSelection()
         {
             var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
+            var teamNames = Plugin?.GetDriversTeamNames() ?? new Dictionary<string, string>();
 
             // Create a deep copy for Dashboard Tracker
-            var teamsDash = CreateTeamsList(driverNames);
-            var teamsExporter = CreateTeamsList(driverNames); // Separate list for Exporter
-
-            if (Plugin.Settings.CustomTeamName.Length > 0)
-            {
-                teamsDash.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
-                teamsExporter.Add(CreateMyTeamEntry(driverNames, Plugin.Settings.CustomTeamName));
-            }
-            else
-            {
-                teamsDash.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
-                teamsExporter.Add(CreateMyTeamEntry(driverNames, "MyTeam"));
-            }
+            var teamsDash = CreateTeamsList(driverNames, teamNames);
+            var teamsExporter = CreateTeamsList(driverNames, teamNames); // Separate list for Exporter
 
             DriversListBox.ItemsSource = teamsExporter;
             DriversListBoxDash.ItemsSource = teamsDash; // Different source for dashboard
@@ -145,60 +135,53 @@ namespace F1Manager2024Plugin
             _tireValueUpdateTimer.Start();
         }
 
-        private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
+        private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames, Dictionary<string, string> teamNames)
         {
             return new List<TeamDrivers>
             {
-                new() { TeamName = "Ferrari", BeautifiedTeamName = "Ferrari",
+                new() { TeamName = "Ferrari", BeautifiedTeamName = GetTeamDisplayName("Ferrari1", teamNames),
                 Driver1 = new DriverSelection { Name = "Ferrari1", DisplayName = GetDisplayName("Ferrari1", driverNames) },
                 Driver2 = new DriverSelection { Name = "Ferrari2", DisplayName = GetDisplayName("Ferrari2", driverNames) }},
 
-                new() { TeamName = "McLaren", BeautifiedTeamName = "McLaren",
+                new() { TeamName = "McLaren", BeautifiedTeamName = GetTeamDisplayName("McLaren1", teamNames),
                 Driver1 = new DriverSelection { Name = "McLaren1", DisplayName = GetDisplayName("McLaren1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "McLaren2", DisplayName = GetDisplayName("McLaren2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Red Bull", BeautifiedTeamName = "Red Bull Racing",
+                new() { TeamName = "Red Bull", BeautifiedTeamName = GetTeamDisplayName("RedBull1", teamNames),
                 Driver1 = new DriverSelection { Name = "RedBull1", DisplayName = GetDisplayName("RedBull1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RedBull2", DisplayName = GetDisplayName("RedBull2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Mercedes", BeautifiedTeamName = "Mercedes AMG Petronas F1",
+                new() { TeamName = "Mercedes", BeautifiedTeamName = GetTeamDisplayName("Mercedes1", teamNames),
                 Driver1 = new DriverSelection { Name = "Mercedes1", DisplayName = GetDisplayName("Mercedes1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Mercedes2", DisplayName = GetDisplayName("Mercedes2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Alpine", BeautifiedTeamName = "Alpine",
+                new() { TeamName = "Alpine", BeautifiedTeamName = GetTeamDisplayName("Alpine1", teamNames),
                 Driver1 = new DriverSelection { Name = "Alpine1", DisplayName = GetDisplayName("Alpine1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Alpine2", DisplayName = GetDisplayName("Alpine2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Williams", BeautifiedTeamName = "Williams Racing",
+                new() { TeamName = "Williams", BeautifiedTeamName = GetTeamDisplayName("Williams1", teamNames),
                 Driver1 = new DriverSelection { Name = "Williams1", DisplayName = GetDisplayName("Williams1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Williams2", DisplayName = GetDisplayName("Williams2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "HAAS", BeautifiedTeamName = "Haas F1",
+                new() { TeamName = "HAAS", BeautifiedTeamName = GetTeamDisplayName("Haas1", teamNames),
                 Driver1 = new DriverSelection { Name = "Haas1", DisplayName = GetDisplayName("Haas1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "Haas2", DisplayName = GetDisplayName("Haas2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Racing Bulls", BeautifiedTeamName = "Racing Bulls",
+                new() { TeamName = "Racing Bulls", BeautifiedTeamName = GetTeamDisplayName("RacingBulls1", teamNames),
                 Driver1 = new DriverSelection { Name = "RacingBulls1", DisplayName = GetDisplayName("RacingBulls1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "RacingBulls2", DisplayName = GetDisplayName("RacingBulls2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Kick Sauber", BeautifiedTeamName = "Kick Sauber",
+                new() { TeamName = "Kick Sauber", BeautifiedTeamName = GetTeamDisplayName("KickSauber1", teamNames),
                 Driver1 = new DriverSelection { Name = "KickSauber1", DisplayName = GetDisplayName("KickSauber1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "KickSauber2", DisplayName = GetDisplayName("KickSauber2", driverNames), IsSelected = false } },
 
-                new() { TeamName = "Aston Martin", BeautifiedTeamName = "Aston Martin",
+                new() { TeamName = "Aston Martin", BeautifiedTeamName = GetTeamDisplayName("AstonMartin1", teamNames),
                 Driver1 = new DriverSelection { Name = "AstonMartin1", DisplayName = GetDisplayName("AstonMartin1", driverNames), IsSelected = false },
                 Driver2 = new DriverSelection { Name = "AstonMartin2", DisplayName = GetDisplayName("AstonMartin2", driverNames), IsSelected = false } },
-            };
-        }
 
-        private TeamDrivers CreateMyTeamEntry(Dictionary<string, (string, string)> driverNames, string teamName)
-        {
-            return new TeamDrivers
-            {
-                TeamName = "MyTeam",
-                BeautifiedTeamName = teamName,
-                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames) },
-                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames) }
+                new() { TeamName = "Custom Team", BeautifiedTeamName = GetTeamDisplayName("MyTeam1", teamNames),
+                Driver1 = new DriverSelection { Name = "MyTeam1", DisplayName = GetDisplayName("MyTeam1", driverNames), IsSelected = false },
+                Driver2 = new DriverSelection { Name = "MyTeam2", DisplayName = GetDisplayName("MyTeam2", driverNames), IsSelected = false } },
             };
         }
 
@@ -221,6 +204,16 @@ namespace F1Manager2024Plugin
             return internalName;
         }
 
+        private string GetTeamDisplayName(string internalName, Dictionary<string, string> teamNames)
+        {
+            if (teamNames.TryGetValue(internalName, out var name))
+            {
+                return name;
+            }
+            // Fallback to internal name if no team info found
+            return internalName;
+        }
+
         // Main constructor with plugin parameter
         public SettingsControl(F1ManagerPlotter plugin) : this()
         {
@@ -238,7 +231,6 @@ namespace F1Manager2024Plugin
             {
                 ExporterEnabledCheckbox.IsChecked = plugin.Settings.ExporterEnabled;
                 ExporterPathTextBox.Text = plugin.Settings.ExporterPath ?? "No folder selected";
-                CustomTeamInput.Text = plugin.Settings.CustomTeamName ?? "MyTeam";
 
                 if (plugin.Settings.TrackedDrivers != null)
                 {
@@ -267,12 +259,6 @@ namespace F1Manager2024Plugin
                     DriversTextBox.Text = selectedDrivers.Any()
                         ? string.Join(", ", selectedDrivers)
                         : "No drivers selected";
-                }
-
-                // Init Custom Team Name
-                if (plugin.Settings.CustomTeamName != null)
-                {
-                    CustomTeamInput.Text = plugin.Settings.CustomTeamName;
                 }
 
                 // Initialize team color
@@ -532,11 +518,6 @@ namespace F1Manager2024Plugin
 
         private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
         {
-            if (CustomTeamInput.Text.Length == 0)
-            {
-                await SHMessageBox.Show("Team Name cannot be empty!", "Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
-            }
 
             // Save tire mappings
             if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
@@ -545,7 +526,6 @@ namespace F1Manager2024Plugin
             }
 
             await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            Plugin.Settings.CustomTeamName = CustomTeamInput.Text;
             Plugin.Settings.CustomTeamColor = ColorHexText.Text;
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             Plugin.ReloadSettings(Plugin.Settings);
@@ -645,7 +625,6 @@ namespace F1Manager2024Plugin
             Plugin.Settings.ExporterPath = defaults.ExporterPath;
             Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
             Plugin.Settings.TrackedDriversDashboard = defaults.TrackedDriversDashboard;
-            Plugin.Settings.CustomTeamName = defaults.CustomTeamName;
             Plugin.Settings.CustomTeamColor = defaults.CustomTeamColor;
             Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
             Plugin.Settings.SavedVersion = Plugin.version;
@@ -662,8 +641,6 @@ namespace F1Manager2024Plugin
                 team.Driver2.IsSelected = defaults.TrackedDrivers.Contains(team.Driver2.Name);
             }
             DriversTextBox.Text = string.Join(", ", defaults.TrackedDrivers);
-
-            CustomTeamInput.Text = "MyTeam";
         }
     }
 }

@@ -7,7 +7,6 @@
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public bool SaveFileFound { get; set; } = false;
-        public string CustomTeamColor { get; set; } = "#FFFFFF";
         public string[] CustomTireEnum { get; set; } = 
             new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                             "Medium", "Medium", "Medium",
@@ -26,7 +25,6 @@
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
                 SaveFileFound = false,
-                CustomTeamColor = "#FFFFFF",
                 CustomTireEnum =
                     new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
                                     "Medium", "Medium", "Medium",

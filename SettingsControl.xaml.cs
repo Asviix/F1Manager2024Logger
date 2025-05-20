@@ -260,28 +260,6 @@ namespace F1Manager2024Plugin
                         ? string.Join(", ", selectedDrivers)
                         : "No drivers selected";
                 }
-
-                // Initialize team color
-                if (!string.IsNullOrEmpty(plugin.Settings.CustomTeamColor))
-                {
-                    try
-                    {
-                        var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(plugin.Settings.CustomTeamColor);
-                        TeamColorBrush = new System.Windows.Media.SolidColorBrush(color);
-                        ColorHexText.Text = plugin.Settings.CustomTeamColor;
-                    }
-                    catch
-                    {
-                        // Default color if parsing fails
-                        TeamColorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                        ColorHexText.Text = "#FFFFFF";
-                    }
-                }
-                else
-                {
-                    TeamColorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                    ColorHexText.Text = "#FFFFFF";
-                }
             }
         }
 
@@ -422,48 +400,6 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void ColorPickerButton_Click(object sender, RoutedEventArgs e)
-        {
-            var colorDialog = new System.Windows.Forms.ColorDialog
-            {
-                AllowFullOpen = true,
-                AnyColor = true,
-                FullOpen = true
-            };
-
-            // Set current color if one exists
-            if (!string.IsNullOrEmpty(Plugin.Settings.CustomTeamColor))
-            {
-                try
-                {
-                    var currentColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(Plugin.Settings.CustomTeamColor);
-                    colorDialog.Color = System.Drawing.Color.FromArgb(currentColor.A, currentColor.R, currentColor.G, currentColor.B);
-                }
-                catch
-                {
-                    // If there's an error parsing the color, just use default
-                }
-            }
-
-            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                var selectedColor = System.Windows.Media.Color.FromArgb(
-                    colorDialog.Color.A,
-                    colorDialog.Color.R,
-                    colorDialog.Color.G,
-                    colorDialog.Color.B);
-
-                TeamColorBrush = new System.Windows.Media.SolidColorBrush(selectedColor);
-                ColorHexText.Text = $"#{selectedColor.R:X2}{selectedColor.G:X2}{selectedColor.B:X2}";
-            }
-        }
-
-        public System.Windows.Media.Brush TeamColorBrush
-        {
-            get { return (System.Windows.Media.Brush)GetValue(TeamColorBrushProperty); }
-            set { SetValue(TeamColorBrushProperty, value); }
-        }
-
         private void UpdateCurrentTireValue(object sender, EventArgs e)
         {
             if (TireMappingDriverComboBox.SelectedValue is string selectedDriver && Plugin != null)
@@ -526,7 +462,6 @@ namespace F1Manager2024Plugin
             }
 
             await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            Plugin.Settings.CustomTeamColor = ColorHexText.Text;
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
             Plugin.ReloadSettings(Plugin.Settings);
 
@@ -625,7 +560,6 @@ namespace F1Manager2024Plugin
             Plugin.Settings.ExporterPath = defaults.ExporterPath;
             Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
             Plugin.Settings.TrackedDriversDashboard = defaults.TrackedDriversDashboard;
-            Plugin.Settings.CustomTeamColor = defaults.CustomTeamColor;
             Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
             Plugin.Settings.SavedVersion = Plugin.version;
 

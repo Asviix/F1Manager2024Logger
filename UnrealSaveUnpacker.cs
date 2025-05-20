@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Dapper;
+using WoteverCommon.WPF.Converters;
 
 namespace F1Manager2024Plugin
 {
@@ -322,7 +323,20 @@ namespace F1Manager2024Plugin
         {
             public int TeamId { get; set; }
             public string RawTeamName { get; set; }
+            public string RawColour { get; set; }
+            public string TeamColour => ConvertRawColour(RawColour);
             public string TeamName => ExtractTeamName(RawTeamName);
+
+            private static string ConvertRawColour(string decimalColor)
+            {
+                if (!long.TryParse(decimalColor, out long argbValue))
+                {
+                    return "#123456"; // Default black if parsing fails
+                }
+
+                // Convert to 6-digit hex RGB (skip alpha channel)
+                return "#" + (argbValue & 0xFFFFFF).ToString("X6");
+            }
 
             private static string ExtractTeamName(string resourceString)
             {
@@ -413,7 +427,7 @@ namespace F1Manager2024Plugin
             public const string CurrentSeason = "SELECT \"CurrentSeason\" FROM \"Player_State\"";
             public const string CurrentRace = "SELECT \"RaceID\" FROM \"Save_Weekend\"";
             public const string driverNameData = "SELECT d.\"StaffID\" as \"Id\", d.\"FirstName\" as \"RawFirstName\", d.\"LastName\" as \"RawLastName\", d.\"DriverCode\" as \"RawDriverCode\", c.\"TeamID\" as \"TeamID\" FROM \"Staff_DriverData_View\" d JOIN \"Staff_Contracts_View\" c ON d.\"StaffID\" = c.\"StaffID\" WHERE c.\"Formula\" = '1' ORDER BY d.\"StaffID\" ASC";
-            public const string F1Teams = "SELECT \"TeamID\" as \"TeamId\", \"TeamNameLocKey\" as \"RawTeamName\" FROM \"Teams\" WHERE \"Formula\" = '1' ORDER BY \"TeamID\" ASC";
+            public const string F1Teams = "SELECT d.\"TeamID\" as \"TeamId\", d.\"TeamNameLocKey\" as \"RawTeamName\", c.\"Colour\" as \"RawColour\" FROM \"Teams\" d JOIN \"Teams_Colours\" c ON d.\"TeamID\" = c.\"TeamID\" WHERE \"Formula\" = '1' ORDER BY \"TeamID\" ASC";
 
             public static string GetRaceIdOfLastRaceQuery()
             {

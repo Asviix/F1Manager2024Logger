@@ -587,16 +587,16 @@ namespace MemoryReader
 
                 // Define all required files
                 var requiredFiles = new Dictionary<string, string>
-                {
-                    { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
-                    { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
-                    { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
-                    { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
-                    { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
-                    { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
-                    { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
-                    { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
-                };
+        {
+            { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
+            { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
+            { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
+            { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
+            { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
+            { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
+            { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
+            { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
+        };
 
                 // Check if any files are missing or need updating
                 bool needsCopy = false;
@@ -626,7 +626,9 @@ namespace MemoryReader
                 // Check if any dependency is missing
                 foreach (var file in requiredFiles)
                 {
-                    string destPath = Path.Combine(simHubPath, file.Key);
+                    string destPath = file.Key == SQLIteInteropName
+                        ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
+                        : Path.Combine(simHubPath, file.Key);
 
                     if (!File.Exists(destPath) && File.Exists(file.Value))
                     {
@@ -644,23 +646,22 @@ namespace MemoryReader
                     foreach (var file in requiredFiles)
                     {
                         string sourcePath = file.Value;
-                        string destPath = Path.Combine(simHubPath, file.Key);
+                        string destPath = file.Key == SQLIteInteropName
+                            ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
+                            : Path.Combine(simHubPath, file.Key);
 
                         if (File.Exists(sourcePath))
                         {
                             try
                             {
                                 // Ensure directory exists
-                                if (destPath is null)
-                                    throw new ArgumentNullException(nameof(destPath));
-
                                 string? directory = Path.GetDirectoryName(destPath);
                                 if (directory is not null)
                                     Directory.CreateDirectory(directory);
 
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);
-                                Console.WriteLine($"Copied: {file.Key}");
+                                Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
                             }
                             catch (Exception ex)
                             {

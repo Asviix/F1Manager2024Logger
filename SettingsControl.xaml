@@ -10,7 +10,7 @@
     xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins"
     xmlns:dd="urn:gong-wpf-dragdrop" x:Name="userControl"
     x:Class="F1Manager2024Plugin.SettingsControl"
-    mc:Ignorable="d" Loaded="CheckNewVersion">
+    mc:Ignorable="d" Loaded="PageLoadEvent">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -104,40 +104,6 @@
                                 <TextBlock x:Name="ColorHexText" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="16"/>
                             </StackPanel>
                         </StackPanel>
-                        <styles:SHSectionSeparator/>
-                        <Label FontSize="16">Points Scheme Selection</Label>
-                        <Grid Margin="0,5,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Scheme 1 -->
-                            <RadioButton x:Name="PointsScheme1Radio" Grid.Column="0" Grid.Row="0" GroupName="PointsScheme" 
-                                            Margin="0,0,10,5" VerticalAlignment="Center" Checked="PointsScheme_Checked"/>
-                            <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
-                                <TextBlock Text="Scheme 1 (25-18-15-12-10-8-6-4-2-1)" FontSize="14" VerticalAlignment="Top"/>
-                            </StackPanel>
-
-                            <!-- Scheme 2 -->
-                            <RadioButton x:Name="PointsScheme2Radio" Grid.Column="0" Grid.Row="1" GroupName="PointsScheme" 
-                                            Margin="0,0,10,5" VerticalAlignment="Center" Checked="PointsScheme_Checked"/>
-                            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
-                                <TextBlock Text="Scheme 2 (10-8-6-5-4-3-2-1)" FontSize="14" VerticalAlignment="Top"/>
-                            </StackPanel>
-
-                            <!-- Scheme 3 -->
-                            <RadioButton x:Name="PointsScheme3Radio" Grid.Column="0" Grid.Row="2" GroupName="PointsScheme" 
-                                            Margin="0,0,10,5" VerticalAlignment="Center" Checked="PointsScheme_Checked"/>
-                            <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal">
-                                <TextBlock Text="Scheme 3 (10-6-4-3-2-1)" FontSize="14" VerticalAlignment="Top"/>
-                            </StackPanel>
-                        </Grid>
                         <styles:SHSectionSeparator/>
                         <Label FontSize="16">Custom Tire Mapping Selection</Label>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">

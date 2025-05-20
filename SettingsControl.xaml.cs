@@ -145,26 +145,6 @@ namespace F1Manager2024Plugin
             _tireValueUpdateTimer.Start();
         }
 
-        private void InitializePointsSchemeSelection()
-        {
-            // Set the correct radio button based on current setting
-            switch (Plugin.Settings.pointScheme)
-            {
-                case 1:
-                    PointsScheme1Radio.IsChecked = true;
-                    break;
-                case 2:
-                    PointsScheme2Radio.IsChecked = true;
-                    break;
-                case 3:
-                    PointsScheme3Radio.IsChecked = true;
-                    break;
-                default:
-                    PointsScheme1Radio.IsChecked = true;
-                    break;
-            }
-        }
-
         private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames)
         {
             return new List<TeamDrivers>
@@ -252,7 +232,6 @@ namespace F1Manager2024Plugin
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
             InitializeTireMapping();
-            InitializePointsSchemeSelection();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
@@ -499,24 +478,6 @@ namespace F1Manager2024Plugin
             set { SetValue(TeamColorBrushProperty, value); }
         }
 
-        private void PointsScheme_Checked(object sender, RoutedEventArgs e)
-        {
-            if (Plugin == null) return;
-
-            if (sender == PointsScheme1Radio)
-            {
-                Plugin.Settings.pointScheme = 1;
-            }
-            else if (sender == PointsScheme2Radio)
-            {
-                Plugin.Settings.pointScheme = 2;
-            }
-            else if (sender == PointsScheme3Radio)
-            {
-                Plugin.Settings.pointScheme = 3;
-            }
-        }
-
         private void UpdateCurrentTireValue(object sender, EventArgs e)
         {
             if (TireMappingDriverComboBox.SelectedValue is string selectedDriver && Plugin != null)
@@ -660,13 +621,18 @@ namespace F1Manager2024Plugin
             DependencyProperty.Register("TeamColorBrush", typeof(System.Windows.Media.Brush), typeof(SettingsControl),
             new PropertyMetadata(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)));
 
-        private async void CheckNewVersion(object sender, RoutedEventArgs e)
+        private async void PageLoadEvent(object sender, RoutedEventArgs e)
         {
             if (Plugin.Settings.SavedVersion != Plugin.version)
             {
                 ResetSettingsToDefault();
 
                 await SHMessageBox.Show("New Version detected, settings have been reset to default.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            if (!Plugin.Settings.SaveFileFound)
+            {
+                await SHMessageBox.Show("Save file not found. Please create a save-game first.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             InitializeUI(Plugin);

@@ -188,7 +188,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the estimated position after pitting.
-        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int i, string[] carNames, int CarsOnGrid)
+        public static int GetEstimatedPositionAfterPit(Telemetry telemetry, int position, int CarsOnGrid)
         {
             if (telemetry.Session.sessionType is not 6 or 7) return 0;
 
@@ -419,7 +419,7 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the points gains based on position and session type.
-        public static int GetPointsGained(int position, int sessionId, bool isFastest, F1Manager2024PluginSettings Settings)
+        public static int GetPointsGained(int position, int sessionId, bool isFastest)
         {
             // No points if position is invalid (<= 0 or beyond F1's point system)
             if (position <= 0 || position > 22)
@@ -429,7 +429,7 @@ namespace F1Manager2024Plugin
             int[] pointTableScheme2 = { 0, 10, 8, 6, 5, 4, 3, 2, 1 };            // Positions 1-8
             int[] pointTableScheme3 = { 0, 10, 6, 4, 3, 2, 1 };                   // Positions 1-6
 
-            int[] pointTable = Settings.pointScheme switch
+            int[] pointTable = SaveDataCache.CachedValues.PointScheme switch
             {
                 1 => pointTableScheme1,
                 2 => pointTableScheme2,
@@ -464,9 +464,19 @@ namespace F1Manager2024Plugin
             }
 
             // +1 point for fastest lap (only if in top 10)
-            if ((sessionId is 6 or 7) && isFastest && position <= 10)
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.FastestLapPoint == 1 && isFastest && position <= 10)
             {
                 basePoints += 1;
+            }
+
+            if ((sessionId is 6 or 7) && SaveDataCache.CachedValues.RaceIdOfLastRace == SaveDataCache.CachedValues.CurrentRace)
+            {
+                basePoints *= 2;
+            }
+
+            if ((sessionId is 5 or 10) && SaveDataCache.CachedValues.PolePositionPoint == 1 && isFastest)
+            {
+                basePoints += 1; // +1 point for pole position
             }
 
             return basePoints;

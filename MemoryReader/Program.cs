@@ -1,12 +1,7 @@
-using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Security.Cryptography;
-using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace MemoryReader
@@ -23,17 +18,22 @@ namespace MemoryReader
         const string PluginName = "F1Manager2024Plugin.dll";
         const string PDBName = "F1Manager2024Plugin.pdb";
         const string configName = "F1Manager2024Plugin.dll.config";
+        const string SQLIteInteropName = "SQLite.Interop.dll";
+        const string SystemDataSQLiteName = "System.Data.SQLite.dll";
+        const string SystemDataSQLiteEF6Name = "System.Data.SQLite.EF6.dll";
+        const string SystemDataSQLiteLinqName = "System.Data.SQLite.Linq.dll";
+        const string DapperName = "Dapper.dll";
         const string SimHubEnvVar = "SIMHUB_INSTALL_PATH";
         const string SimHubProcessName = "SimHubWPF";
         const string SimHubExeName = "SimHubWPF.exe";
 
-        public static readonly List<string[]> _menuItems = new()
-        {
-            new[] { "Start" },
-            new[] { "Properties", "Documentation", "GitHub" },
-            new[] { "Discord", "Overtake" },
-            new[] { "Exit" }
-        };
+        public static readonly List<string[]> _menuItems =
+        [
+            ["Start"],
+            ["Properties", "Documentation", "GitHub"],
+            ["Discord", "Overtake"],
+            ["Exit"]
+        ];
 
         public static (int row, int col) _cursor = (0, 0);
 
@@ -138,7 +138,7 @@ namespace MemoryReader
         private static readonly MemoryReader _mem = new();
         private static bool _isRunning = true;
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             Console.Title = "Memory Reader";
 
@@ -218,7 +218,7 @@ namespace MemoryReader
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
 
-            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.0");
+            MultiColorConsole.WriteCenteredColored($"Version: RELEASE 1.1");
             if (hasUpdate)
             {
                 MultiColorConsole.WriteCenteredColored($"A new version is available!", ("A new version is available!", ConsoleColor.Red));
@@ -585,58 +585,92 @@ namespace MemoryReader
                 // Kill SimHub process if running
                 KillSimHubProcess();
 
-                bool shouldCopy = false;
-
-                string destPluginPath = Path.Combine(simHubPath, PluginName);
-                string destPDBPath = Path.Combine(simHubPath, PDBName);
-                string destConfigPath = Path.Combine(simHubPath, configName);
-                string sourcePluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName);
-                string sourcePDBPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName);
-                string sourceConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName);
-                string? sourceVersion = FileVersionInfo.GetVersionInfo(sourcePluginPath).FileVersion;
-
-                if (!File.Exists(sourcePluginPath) || !File.Exists(sourcePDBPath))
+                // Define all required files
+                var requiredFiles = new Dictionary<string, string>
                 {
-                    Console.WriteLine($"Source plugin file not found at: {sourcePluginPath}");
-                    return;
-                }
+                    { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
+                    { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
+                    { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
+                    { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
+                    { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
+                    { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
+                    { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
+                    { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
+                };
 
-                if (File.Exists(destPluginPath) && File.Exists(destPDBPath))
+                // Check if any files are missing or need updating
+                bool needsCopy = false;
+
+                // First check if main plugin needs update
+                if (File.Exists(requiredFiles[PluginName]))
                 {
-                    string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
-                    if (sourceVersion != destVersion)
+                    string? sourceVersion = FileVersionInfo.GetVersionInfo(requiredFiles[PluginName]).FileVersion;
+                    string destPluginPath = Path.Combine(simHubPath, PluginName);
+
+                    if (File.Exists(destPluginPath))
                     {
-                        Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
-                        shouldCopy = true;
+                        string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
+                        if (sourceVersion != destVersion)
+                        {
+                            Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
+                            needsCopy = true;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Plugin not found in SimHub installation");
+                        needsCopy = true;
                     }
                 }
-                else
+
+                // Check if any dependency is missing
+                foreach (var file in requiredFiles)
                 {
-                    Console.WriteLine("Plugin not found in SimHub installation, copying...");
-                    shouldCopy = true;
+                    string destPath = Path.Combine(simHubPath, file.Key);
+
+                    if (!File.Exists(destPath) && File.Exists(file.Value))
+                    {
+                        Console.WriteLine($"Dependency missing: {file.Key}");
+                        needsCopy = true;
+                        break;
+                    }
                 }
 
-                if (shouldCopy)
+                // Copy all files if needed
+                if (needsCopy)
                 {
-                    try
+                    Console.WriteLine("Copying plugin and dependencies...");
+
+                    foreach (var file in requiredFiles)
                     {
-                        // Force overwrite the file
-                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                        Thread.Sleep(500);
-                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                        Thread.Sleep(500);
-                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
-                        Console.WriteLine($"Successfully installed plugin to: {destPluginPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error copying plugin: {ex.Message}");
-                        // Try again after a short delay in case of file locks
-                        Thread.Sleep(500);
-                        File.Copy(sourcePluginPath, destPluginPath, overwrite: true);
-                        File.Copy(sourcePDBPath, destPDBPath, overwrite: true);
-                        File.Copy(sourceConfigPath, destConfigPath, overwrite: true);
-                        Console.WriteLine($"Successfully installed plugin on second attempt: {destPluginPath}");
+                        string sourcePath = file.Value;
+                        string destPath = Path.Combine(simHubPath, file.Key);
+
+                        if (File.Exists(sourcePath))
+                        {
+                            try
+                            {
+                                // Ensure directory exists
+                                if (destPath is null)
+                                    throw new ArgumentNullException(nameof(destPath));
+
+                                string? directory = Path.GetDirectoryName(destPath);
+                                if (directory is not null)
+                                    Directory.CreateDirectory(directory);
+
+                                // Copy with retry logic
+                                RetryFileCopy(sourcePath, destPath);
+                                Console.WriteLine($"Copied: {file.Key}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to copy {file.Key}: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Source file not found: {file.Key}");
+                        }
                     }
                 }
 
@@ -645,8 +679,25 @@ namespace MemoryReader
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error installing plugin: {ex.ToString()}");
+                Console.WriteLine($"Error installing plugin: {ex}");
             }
+        }
+
+        private static void RetryFileCopy(string source, string dest, int maxRetries = 3, int delayMs = 500)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    File.Copy(source, dest, overwrite: true);
+                    return;
+                }
+                catch when (i < maxRetries - 1)
+                {
+                    Thread.Sleep(delayMs);
+                }
+            }
+            throw new IOException($"Failed to copy {source} to {dest} after {maxRetries} attempts");
         }
 
         private static bool KillSimHubProcess()

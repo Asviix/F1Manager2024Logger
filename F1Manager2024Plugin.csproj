@@ -33,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AvalonDock">
@@ -40,6 +41,9 @@
     </Reference>
     <Reference Include="AvalonDock.Themes.VS2013">
       <HintPath>$(SIMHUB_INSTALL_PATH)\AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
+    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dapper.2.1.66\lib\net461\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
@@ -80,6 +84,9 @@
     <Reference Include="MahApps.Metro.IconPacks.Material">
       <HintPath>$(SIMHUB_INSTALL_PATH)MahApps.Metro.IconPacks.Material.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.9.0.5\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(SIMHUB_INSTALL_PATH)Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -107,6 +114,12 @@
       <HintPath>packages\System.Data.SQLite.Linq.1.0.119.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Threading.Tasks.Extensions.4.6.3\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -166,7 +179,23 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY /Y /R "$(TargetDir)$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25" &amp;&amp; XCOPY /Y /R "$(TargetDir)$(TargetName)*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"</PostBuildEvent>
+    <PostBuildEvent>:: 1. Copy main plugin files (existing)
+XCOPY /Y /R "$(TargetDir)$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)$(TargetName)*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+
+:: 2. Copy SQLite and Dapper DLLs (new additions)
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.EF6.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.Linq.dll" "%25SIMHUB_INSTALL_PATH%25"
+XCOPY /Y /R "$(TargetDir)Dapper.dll" "%25SIMHUB_INSTALL_PATH%25"
+
+:: 3. Copy native SQLite.Interop.dll (x86/x64 if needed)
+XCOPY /Y /R "$(TargetDir)x86\SQLite.Interop.dll" "%25SIMHUB_INSTALL_PATH%25"
+
+:: 4. Copy same files to your local debug folder
+XCOPY /Y /R "$(TargetDir)System.Data.SQLite.*" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+XCOPY /Y /R "$(TargetDir)Dapper.dll" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"
+XCOPY /Y /R "$(TargetDir)x86\SQLite.Interop.dll" "D:\F1M\Logging Script\F1Manager2024Logger-main\MemoryReader\bin\Release\net9.0-windows\win-x64\"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

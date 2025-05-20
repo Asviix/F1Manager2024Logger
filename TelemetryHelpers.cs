@@ -497,6 +497,13 @@ namespace F1Manager2024Plugin
             return drivers.FirstOrDefault(d => d.Id == driverId).LastName;
         }
 
+        // Returns the Driver's Code based on ID.
+        public static string GetDriverCode(int driverId)
+        {
+            var drivers = SaveDataCache.CachedValues.DriverNameData;
+            return drivers.FirstOrDefault(d => d.Id == driverId).DriverCode;
+        }
+
         // Returns the Team's Name based on ID.
         public static string GetTeamName(int teamId, F1Manager2024PluginSettings Settings)
         {

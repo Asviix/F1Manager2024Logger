@@ -151,6 +151,7 @@ namespace F1Manager2024Plugin
                 pluginManager.AddProperty($"{name}_DriverNumber", GetType(), typeof(int), "Driver Number");
                 pluginManager.AddProperty($"{name}_DriverFirstName", GetType(), typeof(string), "Driver First Name");
                 pluginManager.AddProperty($"{name}_DriverLastName", GetType(), typeof(string), "Driver Last Name");
+                pluginManager.AddProperty($"{name}_DriverCode", GetType(), typeof(string), "Driver Code");
                 pluginManager.AddProperty($"{name}_DriverTeamName", GetType(), typeof(string), "Name of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_DriverTeamColor", GetType(), typeof(string), "Color of the Driver's Team.");
                 pluginManager.AddProperty($"{name}_PitStopStatus", GetType(), typeof(string), "Pit Stop Status");
@@ -533,6 +534,7 @@ namespace F1Manager2024Plugin
                 UpdateValue($"{name}_TurnNumber", _lastRecordedData[name].LastTurnNumber);
                 UpdateValue($"{name}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(car.Driver.driverId));
                 UpdateValue($"{name}_DriverLastName", TelemetryHelpers.GetDriverLastName(car.Driver.driverId));
+                UpdateValue($"{name}_DriverCode", TelemetryHelpers.GetDriverCode(car.Driver.driverId));
                 UpdateValue($"{name}_DriverTeamName", TelemetryHelpers.GetTeamName(car.Driver.teamId, Settings));
                 UpdateValue($"{name}_DriverTeamColor", TelemetryHelpers.GetTeamColor(car.Driver.teamId, Settings));
                 UpdateValue($"{name}_CurrentLap", (car.currentLap) + 1); // Adjust for Index
@@ -694,6 +696,7 @@ namespace F1Manager2024Plugin
             {
                 UpdateValue($"{carName}_DriverFirstName", TelemetryHelpers.GetDriverFirstName(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_DriverLastName", TelemetryHelpers.GetDriverLastName(telemetry.Car[i].Driver.driverId));
+                UpdateValue($"{carName}_DriverCode", TelemetryHelpers.GetDriverCode(telemetry.Car[i].Driver.driverId));
                 UpdateValue($"{carName}_DriverTeamName", TelemetryHelpers.GetTeamName(telemetry.Car[i].Driver.teamId, Settings));
                 UpdateValue($"{carName}_PitStopStatus", "RETIRED");
             }
@@ -701,6 +704,7 @@ namespace F1Manager2024Plugin
             {
                 UpdateValue($"{carName}_DriverFirstName", "NOT LOADED");
                 UpdateValue($"{carName}_DriverLastName", "NOT LOADED");
+                UpdateValue($"{carName}_DriverCode", "NOT LOADED");
                 UpdateValue($"{carName}_DriverTeamName", "NOT LOADED");
                 UpdateValue($"{carName}_PitStopStatus", "NOT LOADED");
             }
@@ -897,6 +901,7 @@ namespace F1Manager2024Plugin
                             DriverNumber = t.Value.Car[i].Driver.driverNumber,
                             DriverFirstName = TelemetryHelpers.GetDriverFirstName(t.Value.Car[i].Driver.driverId),
                             DriverLastName = TelemetryHelpers.GetDriverLastName(t.Value.Car[i].Driver.driverId),
+                            DriverCode = TelemetryHelpers.GetDriverCode(t.Value.Car[i].Driver.driverId),
                             TeamName = TelemetryHelpers.GetTeamName(t.Value.Car[i].Driver.teamId, Settings),
                             PitStopStatus = TelemetryHelpers.GetPitStopStatus(t.Value.Car[i].pitStopStatus, t.Value.Session.sessionType),
                             TurnNumber = _lastRecordedData[carName].LastTurnNumber,

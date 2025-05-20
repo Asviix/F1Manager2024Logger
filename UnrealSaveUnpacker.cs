@@ -319,6 +319,13 @@ namespace F1Manager2024Plugin
             }
         }
 
+        public class TyreSetData
+        {
+            public int CarID { get; set; }
+            public int TyreSetID { get; set; }
+            public int WeekendTyreType { get; set; }
+        }
+
         public class F1Teams
         {
             public int TeamId { get; set; }
@@ -415,23 +422,78 @@ namespace F1Manager2024Plugin
             public static int CurrentRace => SaveDataCache.GetCachedValue<int>("CurrentRace");
             public static int RaceIdOfLastRace => SaveDataCache.GetCachedValue<int>("RaceIdOfLastRace");
             public static List<DriverNameData> DriverNameData => SaveDataCache.GetCachedValue<List<DriverNameData>>("driverNameData");
+            public static List<TyreSetData> TyreSetData => SaveDataCache.GetCachedValue<List<TyreSetData>>("TyreSetData");
             public static List<F1Teams> F1Teams => SaveDataCache.GetCachedValue<List<F1Teams>>("F1Teams");
         }
 
         public static class Queries
         {
-            public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
-            public const string FastestLapPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'FastestLapBonusPoint'";
-            public const string PolePositionPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PolePositionBonusPoint'";
-            public const string DoublePointsLastRace = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'DoubleLastRacePoints'";
-            public const string CurrentSeason = "SELECT \"CurrentSeason\" FROM \"Player_State\"";
-            public const string CurrentRace = "SELECT \"RaceID\" FROM \"Save_Weekend\"";
-            public const string driverNameData = "SELECT d.\"StaffID\" as \"Id\", d.\"FirstName\" as \"RawFirstName\", d.\"LastName\" as \"RawLastName\", d.\"DriverCode\" as \"RawDriverCode\", c.\"TeamID\" as \"TeamID\" FROM \"Staff_DriverData_View\" d JOIN \"Staff_Contracts_View\" c ON d.\"StaffID\" = c.\"StaffID\" WHERE c.\"Formula\" = '1' ORDER BY d.\"StaffID\" ASC";
-            public const string F1Teams = "SELECT d.\"TeamID\" as \"TeamId\", d.\"TeamNameLocKey\" as \"RawTeamName\", c.\"Colour\" as \"RawColour\" FROM \"Teams\" d JOIN \"Teams_Colours\" c ON d.\"TeamID\" = c.\"TeamID\" WHERE \"Formula\" = '1' ORDER BY \"TeamID\" ASC";
+            public const string PointScheme = @"
+                SELECT ""CurrentValue"" 
+                FROM ""Regulations_Enum_Changes"" 
+                WHERE ""Name"" = 'PointScheme'";
+
+            public const string FastestLapPoint = @"
+                SELECT ""CurrentValue"" 
+                FROM ""Regulations_Enum_Changes"" 
+                WHERE ""Name"" = 'FastestLapBonusPoint'";
+
+            public const string PolePositionPoint = @"
+                SELECT ""CurrentValue"" 
+                FROM ""Regulations_Enum_Changes"" 
+                WHERE ""Name"" = 'PolePositionBonusPoint'";
+
+            public const string DoublePointsLastRace = @"
+                SELECT ""CurrentValue"" 
+                FROM ""Regulations_Enum_Changes"" 
+                WHERE ""Name"" = 'DoubleLastRacePoints'";
+
+            public const string CurrentSeason = @"
+                SELECT ""CurrentSeason"" 
+                FROM ""Player_State""";
+
+            public const string CurrentRace = @"
+                SELECT ""RaceID"" 
+                FROM ""Save_Weekend""";
+
+            public const string DriverData = @"
+                SELECT 
+                    driver.""StaffID"" as ""Id"", 
+                    driver.""FirstName"" as ""RawFirstName"", 
+                    driver.""LastName"" as ""RawLastName"", 
+                    driver.""DriverCode"" as ""RawDriverCode"", 
+                    team.""TeamID"" as ""TeamID""
+                FROM ""Staff_DriverData_View"" driver 
+                JOIN ""Staff_Contracts_View"" team ON driver.""StaffID"" = team.""StaffID""
+                WHERE team.""Formula"" = '1' 
+                ORDER BY driver.""StaffID"" ASC";
+
+            public const string TyreSetData = @"
+                SELECT
+                    tyre.""CarID"",
+                    tyre.""TyreSetID"",
+                    tyre.""WeekendTyreType""
+                FROM ""Save_CarTyreAllocation"" tyre
+                ORDER BY ""CarID"" ASC";
+
+            public const string F1Teams = @"
+                SELECT 
+                    team.""TeamID"" as ""TeamId"", 
+                    team.""TeamNameLocKey"" as ""RawTeamName"", 
+                    colour.""Colour"" as ""RawColour"" 
+                FROM ""Teams"" team
+                JOIN ""Teams_Colours"" colour ON team.""TeamID"" = colour.""TeamID"" 
+                WHERE team.""Formula"" = '1' 
+                ORDER BY ""TeamID"" ASC";
 
             public static string GetRaceIdOfLastRaceQuery()
             {
-                return $"SELECT \"RaceID\" FROM \"Races\" WHERE \"SeasonID\" = '{CachedValues.CurrentSeason}' ORDER BY \"RaceID\" DESC LIMIT 1";
+                return $@"
+                    SELECT ""RaceID"" 
+                    FROM ""Races"" 
+                    WHERE ""SeasonID"" = '{CachedValues.CurrentSeason}' 
+                    ORDER BY ""RaceID"" DESC 
+                    LIMIT 1";
             }
         }
 
@@ -446,7 +508,8 @@ namespace F1Manager2024Plugin
                 _cachedValues["CurrentSeason"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentSeason);
                 _cachedValues["CurrentRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentRace);
                 _cachedValues["RaceIdOfLastRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.GetRaceIdOfLastRaceQuery());
-                _cachedValues["driverNameData"] = SaveFileQuery.ExecuteSql<DriverNameData>(Queries.driverNameData);
+                _cachedValues["driverNameData"] = SaveFileQuery.ExecuteSql<DriverNameData>(Queries.DriverData);
+                _cachedValues["TyreSetData"] = SaveFileQuery.ExecuteSql<TyreSetData>(Queries.TyreSetData);
                 _cachedValues["F1Teams"] = SaveFileQuery.ExecuteSql<F1Teams>(Queries.F1Teams);
             }
         }

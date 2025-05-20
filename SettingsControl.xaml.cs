@@ -83,58 +83,6 @@ namespace F1Manager2024Plugin
             DriversListBoxDash.ItemsSource = teamsDash; // Different source for dashboard
         }
 
-        private void InitializeTireMapping()
-        {
-            // Get driver names with real names
-            var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();
-            var drivers = new List<DriverDisplayItem>();
-
-            foreach (var team in DriversListBox.ItemsSource.Cast<TeamDrivers>())
-            {
-                drivers.Add(new DriverDisplayItem
-                {
-                    InternalName = team.Driver1.Name,
-                    DisplayName = GetDisplayName(team.Driver1.Name, driverNames)
-                });
-                drivers.Add(new DriverDisplayItem
-                {
-                    InternalName = team.Driver2.Name,
-                    DisplayName = GetDisplayName(team.Driver2.Name, driverNames)
-                });
-            }
-
-            // Set up combo box
-            TireMappingDriverComboBox.DisplayMemberPath = "DisplayName";
-            TireMappingDriverComboBox.SelectedValuePath = "InternalName";
-            TireMappingDriverComboBox.ItemsSource = drivers;
-
-            // Select first driver by default if available
-            if (drivers.Count > 0)
-            {
-                TireMappingDriverComboBox.SelectedIndex = 0;
-            }
-
-            // Initialize tire mapping controls
-            var tireMappings = new List<TireMappingItem>();
-            for (int i = 0; i < Plugin.Settings.CustomTireEnum.Length; i++)
-            {
-                tireMappings.Add(new TireMappingItem
-                {
-                    Index = i,
-                    SelectedTireType = Plugin.Settings.CustomTireEnum[i]
-                });
-            }
-            TireMappingItemsControl.ItemsSource = tireMappings;
-
-            // Start timer for real-time updates
-            _tireValueUpdateTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(1000)
-            };
-            _tireValueUpdateTimer.Tick += UpdateCurrentTireValue;
-            _tireValueUpdateTimer.Start();
-        }
-
         private List<TeamDrivers> CreateTeamsList(Dictionary<string, (string, string)> driverNames, Dictionary<string, string> teamNames)
         {
             return new List<TeamDrivers>
@@ -224,7 +172,6 @@ namespace F1Manager2024Plugin
         {
             Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             InitializeDriverSelection();
-            InitializeTireMapping();
 
             // Initialize UI with current settings
             if (plugin.Settings != null)
@@ -400,74 +347,6 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private void UpdateCurrentTireValue(object sender, EventArgs e)
-        {
-            if (TireMappingDriverComboBox.SelectedValue is string selectedDriver && Plugin != null)
-            {
-                // Find the driver in the telemetry data
-                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
-                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
-                {
-                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
-                }
-                else
-                {
-                    CurrentTireByteValueText.Text = "N/A";
-                }
-            }
-        }
-
-        private void TireMappingDriverComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (TireMappingDriverComboBox.SelectedItem is string selectedDriver && Plugin != null)
-            {
-                // Find the driver in the telemetry data
-                int driverIndex = Array.IndexOf(Plugin.carNames, selectedDriver);
-                if (driverIndex >= 0 && Plugin._lastData.Car != null && driverIndex < Plugin._lastData.Car.Length)
-                {
-                    CurrentTireByteValueText.Text = Plugin._lastData.Car[driverIndex].tireCompound.ToString();
-                }
-                else
-                {
-                    CurrentTireByteValueText.Text = "N/A";
-                }
-                UpdateCurrentTireValue(null, EventArgs.Empty);
-            }
-        }
-
-        private void ResetTireMappingButton_Click(object sender, RoutedEventArgs e)
-        {
-            var defaults = F1Manager2024PluginSettings.GetDefaults();
-
-            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
-            {
-                int i = 0;
-                foreach (var item in tireMappings)
-                {
-                    item.SelectedTireType = defaults.CustomTireEnum[i++];
-                }
-            }
-
-            // Also reset the settings
-            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
-        }
-
-        private async void SaveCustomSettings_Click(object sender, RoutedEventArgs e)
-        {
-
-            // Save tire mappings
-            if (TireMappingItemsControl.ItemsSource is IEnumerable<TireMappingItem> tireMappings)
-            {
-                Plugin.Settings.CustomTireEnum = tireMappings.Select(x => x.SelectedTireType).ToArray();
-            }
-
-            await SHMessageBox.Show("Settings saved successfully!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);
-            Plugin.ReloadSettings(Plugin.Settings);
-
-            InitializeUI(Plugin);
-        }
-
         private void HistoricalDataDelete_Click(object sender, RoutedEventArgs e)
         {
             Plugin.ClearAllHistory();
@@ -560,7 +439,6 @@ namespace F1Manager2024Plugin
             Plugin.Settings.ExporterPath = defaults.ExporterPath;
             Plugin.Settings.TrackedDrivers = defaults.TrackedDrivers;
             Plugin.Settings.TrackedDriversDashboard = defaults.TrackedDriversDashboard;
-            Plugin.Settings.CustomTireEnum = defaults.CustomTireEnum;
             Plugin.Settings.SavedVersion = Plugin.version;
 
             Plugin.SaveCommonSettings("GeneralSettings", Plugin.Settings);

@@ -560,13 +560,14 @@ namespace F1Manager2024Plugin
         }
 
         // Returns the Tire Compound based on ID.
-        public static string GetTireCompound(int compound, F1Manager2024PluginSettings Settings)
+        public static string GetTireCompound(int compound, int i)
         {
-            if (compound >= 0 && compound < Settings.CustomTireEnum.Length)
-            {
-                return Settings.CustomTireEnum[compound];
-            }
-            return "Unknown";
+            string[] TyreSets = { "Hard", "Medium", "Soft", "Intermediates", "Wet" };
+
+            var tyre = SaveDataCache.CachedValues.TyreSetData.FirstOrDefault(t => t.TyreSetID == compound && t.CarID == i);
+            var tyreSet = tyre.WeekendTyreType;
+
+            return TyreSets[tyreSet];
         }
 
         // Returns the Pace Mode based on ID.

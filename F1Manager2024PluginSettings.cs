@@ -7,13 +7,6 @@
         public string[] TrackedDrivers { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public string[] TrackedDriversDashboard { get; set; } = new string[] { "MyTeam1", "MyTeam2" };
         public bool SaveFileFound { get; set; } = false;
-        public string[] CustomTireEnum { get; set; } = 
-            new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
-                            "Medium", "Medium", "Medium",
-                            "Hard", "Hard",
-                            "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
-                            "Wet", "Wet",
-                            "Not-Set", "Not-Set"};
         public double SavedVersion { get; set; } = 1.1;
 
         public static F1Manager2024PluginSettings GetDefaults()
@@ -25,13 +18,6 @@
                 TrackedDrivers = new string[] { "MyTeam1", "MyTeam2" },
                 TrackedDriversDashboard = new string[] { "MyTeam1", "MyTeam2" },
                 SaveFileFound = false,
-                CustomTireEnum =
-                    new string[] { "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft", "Soft",
-                                    "Medium", "Medium", "Medium",
-                                    "Hard", "Hard",
-                                    "Intermediates", "Intermediates", "Intermediates", "Intermediates", "Intermediates",
-                                    "Wet", "Wet",
-                                    "Not-Set", "Not-Set"},
             };
         }
     }

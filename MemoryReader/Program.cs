@@ -148,8 +148,7 @@ namespace MemoryReader
                 throw new PlatformNotSupportedException("This code is only supported on Windows.");
             }
 
-            var updateChecker = new GitHubUpdateChecker();
-            bool hasUpdate = await updateChecker.CheckForUpdates();
+            bool hasUpdate = await GitHubUpdateChecker.CheckForUpdates();
             while (_isRunning)
             {
                 Console.Clear();
@@ -295,37 +294,84 @@ namespace MemoryReader
             EnsurePluginInstalled();
             Thread.Sleep(1000);
 
-            if (!AttachToHighMemoryProcess())
+            int counter = 0;
+            Process? gameProcess = null;
+
+            // First find and attach to the process
+            while (true)
             {
-                DisplayTelemetryHeader("Failed to attach to process");
-                Thread.Sleep(2000);
-                return;
+                gameProcess = FindTargetProcess();
+                if (gameProcess != null)
+                {
+                    _mem.OpenProcess(gameProcess.Id);
+                    break;
+                }
+
+                string dots = new string('.', counter % 3 + 1);
+                DisplayTelemetryHeader($"Waiting for game{dots}");
+                Thread.Sleep(1000);
+                counter++;
+
+                // Check if user wants to abort
+                if (Console.KeyAvailable)
+                {
+                    Console.ReadKey(true); // Clear the key
+                    return; // Return to menu
+                }
             }
 
             DisplayTelemetryHeader("Connected to process");
-            using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
-            using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
-            byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
-            int delay = 1000 / UpdateRateHz;
-
-            DisplayTelemetryHeader("Connected to game, press any key to stop telemetry...");
-
-            // Run until key is pressed
-            while (!Console.KeyAvailable)
+            try
             {
-                Telemetry telemetry = ReadTelemetry();
+                using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
+                using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
-                GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                Marshal.StructureToPtr(telemetry, handle.AddrOfPinnedObject(), false);
-                accessor.WriteArray(0, buffer, 0, buffer.Length);
-                handle.Free();
+                byte[] buffer = new byte[Marshal.SizeOf<Telemetry>()];
+                int delay = 1000 / UpdateRateHz;
 
-                Thread.Sleep(delay);
+                DisplayTelemetryHeader("Connected to game, press any key to stop telemetry...");
+
+                // Main telemetry loop
+                while (true)
+                {
+                    // Check if game process has exited
+                    if (gameProcess.HasExited)
+                    {
+                        DisplayTelemetryHeader("Game process has exited");
+                        Thread.Sleep(2000); // Give user time to see the message
+                        return; // Return to menu
+                    }
+
+                    // Check if user wants to stop
+                    if (Console.KeyAvailable)
+                    {
+                        Console.ReadKey(true); // Clear the key
+                        return; // Return to menu
+                    }
+
+                    // Read and write telemetry
+                    Telemetry telemetry = ReadTelemetry();
+
+                    GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                    try
+                    {
+                        Marshal.StructureToPtr(telemetry, handle.AddrOfPinnedObject(), false);
+                        accessor.WriteArray(0, buffer, 0, buffer.Length);
+                    }
+                    finally
+                    {
+                        handle.Free();
+                    }
+
+                    Thread.Sleep(delay);
+                }
             }
-
-            // Clear the key that was pressed
-            Console.ReadKey(true);
+            catch (Exception ex)
+            {
+                DisplayTelemetryHeader($"Error: {ex.Message}");
+                Thread.Sleep(2000);
+            }
         }
 
         private static void OpenDocumentation()
@@ -524,18 +570,11 @@ namespace MemoryReader
             return telemetry;
         }
 
-        static bool AttachToHighMemoryProcess()
+        private static Process? FindTargetProcess()
         {
             try
             {
                 Process[] processes = Process.GetProcessesByName(ProcessName);
-
-                if (processes.Length == 0)
-                {
-                    return false;
-                }
-
-                Process? targetProcess = null;
                 foreach (Process p in processes)
                 {
                     try
@@ -543,32 +582,21 @@ namespace MemoryReader
                         p.Refresh();
                         if (p.WorkingSet64 >= MinMemoryUsage)
                         {
-                            targetProcess = p;
-                            break;
+                            return p;
                         }
-                        Console.WriteLine($"Found low-memory process (PID: {p.Id}, Memory: {p.WorkingSet64 / 1024 / 1024}MB)");
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Console.WriteLine($"Error checking process {p.Id}: {ex.Message}");
+                        // Process might have terminated, continue to next
+                        continue;
                     }
                 }
-
-                if (targetProcess == null)
-                {
-                    Console.WriteLine($"No {ProcessName} process using ≥100MB memory found.");
-                    return false;
-                }
-
-                Console.WriteLine($"Found target process (PID: {targetProcess.Id}, Memory: {targetProcess.WorkingSet64 / 1024 / 1024}MB)");
-                _mem.OpenProcess(targetProcess.Id);
-                return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error attaching to process: {ex.Message}");
-                return false;
+                // Ignore errors in process enumeration
             }
+            return null;
         }
 
         public static void EnsurePluginInstalled()
@@ -587,16 +615,16 @@ namespace MemoryReader
 
                 // Define all required files
                 var requiredFiles = new Dictionary<string, string>
-        {
-            { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
-            { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
-            { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
-            { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
-            { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
-            { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
-            { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
-            { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
-        };
+                {
+                    { PluginName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginName) },
+                    { PDBName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PDBName) },
+                    { configName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configName) },
+                    { SQLIteInteropName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SQLIteInteropName) },
+                    { SystemDataSQLiteName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteName) },
+                    { SystemDataSQLiteEF6Name, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteEF6Name) },
+                    { SystemDataSQLiteLinqName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SystemDataSQLiteLinqName) },
+                    { DapperName, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DapperName) }
+                };
 
                 // Check if any files are missing or need updating
                 bool needsCopy = false;
@@ -662,6 +690,7 @@ namespace MemoryReader
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);
                                 Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
+                                Thread.Sleep(2000);
                             }
                             catch (Exception ex)
                             {
@@ -819,7 +848,7 @@ namespace MemoryReader
         private const string CurrentVersion = "1.1";
         private const string RepoUrl = "https://github.com/Asviix/F1Manager2024Logger";
 
-        public async Task<bool> CheckForUpdates()
+        public static async Task<bool> CheckForUpdates()
         {
             try
             {
@@ -841,7 +870,7 @@ namespace MemoryReader
             }
         }
 
-        private async Task<string> GetLatestVersion()
+        private static async Task<string> GetLatestVersion()
         {
             using var httpClient = new HttpClient();
 
@@ -873,7 +902,7 @@ namespace MemoryReader
             return ExtractVersionFromTitle(title);
         }
 
-        private string ExtractVersionFromTitle(string title)
+        private static string ExtractVersionFromTitle(string title)
         {
             // Handle different title formats:
             // "Release v1.2.3"
@@ -892,7 +921,7 @@ namespace MemoryReader
             return title[start..end].Trim();
         }
 
-        private bool IsVersionNewer(string latestVersion)
+        private static bool IsVersionNewer(string latestVersion)
         {
             try
             {

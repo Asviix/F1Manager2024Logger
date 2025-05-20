@@ -10,7 +10,7 @@
 - Point for Pole Position will now be read from the savefile. ([`f9ee375`](https://github.com/Asviix/F1Manager2024Logger/commit/f9ee375e17900d7c3dc3a49047fe99277ccd636d))
 - Retrieved team names from the save file instead of a hard-coded table. ([`ba31dd5`](https://github.com/Asviix/F1Manager2024Logger/commit/ba31dd551a248449f231d2f4b7583a51e3fe2774))
 - Retrieved team colors from the save file instead of a user-defined color. ([`e351cc6`](https://github.com/Asviix/F1Manager2024Logger/commit/e351cc6b7b6097daeccda8a02273e1f3e5a36fba))
-- Retrived tyre enum mapping from the save file instead of user-defined values. ([``]())
+- Retrived tyre enum mapping from the save file instead of user-defined values. ([`8194cfc`](https://github.com/Asviix/F1Manager2024Logger/commit/8194cfce17a783d1a088423346e03013636e565d))
 
 ### Added
 - Added Points Doubling for the last Race if enabled. ([`204700c`](https://github.com/Asviix/F1Manager2024Logger/commit/204700c214d9bce2aadf275cc9c16ec3f38ba14d))

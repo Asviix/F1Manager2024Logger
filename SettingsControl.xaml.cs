@@ -374,19 +374,19 @@ namespace F1Manager2024Plugin
 
         private void OpenHelpLinks(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is System.Windows.Controls.TextBlock textBlock && !string.IsNullOrWhiteSpace(textBlock.Text))
+            if (sender is System.Windows.Controls.TextBlock textBlock && textBlock.Tag is string url)
             {
                 try
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                     {
-                        FileName = textBlock.Text,
+                        FileName = url,
                         UseShellExecute = true
                     });
                 }
                 catch (Exception ex)
                 {
-                    SHMessageBox.Show($"Failed to open the URL: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SHMessageBox.Show($"Failed to open the link: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

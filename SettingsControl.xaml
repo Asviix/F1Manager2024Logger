@@ -115,22 +115,36 @@
         <styles:SHSubSection Title="Need Help?" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.Row="1">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="For support, join our Discord: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="For support, join our " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                     <TextBlock
-                        x:Name="DiscordTextBost"
-                        MouseLeftButtonDown="OpenHelpLinks"
-                        MouseEnter="HighlightHelpLinks"
-                        MouseLeave="RemoveHighlightHelpLinks"
-                        Text="https://discord.gg/gTMQJUNDxk" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                x:Name="DiscordLink"
+                Tag="https://discord.gg/gTMQJUNDxk"
+                MouseLeftButtonDown="OpenHelpLinks"
+                MouseEnter="HighlightHelpLinks"
+                MouseLeave="RemoveHighlightHelpLinks"
+                Text="Discord" 
+                FontSize="14" 
+                TextWrapping="Wrap" 
+                Margin="0,5,0,0" 
+                Foreground="#FF3366CC" 
+                VerticalAlignment="Center"
+                Cursor="Hand"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Visit the GitHub wiki: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Visit the " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                     <TextBlock
-                        x:Name="GitHubTextBox"
-                        MouseLeftButtonDown="OpenHelpLinks"
-                        MouseEnter="HighlightHelpLinks"
-                        MouseLeave="RemoveHighlightHelpLinks"
-                        Text="https://github.com/Asviix/F1Manager2024Logger/wiki" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                x:Name="GitHubLink"
+                Tag="https://github.com/Asviix/F1Manager2024Logger/wiki"
+                MouseLeftButtonDown="OpenHelpLinks"
+                MouseEnter="HighlightHelpLinks"
+                MouseLeave="RemoveHighlightHelpLinks"
+                Text="GitHub wiki" 
+                FontSize="14" 
+                TextWrapping="Wrap" 
+                Margin="0,5,0,0" 
+                Foreground="#FF3366CC" 
+                VerticalAlignment="Center"
+                Cursor="Hand"/>
                 </StackPanel>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -138,13 +152,20 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.Column="0">
-                        <TextBlock Text="Download the lastest release at: " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Download the lastest release on " FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" VerticalAlignment="Center"/>
                         <TextBlock 
-                            x:Name="OvertakeTextBox"
-                            MouseLeftButtonDown="OpenHelpLinks"
-                            MouseEnter="HighlightHelpLinks"
-                            MouseLeave="RemoveHighlightHelpLinks"
-                            Text="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/" FontSize="14" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#FF3366CC" VerticalAlignment="Center"/>
+                    x:Name="OvertakeLink"
+                    Tag="https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/"
+                    MouseLeftButtonDown="OpenHelpLinks"
+                    MouseEnter="HighlightHelpLinks"
+                    MouseLeave="RemoveHighlightHelpLinks"
+                    Text="Overtake.GG" 
+                    FontSize="14" 
+                    TextWrapping="Wrap" 
+                    Margin="0,5,0,0" 
+                    Foreground="#FF3366CC" 
+                    VerticalAlignment="Center"
+                    Cursor="Hand"/>
                     </StackPanel>
                     <TextBlock Text="Version: RELEASE 1.1" FontSize="14" TextWrapping="Wrap" Margin="0,5,5,0" VerticalAlignment="Center" Grid.Column="1"/>
                 </Grid>

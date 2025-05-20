@@ -478,7 +478,6 @@ namespace MemoryReader
             {
                 case "ForceInstall":
                     PluginInstall.EnsurePluginInstalled(true);
-                    Thread.Sleep(5000);
                     break;
 
                 case "Back":
@@ -613,62 +612,6 @@ namespace MemoryReader
             return telemetry;
         }
 
-        public static class MultiColorConsole
-        {
-            public static void WriteCenteredColored(string text, params (string text, ConsoleColor foreground, ConsoleColor background)[] coloredParts)
-            {
-                int consoleWidth = Console.WindowWidth;
-                int totalLength = text.Length;
-                int startPos = (consoleWidth - totalLength) / 2;
-
-                if (startPos < 0) startPos = 0;
-
-                Console.SetCursorPosition(startPos, Console.CursorTop);
-
-                int currentIndex = 0;
-                foreach (var part in coloredParts)
-                {
-                    // Write any uncolored text before this part
-                    if (currentIndex < text.IndexOf(part.text, currentIndex))
-                    {
-                        Console.Write(text.Substring(currentIndex, text.IndexOf(part.text, currentIndex) - currentIndex));
-                    }
-
-                    // Store original colors
-                    var originalFg = Console.ForegroundColor;
-                    var originalBg = Console.BackgroundColor;
-
-                    // Set new colors
-                    Console.ForegroundColor = part.foreground;
-                    Console.BackgroundColor = part.background;
-
-                    // Write the colored part
-                    Console.Write(part.text);
-
-                    // Restore original colors
-                    Console.ForegroundColor = originalFg;
-                    Console.BackgroundColor = originalBg;
-
-                    currentIndex = text.IndexOf(part.text, currentIndex) + part.text.Length;
-                }
-
-                // Write any remaining text
-                if (currentIndex < text.Length)
-                {
-                    Console.Write(text.Substring(currentIndex));
-                }
-
-                Console.WriteLine();
-            }
-
-            // Overload for backward compatibility (single color)
-            public static void WriteCenteredColored(string text, params (string text, ConsoleColor color)[] coloredParts)
-            {
-                // Convert single color tuples to dual color (using default background)
-                var convertedParts = coloredParts.Select(p => (p.text, p.color, Console.BackgroundColor)).ToArray();
-                WriteCenteredColored(text, convertedParts);
-            }
-        }
     }
 
     public static class ConfigManager
@@ -814,7 +757,7 @@ namespace MemoryReader
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);
                                 Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
-                                Thread.Sleep(1000);
+                                Thread.Sleep(200);
                             }
                             catch (Exception ex)
                             {
@@ -826,6 +769,9 @@ namespace MemoryReader
                             Console.WriteLine($"Source file not found: {file.Key}");
                         }
                     }
+
+                    MultiColorConsole.WriteForegroundColor("Copied Source Files successfully!", ConsoleColor.Green);
+                    Thread.Sleep(1000);
                 }
 
                 // Start SimHub
@@ -1102,6 +1048,72 @@ namespace MemoryReader
                 // Fallback to string comparison if version parsing fails
                 return string.CompareOrdinal(latestVersion, CurrentVersion) > 0;
             }
+        }
+    }
+
+
+    public static class MultiColorConsole
+    {
+        public static void WriteCenteredColored(string text, params (string text, ConsoleColor foreground, ConsoleColor background)[] coloredParts)
+        {
+            int consoleWidth = Console.WindowWidth;
+            int totalLength = text.Length;
+            int startPos = (consoleWidth - totalLength) / 2;
+
+            if (startPos < 0) startPos = 0;
+
+            Console.SetCursorPosition(startPos, Console.CursorTop);
+
+            int currentIndex = 0;
+            foreach (var part in coloredParts)
+            {
+                // Write any uncolored text before this part
+                if (currentIndex < text.IndexOf(part.text, currentIndex))
+                {
+                    Console.Write(text.Substring(currentIndex, text.IndexOf(part.text, currentIndex) - currentIndex));
+                }
+
+                // Store original colors
+                var originalFg = Console.ForegroundColor;
+                var originalBg = Console.BackgroundColor;
+
+                // Set new colors
+                Console.ForegroundColor = part.foreground;
+                Console.BackgroundColor = part.background;
+
+                // Write the colored part
+                Console.Write(part.text);
+
+                // Restore original colors
+                Console.ForegroundColor = originalFg;
+                Console.BackgroundColor = originalBg;
+
+                currentIndex = text.IndexOf(part.text, currentIndex) + part.text.Length;
+            }
+
+            // Write any remaining text
+            if (currentIndex < text.Length)
+            {
+                Console.Write(text.Substring(currentIndex));
+            }
+
+            Console.WriteLine();
+        }
+
+        // Overload for backward compatibility (single color)
+        public static void WriteCenteredColored(string text, params (string text, ConsoleColor color)[] coloredParts)
+        {
+            // Convert single color tuples to dual color (using default background)
+            var convertedParts = coloredParts.Select(p => (p.text, p.color, Console.BackgroundColor)).ToArray();
+            WriteCenteredColored(text, convertedParts);
+        }
+
+        public static void WriteForegroundColor(string text, ConsoleColor color)
+        {
+            var originalFG = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(text);
+            Console.ForegroundColor = originalFG;
         }
     }
 

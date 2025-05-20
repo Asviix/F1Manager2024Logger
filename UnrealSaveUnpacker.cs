@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Dapper;
 
 namespace F1Manager2024Plugin
@@ -283,14 +284,47 @@ namespace F1Manager2024Plugin
         private static readonly object _cacheLock = new();
         private static readonly ConcurrentDictionary<string, object> _cachedValues = new();
 
+        public class DriverNameData
+        {
+            public int Id { get; set; }
+            public string RawFirstName { get; set; }
+            public string RawLastName { get; set; }
+            public string RawDriverCode { get; set; }
+            public string FirstName => ExtractName(RawFirstName);
+            public string LastName => ExtractName(RawLastName);
+            public string DriverCode => ExtractName(RawDriverCode);
+
+            private static string ExtractName(string resourceString)
+            {
+                if (string.IsNullOrEmpty(resourceString))
+                {
+                    return resourceString;
+                }
+
+                if (!resourceString.StartsWith("[") || !resourceString.EndsWith("]"))
+                {
+                    return resourceString;
+                }
+
+                var cleanString = resourceString.Trim('[', ']');
+                var parts = cleanString.Split('_');
+                var lastPart = parts.LastOrDefault() ?? cleanString;
+
+                var result = Regex.Replace(lastPart, @"\d+$", "");
+                return result;
+            }
+        }
+
         public static class CachedValues
         {
             public static int PointScheme => SaveDataCache.GetCachedValue<int>("PointScheme");
             public static int FastestLapPoint => SaveDataCache.GetCachedValue<int>("FastestLapPoint");
             public static int PolePositionPoint => SaveDataCache.GetCachedValue<int>("PolePositionPoint");
+            public static int DoublePointsLastRace => SaveDataCache.GetCachedValue<int>("DoublePointsLastRace");
             public static int CurrentSeason => SaveDataCache.GetCachedValue<int>("CurrentSeason");
             public static int CurrentRace => SaveDataCache.GetCachedValue<int>("CurrentRace");
             public static int RaceIdOfLastRace => SaveDataCache.GetCachedValue<int>("RaceIdOfLastRace");
+            public static List<DriverNameData> DriverNameData => SaveDataCache.GetCachedValue<List<DriverNameData>>("driverNameData");
         }
 
         public static class Queries
@@ -298,8 +332,10 @@ namespace F1Manager2024Plugin
             public const string PointScheme = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PointScheme'";
             public const string FastestLapPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'FastestLapBonusPoint'";
             public const string PolePositionPoint = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'PolePositionBonusPoint'";
+            public const string DoublePointsLastRace = "SELECT \"CurrentValue\" FROM \"Regulations_Enum_Changes\" WHERE \"Name\" = 'DoubleLastRacePoints'";
             public const string CurrentSeason = "SELECT \"CurrentSeason\" FROM \"Player_State\"";
             public const string CurrentRace = "SELECT \"RaceID\" FROM \"Save_Weekend\"";
+            public const string driverNameData = "SELECT \"StaffID\" as \"Id\", \"FirstName\" as \"RawFirstName\", \"LastName\" as \"RawLastName\", \"DriverCode\" as \"RawDriverCode\" FROM \"Staff_DriverData_View\" ORDER BY \"StaffID\" ASC";
 
             public static string GetRaceIdOfLastRaceQuery()
             {
@@ -314,9 +350,11 @@ namespace F1Manager2024Plugin
                 _cachedValues["PointScheme"] = SaveFileQuery.ExecuteScalar<int>(Queries.PointScheme);
                 _cachedValues["FastestLapPoint"] = SaveFileQuery.ExecuteScalar<int>(Queries.FastestLapPoint);
                 _cachedValues["PolePositionPoint"] = SaveFileQuery.ExecuteScalar<int>(Queries.PolePositionPoint);
+                _cachedValues["DoublePointsLastRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.DoublePointsLastRace);
                 _cachedValues["CurrentSeason"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentSeason);
                 _cachedValues["CurrentRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.CurrentRace);
                 _cachedValues["RaceIdOfLastRace"] = SaveFileQuery.ExecuteScalar<int>(Queries.GetRaceIdOfLastRaceQuery());
+                _cachedValues["driverNameData"] = SaveFileQuery.ExecuteSql<DriverNameData>(Queries.driverNameData);
             }
         }
 

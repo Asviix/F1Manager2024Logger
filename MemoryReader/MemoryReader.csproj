@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="bin\Release\net9.0-windows\win-x64\icon.ico" />
+    <Content Include="bin\Release\net9.0-windows\win-x64\MemoryReader.deps.json" />
+    <Content Include="bin\Release\net9.0-windows\win-x64\MemoryReader.runtimeconfig.json" />
+    <Content Include="bin\Release\net9.0-windows\win-x64\System.Data.SQLite.xml" />
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -26,6 +30,7 @@
   <ItemGroup>
     <!-- Use PackageReference for Windows Forms instead of direct reference -->
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.0-preview.3.25174.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.0-preview.3.25173.2" />
     <PackageReference Include="System.Security.Permissions" Version="10.0.0-preview.3.25171.5" />
     
@@ -51,7 +56,132 @@
     <Content Update="**\*.dll" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin\Release\net9.0-windows\win-x64\" />
+    <None Include="bin\Release\net9.0-windows\win-x64\Accessibility.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\cs\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\cs\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\cs\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\cs\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\cs\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\Dapper.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\de\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\de\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\de\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\de\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\de\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\es\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\es\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\es\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\es\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\es\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\F1Manager2024Plugin.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\F1Manager2024Plugin.dll.config" />
+    <None Include="bin\Release\net9.0-windows\win-x64\F1Manager2024Plugin.pdb" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.Deployment.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.Runtime.Serialization.Formatters.Soap.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\fr\System.Windows.Forms.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\it\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\it\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\it\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\it\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\it\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ja\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ja\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ja\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ja\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ja\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ko\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ko\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ko\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ko\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ko\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\MemoryReader.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\MemoryReader.exe" />
+    <None Include="bin\Release\net9.0-windows\win-x64\Microsoft.Extensions.ObjectPool.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\Microsoft.Win32.Registry.AccessControl.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\Microsoft.Win32.SystemEvents.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pl\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pl\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pl\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pl\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pl\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pt-BR\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pt-BR\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pt-BR\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pt-BR\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\pt-BR\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ru\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ru\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ru\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ru\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\ru\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\sni.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\SQLite.Interop.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.CodeDom.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ComponentModel.Composition.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ComponentModel.Composition.Registration.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Configuration.ConfigurationManager.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.Odbc.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.OleDb.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.SqlClient.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.SQLite.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.SQLite.EF6.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Data.SQLite.Linq.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Deployment.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Diagnostics.EventLog.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Diagnostics.EventLog.Messages.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Diagnostics.PerformanceCounter.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.DirectoryServices.AccountManagement.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.DirectoryServices.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.DirectoryServices.Protocols.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Drawing.Common.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Formats.Asn1.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.IO.Packaging.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.IO.Ports.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Management.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Private.Windows.Core.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Private.Windows.GdiPlus.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Reflection.Context.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Runtime.Caching.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Runtime.Serialization.Formatters.Soap.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Security.Cryptography.Pkcs.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Security.Cryptography.ProtectedData.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Security.Cryptography.Xml.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Security.Permissions.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.Duplex.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.Http.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.NetFramingBase.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.NetTcp.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.Primitives.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.Security.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceModel.Syndication.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.ServiceProcess.ServiceController.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Speech.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Text.Encoding.CodePages.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Threading.AccessControl.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Web.Services.Description.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Windows.Extensions.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\System.Windows.Forms.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\tr\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\tr\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\tr\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\tr\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\tr\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hans\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hans\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hans\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hans\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hans\System.Web.Services.Description.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hant\System.ServiceModel.Http.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hant\System.ServiceModel.NetFramingBase.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hant\System.ServiceModel.NetTcp.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hant\System.ServiceModel.Primitives.resources.dll" />
+    <None Include="bin\Release\net9.0-windows\win-x64\zh-Hant\System.Web.Services.Description.resources.dll" />
   </ItemGroup>
 
 </Project>

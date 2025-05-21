@@ -13,11 +13,13 @@ public class UESaveTool
     private const string BACKUP_DB2_NAME = "backup2.db";
     private const string CHUNK1_NAME = "chunk1";
 
-    // Signature that marks the beginning of the database section
-    private static readonly byte[] NONE_NONE_SIGNATURE = new byte[]
+    // Signature patterns that might mark the beginning of the database section
+    private static readonly byte[][] DATABASE_SIGNATURES = new byte[][]
     {
-        0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, // "None" with length prefix
-        0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00 // Another "None" with length prefix
+        // Original None-None signature
+        new byte[] { 0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00 },
+        // Alternative pattern that might appear in custom saves
+        new byte[] { 0x00, 0x04, 0x00, 0x00, 0x00, 0x44, 0x61, 0x74, 0x61 } // "Data" with length prefix
     };
 
     private static string _lastMd5Hash;
@@ -44,57 +46,69 @@ public class UESaveTool
 
         lock (_fileCheckLock)
         {
-            if (DateTime.Now - _lastCheckTime < CheckInterval)
+            try
             {
-                return;
+                if (DateTime.Now - _lastCheckTime < CheckInterval)
+                {
+                    return;
+                }
+
+                _lastCheckTime = DateTime.Now;
+
+                if (!File.Exists(saveFilePath))
+                {
+                    throw new FileNotFoundException($"Save file not found: {saveFilePath}");
+                }
+
+                string currentHash;
+                using (var md5 = MD5.Create())
+                using (var stream = File.OpenRead(saveFilePath))
+                {
+                    currentHash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                }
+
+                if (currentHash == _lastMd5Hash)
+                {
+                    return; // No changes detected
+                }
+
+                _lastMd5Hash = currentHash;
+
+                if (!Directory.Exists(_outputDirectory))
+                {
+                    Directory.CreateDirectory(_outputDirectory);
+                }
+
+                byte[] fileBytes = File.ReadAllBytes(saveFilePath);
+                int dbSectionOffset = FindDatabaseSectionOffset(fileBytes);
+
+                ExtractChunk1(fileBytes, dbSectionOffset);
+                ExtractDatabases(fileBytes, dbSectionOffset);
+
+                SaveDataCache.UpdateCache();
             }
-
-            _lastCheckTime = DateTime.Now;
-
-            if (!File.Exists(saveFilePath))
+            catch (Exception ex)
             {
-                throw new FileNotFoundException($"Save file not found: {saveFilePath}");
+                Console.WriteLine($"Error processing save file: {ex.Message}");
+                throw;
             }
-
-            string currentHash;
-            using (var md5 = MD5.Create())
-            using (var stream = File.OpenRead(saveFilePath))
-            {
-                currentHash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-            }
-
-            if (currentHash == _lastMd5Hash)
-            {
-                return; // No changes detected
-            }
-
-            _lastMd5Hash = currentHash;
-
-            if (!Directory.Exists(_outputDirectory))
-            {
-                Directory.CreateDirectory(_outputDirectory);
-            }
-
-            byte[] fileBytes = File.ReadAllBytes(saveFilePath);
-            int dbSectionOffset = FindDatabaseSectionOffset(fileBytes);
-
-            ExtractChunk1(fileBytes, dbSectionOffset);
-            ExtractDatabases(fileBytes, dbSectionOffset);
-
-            SaveDataCache.UpdateCache();
         }
     }
 
     private int FindDatabaseSectionOffset(byte[] fileBytes)
     {
-        int sigPosition = ByteArrayIndexOf(fileBytes, NONE_NONE_SIGNATURE);
-        if (sigPosition == -1)
+        // Try all known signatures
+        foreach (var signature in DATABASE_SIGNATURES)
         {
-            throw new InvalidDataException("Could not find database section signature in save file");
+            int sigPosition = ByteArrayIndexOf(fileBytes, signature);
+            if (sigPosition != -1)
+            {
+                // Skip the signature and 4 unknown bytes
+                return sigPosition + signature.Length + 4;
+            }
         }
 
-        // Skip the signature and 4 unknown bytes
-        return sigPosition + NONE_NONE_SIGNATURE.Length + 4;
+        throw new InvalidDataException("Could not find any known database section signature in save file");
     }
 
     private void ExtractChunk1(byte[] fileBytes, int dbSectionOffset)
@@ -114,7 +128,7 @@ public class UESaveTool
         {
             throw new InvalidDataException("Save file truncated at compressed size field");
         }
-        _ = BitConverter.ToInt32(fileBytes, position);
+        int compressedSize = BitConverter.ToInt32(fileBytes, position);
         position += 4;
 
         // Read the three database sizes
@@ -129,8 +143,8 @@ public class UESaveTool
         byte[] compressedData = new byte[fileBytes.Length - position];
         Buffer.BlockCopy(fileBytes, position, compressedData, 0, compressedData.Length);
 
-        // Decompress the database block
-        byte[] decompressedData = DecompressData(compressedData);
+        // Decompress the database block with multiple attempts if needed
+        byte[] decompressedData = DecompressDataWithFallback(compressedData);
 
         // Write each database file
         int currentPosition = 0;
@@ -150,6 +164,41 @@ public class UESaveTool
         }
     }
 
+    private byte[] DecompressDataWithFallback(byte[] compressedData)
+    {
+        try
+        {
+            // First try with ZLib header skip (standard case)
+            return DecompressData(compressedData, skipHeader: true);
+        }
+        catch
+        {
+            try
+            {
+                // If that fails, try without skipping header (some custom saves)
+                return DecompressData(compressedData, skipHeader: false);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidDataException("Failed to decompress data with both methods. The save file might use an unsupported compression format.", ex);
+            }
+        }
+    }
+
+    private byte[] DecompressData(byte[] compressedData, bool skipHeader)
+    {
+        using var outputStream = new MemoryStream();
+        int offset = skipHeader ? 2 : 0;
+        int length = compressedData.Length - offset;
+
+        using (var compressedStream = new MemoryStream(compressedData, offset, length))
+        using (var decompressionStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
+        {
+            decompressionStream.CopyTo(outputStream);
+        }
+        return outputStream.ToArray();
+    }
+
     private int ReadDatabaseSize(byte[] fileBytes, ref int position)
     {
         if (position + 4 > fileBytes.Length)
@@ -159,18 +208,6 @@ public class UESaveTool
         int size = BitConverter.ToInt32(fileBytes, position);
         position += 4;
         return size;
-    }
-
-    private byte[] DecompressData(byte[] compressedData)
-    {
-        // ZLib format requires skipping the first 2 bytes (header) for .NET's DeflateStream
-        using var outputStream = new MemoryStream();
-        using (var compressedStream = new MemoryStream(compressedData, 2, compressedData.Length - 2))
-        using (var decompressionStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
-        {
-            decompressionStream.CopyTo(outputStream);
-        }
-        return outputStream.ToArray();
     }
 
     private int ByteArrayIndexOf(byte[] source, byte[] pattern)

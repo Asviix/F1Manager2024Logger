@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Controls;
 using SimHub.Plugins;
 using SimHub.Plugins.Styles;
 using System.ComponentModel;

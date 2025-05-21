@@ -7,7 +7,6 @@ using System.Linq;
 using System.Collections.Concurrent;
 using WoteverCommon;
 using WoteverCommon.Extensions;
-using System.Windows.Navigation;
 
 namespace F1Manager2024Plugin
 {
@@ -62,7 +61,8 @@ namespace F1Manager2024Plugin
             SimHub.Logging.Current.Info("Settings Loaded.");
 
             SimHub.Logging.Current.Info("Unpacking Save File...");
-            UnrealSaveUnpacker.UnpackSaveFile();
+            var savetool = new UESaveTool();
+            savetool.UnpackSaveFile();
             SimHub.Logging.Current.Info("Save File Unpacked.");
 
             SimHub.Logging.Current.Info("Registering Debug Properties...");
@@ -244,7 +244,8 @@ namespace F1Manager2024Plugin
                 if (telemetry.carFloatValue != ExpectedCarValueSteam && telemetry.carFloatValue != ExpectedCarValueEpic) { UpdateStatus(true, false, "Game not in Session."); return; }
                 try
                 {
-                    UnrealSaveUnpacker.UnpackSaveFile();
+                    var savetool = new UESaveTool();
+                    savetool.UnpackSaveFile();
 
                     _lastData = telemetry;
 

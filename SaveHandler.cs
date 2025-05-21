@@ -40,7 +40,7 @@ public class UESaveTool
     {
         saveFilePath = saveFilePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "F1Manager24", "Saved", "SaveGames", "autosav.sav");
+            "F1Manager24", "Saved", "SaveGames", "autosave.sav");
 
         lock (_fileCheckLock)
         {

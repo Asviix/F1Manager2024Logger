@@ -441,7 +441,7 @@ namespace F1Manager2024Plugin
 
 
             // Update Game Properties
-            UpdateValue("CameraFocusedOn", carNames[telemetry.cameraFocus]);
+            UpdateValue("CameraFocusedOn", telemetry.cameraFocus > carNames.Length ? "None" : carNames[telemetry.cameraFocus]);
 
             // Update Session Properties
             UpdateValue("TrackName", TelemetryHelpers.GetTrackName(session.trackId));

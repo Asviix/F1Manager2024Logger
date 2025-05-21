@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace MemoryReader
@@ -10,6 +11,7 @@ namespace MemoryReader
     public class PluginConfig
     {
         public bool LaunchSimHubOnStart { get; set; } = true;
+        public bool DebugMode { get; set; } = false;
     }
 
     class Program
@@ -134,6 +136,9 @@ namespace MemoryReader
 
         static async Task Main()
         {
+            Logger.Debug("Debug Mode Enabled.");
+
+            Logger.Info($"Application started - Version: {FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion}");
             Console.Title = "Memory Reader";
 
             if (!OperatingSystem.IsWindows())
@@ -141,8 +146,9 @@ namespace MemoryReader
                 Console.WriteLine("This code is only supported on Windows.");
                 throw new PlatformNotSupportedException("This code is only supported on Windows.");
             }
-
             bool hasUpdate = await GitHubUpdateChecker.CheckForUpdates();
+
+            Logger.Info("Displaying Header...");
             while (_isRunning)
             {
                 Console.Clear();
@@ -181,6 +187,7 @@ namespace MemoryReader
             }
 
             Console.WriteLine("\nSuccessfully stopped, you can close this window.");
+            Logger.Info("Application stopped");
             Console.Read();
         }
 
@@ -236,7 +243,8 @@ namespace MemoryReader
                     StartTelemetryReader();
                     break;
 
-                case "Documentation": case "Properties":
+                case "Documentation":
+                case "Properties":
                     OpenDocs.OpenDocumentation();
                     break;
 
@@ -247,7 +255,7 @@ namespace MemoryReader
                 case "Discord":
                     OpenDocs.OpenDiscord();
                     break;
-                
+
                 case "Overtake":
                     OpenDocs.OpenOvertake();
                     break;
@@ -290,6 +298,8 @@ namespace MemoryReader
 
         private static void StartTelemetryReader()
         {
+            Logger.Debug("Starting telemetry reader...");
+
             DisplayTelemetryHeader("Starting...");
 
             PluginInstall.EnsurePluginInstalled(false);
@@ -299,6 +309,7 @@ namespace MemoryReader
             Process? gameProcess = null;
 
             // First find and attach to the process
+            Logger.Debug("Finding target process...");
             while (true)
             {
                 gameProcess = FindTargetProcess();
@@ -309,6 +320,7 @@ namespace MemoryReader
                 }
 
                 string dots = new string('.', counter % 3 + 1);
+                Logger.Debug($"Waiting for game, Iteration {counter}");
                 DisplayTelemetryHeader($"Waiting for game{dots}");
                 Thread.Sleep(1000);
                 counter++;
@@ -317,14 +329,18 @@ namespace MemoryReader
                 if (Console.KeyAvailable)
                 {
                     Console.ReadKey(true); // Clear the key
+                    Logger.Debug("User aborted process search.");
                     return; // Return to menu
                 }
             }
 
+            Logger.Debug($"Found target process: {gameProcess.ProcessName} (PID: {gameProcess.Id})");
             DisplayTelemetryHeader("Connected to process");
 
             try
             {
+                Logger.Debug("Creating memory mapped file...");
+
                 using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
                 using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
 
@@ -339,6 +355,7 @@ namespace MemoryReader
                     // Check if game process has exited
                     if (gameProcess.HasExited)
                     {
+                        Logger.Debug("Game process has exited.");
                         DisplayTelemetryHeader("Game process has exited");
                         Thread.Sleep(2000); // Give user time to see the message
                         return; // Return to menu
@@ -348,6 +365,7 @@ namespace MemoryReader
                     if (Console.KeyAvailable)
                     {
                         Console.ReadKey(true); // Clear the key
+                        Logger.Debug("User stopped telemetry.");
                         return; // Return to menu
                     }
 
@@ -413,6 +431,7 @@ namespace MemoryReader
             {
                 new string[] { "ForceInstall" },
                 new string[] { "LaunchSimHubOnStart" },
+                new string[] { "DebugMode" },
                 new string[] { "Back" }
             };
 
@@ -428,12 +447,15 @@ namespace MemoryReader
 
                 const int boxWidth = 44;
                 string LaunchSimHubOnStartString = $@"| Launch SimHub on Start - {(config.LaunchSimHubOnStart ? "ON" : "OFF")}".PadRight(boxWidth) + "|";
+                string DebugModeString = $@"| Debug Mode - {(config.DebugMode ? "ON" : "OFF")}".PadRight(boxWidth) + "|";
 
                 MultiColorConsole.WriteCenteredColored($@"+----------------- OPTIONS -----------------+", ("+----------------- OPTIONS -----------------+", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"| [Force Install]                           |", ("|", ConsoleColor.DarkRed), ("[Force Install]", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "ForceInstall" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored(LaunchSimHubOnStartString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Launch SimHub on Start - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "LaunchSimHubOnStart" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ((config.LaunchSimHubOnStart ? "ON" : "OFF"), config.LaunchSimHubOnStart == true ? ConsoleColor.White : ConsoleColor.Black, config.LaunchSimHubOnStart == true ? ConsoleColor.Green : ConsoleColor.Red), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
+                MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
+                MultiColorConsole.WriteCenteredColored(DebugModeString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Debug Mode - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "DebugMode" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ((config.DebugMode ? "ON" : "OFF"), config.DebugMode == true ? ConsoleColor.White : ConsoleColor.Black, config.DebugMode == true ? ConsoleColor.Green : ConsoleColor.Red), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"| [BACK]                                    |", ("|", ConsoleColor.DarkRed), ("[BACK]", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "Back" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
@@ -487,6 +509,11 @@ namespace MemoryReader
 
                 case "LaunchSimHubOnStart":
                     config.LaunchSimHubOnStart = !config.LaunchSimHubOnStart;
+                    ConfigManager.SaveConfig(config);
+                    break;
+
+                case "DebugMode":
+                    config.DebugMode = !config.DebugMode;
                     ConfigManager.SaveConfig(config);
                     break;
             }
@@ -547,7 +574,7 @@ namespace MemoryReader
                 telemetry.Car[i].Driver.DontFightTeammate = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF8):X}");
 
                 telemetry.Car[i].flSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x97C):X}");
-                telemetry.Car[i].flTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x980):X}", round:false);
+                telemetry.Car[i].flTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x980):X}", round: false);
                 telemetry.Car[i].frSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x988):X}");
                 telemetry.Car[i].frTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x98C):X}");
                 telemetry.Car[i].rlSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x994):X}");
@@ -599,7 +626,7 @@ namespace MemoryReader
 
                 string sessionPtr = gameObjPtr + ",0x260";
 
-                telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round:false);
+                telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round: false);
                 telemetry.Session.rubber = _mem.ReadFloat(sessionPtr + ",0x278");
                 telemetry.Session.trackId = _mem.ReadInt(sessionPtr + ",0x228");
                 telemetry.Session.sessionType = _mem.ReadInt(sessionPtr + ",0x288");
@@ -613,6 +640,148 @@ namespace MemoryReader
             return telemetry;
         }
 
+    }
+
+    public static class Logger
+    {
+        private static readonly string LogsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+        private static readonly string LogFilePath;
+        private static readonly object _lock = new object();
+        private static bool _debugModeEnabled = false;
+
+        static Logger()
+        {
+            Directory.CreateDirectory(LogsDirectory);
+
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            LogFilePath = Path.Combine(LogsDirectory, $"log_{timestamp}.txt");
+
+            var config = ConfigManager.LoadConfig();
+            _debugModeEnabled = config.DebugMode;
+        }
+
+        private static void Log(string message, LogLevel level = LogLevel.INFO)
+        {
+            lock (_lock)
+            {
+                string LogEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}";
+
+                try
+                {
+                    File.AppendAllText(LogFilePath, LogEntry + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    // Fallback to console if file logging fails
+                    Console.WriteLine($"[ERROR] Failed to write to log file: {ex.Message}");
+                    Console.WriteLine(LogEntry);
+                }
+            }
+        }
+
+        public static void Debug(string message)
+        {
+            if (_debugModeEnabled)
+                Log(message, LogLevel.DEBUG);
+        }
+        public static void Info(string message) => Log(message, LogLevel.INFO);
+        public static void Warn(string message) => Log(message, LogLevel.WARNING);
+        public static void Error(string message) => Log(message, LogLevel.ERROR);
+        public static void Critical(string message) => Log(message, LogLevel.CRITICAL);
+
+        public static void LogException(Exception ex, string? context = null)
+        {
+            try
+            {
+                // Basic exception info
+                string message = $"Exception in {context ?? "unknown context"}: {ex.GetType().Name} - {ex.Message}";
+                Error(message);
+                Error($"Stack Trace: {ex.StackTrace}");
+
+                // Full exception details including all properties
+                Error($"Full Exception Details:{Environment.NewLine}{GetFullExceptionDetails(ex)}");
+
+                // System and application context
+                Error($"Application Context:{Environment.NewLine}{GetApplicationContext()}");
+
+                // Inner exception (recursive)
+                if (ex.InnerException != null)
+                {
+                    Error("--- Inner Exception ---");
+                    LogException(ex.InnerException, "Inner Exception");
+                }
+            }
+            catch (Exception loggingEx)
+            {
+                // If something goes wrong while logging the exception
+                Error($"Failed to log exception properly: {loggingEx.Message}");
+                Error($"Original exception was: {ex?.Message ?? "null"}");
+            }
+        }
+
+        private static string GetFullExceptionDetails(Exception ex)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            // Get all properties of the exception via reflection
+            foreach (var property in ex.GetType().GetProperties())
+            {
+                try
+                {
+                    object value = property.GetValue(ex, null);
+                    sb.AppendLine($"{property.Name}: {value ?? "null"}");
+                }
+                catch
+                {
+                    sb.AppendLine($"{property.Name}: <error retrieving value>");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GetApplicationContext()
+        {
+            var sb = new System.Text.StringBuilder();
+
+            try
+            {
+                // Application information
+                var assembly = System.Reflection.Assembly.GetEntryAssembly() ?? System.Reflection.Assembly.GetExecutingAssembly();
+                var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+
+                sb.AppendLine($"Application: {versionInfo.ProductName ?? "Unknown"}");
+                sb.AppendLine($"Version: {versionInfo.FileVersion ?? "Unknown"}");
+                sb.AppendLine($"Location: {assembly.Location}");
+                sb.AppendLine($"Process: {Process.GetCurrentProcess().ProcessName} (ID: {Process.GetCurrentProcess().Id})");
+
+                // System information
+                sb.AppendLine($"OS: {Environment.OSVersion} (64-bit: {Environment.Is64BitOperatingSystem})");
+                sb.AppendLine($"Runtime: {RuntimeInformation.FrameworkDescription}");
+                sb.AppendLine($"Culture: {CultureInfo.CurrentCulture.Name}");
+                sb.AppendLine($"Time: {DateTime.Now.ToString("o")}");
+                sb.AppendLine($"Memory: {GC.GetTotalMemory(false) / 1024 / 1024} MB");
+
+                // Environment variables that might be useful
+                sb.AppendLine($"Command Line: {Environment.CommandLine}");
+                sb.AppendLine($"Current Directory: {Environment.CurrentDirectory}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"Error gathering application context: {ex.Message}");
+            }
+
+            return sb.ToString();
+        }
+
+        public enum LogLevel
+        {
+            DEBUG,
+            INFO,
+            WARNING,
+            ERROR,
+            CRITICAL
+        }
     }
 
     public static class ConfigManager
@@ -631,7 +800,8 @@ namespace MemoryReader
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading config: {ex.Message}");
+                Console.WriteLine($"Error loading config!");
+                Logger.LogException(ex, "ConfigManager - LoadConfig");
             }
 
             return new PluginConfig();
@@ -889,30 +1059,37 @@ namespace MemoryReader
                 switch (selected)
                 {
                     case "Properties":
+                        Logger.Debug("Opening properties file...");
                         if (File.Exists(propertiesPath))
                         {
                             Process.Start(new ProcessStartInfo(propertiesPath) { UseShellExecute = true });
                         }
                         else
                         {
+                            Logger.Debug($"Properties file not found in {propertiesPath}");
                             Console.WriteLine("Properties file not found.");
+                            Thread.Sleep(1000);
                         }
                         break;
                     case "Documentation":
+                        Logger.Debug("Opening documentation file...");
                         if (File.Exists(documentationPath))
                         {
                             Process.Start(new ProcessStartInfo(documentationPath) { UseShellExecute = true });
                         }
                         else
                         {
+                            Logger.Debug($"Documentation file not found in {documentationPath}");
                             Console.WriteLine("Documentation file not found.");
+                            Thread.Sleep(1000);
                         }
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error opening documentation: {ex.Message}");
+                Logger.LogException(ex, "OpenDocs - OpenDocumentation");
+                Console.WriteLine($"Error opening documentation!");
             }
         }
 
@@ -922,11 +1099,14 @@ namespace MemoryReader
 
             try
             {
+                Logger.Debug("Opening GitHub page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error opening GitHub: {ex.Message}");
+                Logger.LogException(ex, "OpenDocs - OpenGitHub");
+                Console.WriteLine($"Error opening GitHub!");
+                Thread.Sleep(1000);
             }
         }
 
@@ -935,11 +1115,14 @@ namespace MemoryReader
             string url = "https://discord.gg/gTMQJUNDxk";
             try
             {
+                Logger.Debug("Opening Discord page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error opening Discord: {ex.Message}");
+                Logger.LogException(ex, "OpenDocs - OpenDiscord");
+                Console.WriteLine($"Error opening Discord!");
+                Thread.Sleep(1000);
             }
         }
 
@@ -948,11 +1131,14 @@ namespace MemoryReader
             string url = "https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/";
             try
             {
+                Logger.Debug("Opening Overtake page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error opening Overtake: {ex.Message}");
+                Logger.LogException(ex, "OpenDocs - OpenOvertake");
+                Console.WriteLine($"Error opening Overtake!");
+                Thread.Sleep(1000);
             }
         }
     }
@@ -964,6 +1150,7 @@ namespace MemoryReader
 
         public static async Task<bool> CheckForUpdates()
         {
+            Logger.Debug("Checking for updates...");
             try
             {
                 var latestVersion = await GetLatestVersion();
@@ -986,6 +1173,8 @@ namespace MemoryReader
 
         private static async Task<string> GetLatestVersion()
         {
+            Logger.Debug("Getting latest version from GitHub...");
+
             using var httpClient = new HttpClient();
 
             // GitHub requires a User-Agent header
@@ -1002,22 +1191,32 @@ namespace MemoryReader
             var latestEntry = doc.Root?.Element(ns + "entry");
             if (latestEntry == null)
             {
-                throw new Exception("No releases found in Atom feed");
+                var ex = new Exception("No releases found in Atom feed");
+                Logger.LogException(ex, "GitHubUpdateChecker - GetLatestVersion");
+                throw ex;
             }
             if (latestEntry == null)
-                throw new Exception("No releases found in Atom feed");
-
+            {
+                var ex = new Exception("No releases found in Atom feed");
+                Logger.LogException(ex, "GitHubUpdateChecker - GetLatestVersion");
+                throw ex;
+            }
             // The title contains the version (format: "Release v1.2.3")
             var title = latestEntry.Element(ns + "title")?.Value;
             if (string.IsNullOrWhiteSpace(title))
-                throw new Exception("Could not parse release version");
-
+            {
+                var ex = new Exception("Could not parse release version");
+                Logger.LogException(ex, "GitHubUpdateChecker - GetLatestVersion");
+                throw ex;
+            }
             // Extract version number (handles formats like "v1.2.3" or "Release 1.2.3")
             return ExtractVersionFromTitle(title);
         }
 
         private static string ExtractVersionFromTitle(string title)
         {
+            Logger.Debug($"Extracting version from title: {title}");
+
             // Handle different title formats:
             // "Release v1.2.3"
             // "v1.2.3"
@@ -1037,6 +1236,8 @@ namespace MemoryReader
 
         private static bool IsVersionNewer(string latestVersion)
         {
+            Logger.Debug($"Comparing versions: {latestVersion} vs {CurrentVersion}");
+
             try
             {
                 // Normalize versions by removing 'v' prefix
@@ -1126,7 +1327,7 @@ namespace MemoryReader
         public ProcessModule? MainModule { get; set; }
     }
 
-    public class MemoryReader: IDisposable
+    public class MemoryReader : IDisposable
     {
 
         public Proc mProc = new Proc();

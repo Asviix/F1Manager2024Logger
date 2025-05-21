@@ -724,11 +724,13 @@ namespace MemoryReader
             var sb = new System.Text.StringBuilder();
 
             // Get all properties of the exception via reflection
+#pragma warning disable IL2075
             foreach (var property in ex.GetType().GetProperties())
+#pragma warning restore IL2075
             {
                 try
                 {
-                    object value = property.GetValue(ex, null);
+                    object? value = property.GetValue(ex, null);
                     sb.AppendLine($"{property.Name}: {value ?? "null"}");
                 }
                 catch

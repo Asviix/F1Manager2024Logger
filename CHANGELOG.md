@@ -12,6 +12,7 @@
 - Retrieved team colors from the save file instead of a user-defined color. ([`e351cc6`](https://github.com/Asviix/F1Manager2024Logger/commit/e351cc6b7b6097daeccda8a02273e1f3e5a36fba))
 - Retrived tyre enum mapping from the save file instead of user-defined values. ([`8194cfc`](https://github.com/Asviix/F1Manager2024Logger/commit/8194cfce17a783d1a088423346e03013636e565d))
 - Changed Behavior of the Memory Reader when game isn't started ([`42cad62`](https://github.com/Asviix/F1Manager2024Logger/commit/42cad6276ecfc98c80d0f2980ae64d0b2c78b992))
+- Added Options to the Memory Reader. ([`b215239`](https://github.com/Asviix/F1Manager2024Logger/commit/b2152391a1697dc63199dc3c0a5cb49e913347b9))
 
 ### Added
 - Added Points Doubling for the last Race if enabled. ([`204700c`](https://github.com/Asviix/F1Manager2024Logger/commit/204700c214d9bce2aadf275cc9c16ec3f38ba14d))

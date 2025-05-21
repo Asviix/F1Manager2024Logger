@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
@@ -643,7 +644,10 @@ namespace MemoryReader
 
     public static class Logger
     {
-        private static readonly string LogsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+        private static readonly string LogsDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "F1Manager2024MemoryReader",
+            "logs");
         private static readonly string LogFilePath;
         private static readonly object _lock = new object();
         private static bool _debugModeEnabled = false;

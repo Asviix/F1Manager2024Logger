@@ -24,8 +24,8 @@ namespace MemoryReader
         public static readonly List<string[]> _menuItems =
         [
             ["Start"],
-            ["Properties", "Documentation", "GitHub"],
-            ["Discord", "Overtake"],
+            ["Properties", "Documentation"],
+            ["Discord", "GitHub", "Overtake"],
             ["Options", "Exit"]
         ];
 
@@ -147,6 +147,7 @@ namespace MemoryReader
             {
                 Console.Clear();
                 Console.CursorVisible = false;
+
                 DisplayMenuHeader(hasUpdate);
 
                 var input = Console.ReadKey(true).Key;
@@ -201,13 +202,13 @@ namespace MemoryReader
             MultiColorConsole.WriteCenteredColored($@"|        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      |", ("|", ConsoleColor.DarkRed), (@"        |____/___|_|  |_|_| |_|\___/|____/  |_|   |_____\___/ \____|___|_| \_|      ", ConsoleColor.White), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored($@"| - START TELEMETRY READER                                                           |", ("|", ConsoleColor.DarkRed), ("START TELEMETRY READER", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                             - START TELEMETRY READER -                             |", ("|", ConsoleColor.DarkRed), ("- START TELEMETRY READER -", _menuItems[_cursor.row][_cursor.col] == "Start" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored($@"| - [Properties] - [Documentation] - [GitHub]                                        |", ("|", ConsoleColor.DarkRed), ("[Properties]", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Documentation]", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.White), ("[GitHub]", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                           - Properties - Documentation -                           |", ("|", ConsoleColor.DarkRed), ("Properties", _menuItems[_cursor.row][_cursor.col] == "Properties" ? ConsoleColor.Yellow : ConsoleColor.Green), ("Documentation", _menuItems[_cursor.row][_cursor.col] == "Documentation" ? ConsoleColor.Yellow : ConsoleColor.Green), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored($@"| - [Discord] - [Overtake.gg]                                                        |", ("|", ConsoleColor.DarkRed), ("[Discord]", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.White), ("[Overtake.gg]", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                         - Discord - GitHub - Overtake.gg -                         |", ("|", ConsoleColor.DarkRed), ("Discord", _menuItems[_cursor.row][_cursor.col] == "Discord" ? ConsoleColor.Yellow : ConsoleColor.Blue), ("GitHub", _menuItems[_cursor.row][_cursor.col] == "GitHub" ? ConsoleColor.Yellow : ConsoleColor.Blue), ("Overtake.gg", _menuItems[_cursor.row][_cursor.col] == "Overtake" ? ConsoleColor.Yellow : ConsoleColor.Blue), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
-            MultiColorConsole.WriteCenteredColored($@"| - [OPTIONS] - [EXIT]                                                               |", ("|", ConsoleColor.DarkRed), ("[OPTIONS]", _menuItems[_cursor.row][_cursor.col] == "Options" ? ConsoleColor.Yellow : ConsoleColor.White), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
+            MultiColorConsole.WriteCenteredColored($@"|                               - [OPTIONS] - [EXIT] -                               |", ("|", ConsoleColor.DarkRed), ("[OPTIONS]", _menuItems[_cursor.row][_cursor.col] == "Options" ? ConsoleColor.Yellow : ConsoleColor.White), ("[EXIT]", _menuItems[_cursor.row][_cursor.col] == "Exit" ? ConsoleColor.Yellow : ConsoleColor.Red), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"|                                                                                    |", ("|", ConsoleColor.DarkRed), ("|", ConsoleColor.DarkRed));
             MultiColorConsole.WriteCenteredColored($@"+------------------------------------------------------------------------------------+", ("+------------------------------------------------------------------------------------+", ConsoleColor.DarkRed));
 
@@ -411,8 +412,8 @@ namespace MemoryReader
             var optionsMenuItems = new List<string[]>
             {
                 new string[] { "ForceInstall" },
-                new string[] { "Back" },
-                new string[] { "LaunchSimHubOnStart" }
+                new string[] { "LaunchSimHubOnStart" },
+                new string[] { "Back" }
             };
 
             var optionsCursor = (row: 0, col: 0);
@@ -430,11 +431,11 @@ namespace MemoryReader
 
                 MultiColorConsole.WriteCenteredColored($@"+----------------- OPTIONS -----------------+", ("+----------------- OPTIONS -----------------+", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
-                MultiColorConsole.WriteCenteredColored($@"| Force Install                             |", ("|", ConsoleColor.DarkRed), ("Force Install", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "ForceInstall" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-                MultiColorConsole.WriteCenteredColored($@"| Back                                      |", ("|", ConsoleColor.DarkRed), ("Back", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "Back" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
-                MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
+                MultiColorConsole.WriteCenteredColored($@"| [Force Install]                           |", ("|", ConsoleColor.DarkRed), ("[Force Install]", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "ForceInstall" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored(LaunchSimHubOnStartString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Launch SimHub on Start - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "LaunchSimHubOnStart" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ((config.LaunchSimHubOnStart ? "ON" : "OFF"), config.LaunchSimHubOnStart == true ? ConsoleColor.White : ConsoleColor.Black, config.LaunchSimHubOnStart == true ? ConsoleColor.Green : ConsoleColor.Red), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
+                MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
+                MultiColorConsole.WriteCenteredColored($@"| [BACK]                                    |", ("|", ConsoleColor.DarkRed), ("[BACK]", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "Back" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"+-------------------------------------------+", ("+-------------------------------------------+", ConsoleColor.DarkRed));
 

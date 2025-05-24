@@ -13,22 +13,13 @@ public class UESaveTool
     private const string BACKUP_DB2_NAME = "backup2.db";
     private const string CHUNK1_NAME = "chunk1";
 
-    // Signature patterns that might mark the beginning of the database section
-    private static readonly byte[][] DATABASE_SIGNATURES = new byte[][]
-    {
-        // Original None-None signature
-        new byte[] { 0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00 },
-        // Alternative pattern that might appear in custom saves
-        new byte[] { 0x00, 0x04, 0x00, 0x00, 0x00, 0x44, 0x61, 0x74, 0x61 } // "Data" with length prefix
-    };
-
     private static string _lastMd5Hash;
     private static DateTime _lastCheckTime = DateTime.MinValue;
     private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(5);
     private static readonly object _fileCheckLock = new();
 
-    private BinaryReader reader;
-    private MemoryStream stream;
+    private readonly BinaryReader reader;
+    private readonly MemoryStream stream;
     private readonly string _outputDirectory;
 
     public UESaveTool(string outputDirectory = null)
@@ -97,18 +88,38 @@ public class UESaveTool
 
     private int FindDatabaseSectionOffset(byte[] fileBytes)
     {
-        // Try all known signatures
-        foreach (var signature in DATABASE_SIGNATURES)
+        // Define the None...None signature to search for
+        byte[] noneSignature = new byte[] {
+        0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65,  // None
+        0x00, 0x05, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65   // None
+        };
+
+        // Find the last occurrence of the signature
+        int lastOffset = -1;
+        for (int i = 0; i <= fileBytes.Length - noneSignature.Length; i++)
         {
-            int sigPosition = ByteArrayIndexOf(fileBytes, signature);
-            if (sigPosition != -1)
+            bool match = true;
+            for (int j = 0; j < noneSignature.Length; j++)
             {
-                // Skip the signature and 4 unknown bytes
-                return sigPosition + signature.Length + 4;
+                if (fileBytes[i + j] != noneSignature[j])
+                {
+                    match = false;
+                    break;
+                }
+            }
+            if (match)
+            {
+                lastOffset = i;
             }
         }
 
-        throw new InvalidDataException("Could not find any known database section signature in save file");
+        if (lastOffset == -1)
+        {
+            throw new InvalidDataException("Could not find None...None signature in save file");
+        }
+
+        // Skip the signature and 5 unknown bytes
+        return lastOffset + noneSignature.Length + 5;
     }
 
     private void ExtractChunk1(byte[] fileBytes, int dbSectionOffset)
@@ -208,89 +219,6 @@ public class UESaveTool
         int size = BitConverter.ToInt32(fileBytes, position);
         position += 4;
         return size;
-    }
-
-    private int ByteArrayIndexOf(byte[] source, byte[] pattern)
-    {
-        for (int i = 0; i <= source.Length - pattern.Length; i++)
-        {
-            bool match = true;
-            for (int j = 0; j < pattern.Length; j++)
-            {
-                if (source[i + j] != pattern[j])
-                {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) return i;
-        }
-        return -1;
-    }
-
-    // Original UESaveTool methods for parsing the save file
-    public Dictionary<string, object> ParseSaveGame(byte[] data)
-    {
-        stream = new MemoryStream(data);
-        reader = new BinaryReader(stream);
-
-        var result = new Dictionary<string, object>();
-
-        // Read header
-        string saveType = ReadString();
-        int fileVersion = reader.ReadInt32();
-
-        if (saveType != "GVAS")
-        {
-            throw new Exception("Not a valid UE4 save file");
-        }
-
-        if (fileVersion < 3)
-        {
-            throw new Exception("Unsupported file version");
-        }
-
-        result["SaveGameType"] = saveType;
-        result["FileVersion"] = fileVersion;
-
-        // Read package version
-        int packageVersion = reader.ReadInt32();
-        result["PackageVersion"] = packageVersion;
-
-        // Engine version
-        int engineVersionMajor = reader.ReadInt16();
-        int engineVersionMinor = reader.ReadInt16();
-        int engineVersionPatch = reader.ReadInt16();
-        int engineVersionBuild = reader.ReadInt32();
-        string engineVersion = ReadString();
-        result["EngineVersion"] = $"{engineVersionMajor}.{engineVersionMinor}.{engineVersionPatch}.{engineVersionBuild}";
-        result["EngineVersionName"] = engineVersion;
-
-        // Read custom format data
-        int customFormatCount = reader.ReadInt32();
-        var customFormats = new List<Dictionary<string, object>>();
-        for (int i = 0; i < customFormatCount; i++)
-        {
-            var format = new Dictionary<string, object>
-            {
-                ["Id"] = new Guid(reader.ReadBytes(16)),
-                ["Value"] = reader.ReadInt32()
-            };
-            customFormats.Add(format);
-        }
-        result["CustomFormats"] = customFormats;
-
-        // Read main content
-        string saveGameClassName = ReadString();
-        result["SaveGameClassName"] = saveGameClassName;
-
-        // Read properties
-        result["Properties"] = ReadProperties();
-
-        reader.Close();
-        stream.Close();
-
-        return result;
     }
 
     private Dictionary<string, object> ReadProperties()

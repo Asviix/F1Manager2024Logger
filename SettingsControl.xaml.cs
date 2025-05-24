@@ -67,8 +67,6 @@ namespace F1Manager2024Plugin
             }
         }
 
-        private DispatcherTimer _tireValueUpdateTimer;
-
         private void InitializeDriverSelection()
         {
             var driverNames = Plugin?.GetDriversNames() ?? new Dictionary<string, (string, string)>();

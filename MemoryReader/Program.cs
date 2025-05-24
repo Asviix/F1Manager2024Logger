@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.MemoryMappedFiles;
@@ -559,9 +558,14 @@ namespace MemoryReader
 
             telemetry.carFloatValue = _mem.ReadFloat(carBasePtr + ",0x0", round: false);
 
+            string sessionPtr = gameObjPtr + ",0x260";
+            string weatherPtr = sessionPtr + $",0xA12990";
+
             for (int i = 0; i < DriverCount; i++)
             {
                 int carOffset = 0x10D8 * i;
+
+                string driverPtr = carBasePtr + $",0x{(carOffset + 0x708):X}";
 
                 telemetry.Car[i].driverPos = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x710):X}");
                 telemetry.Car[i].currentLap = _mem.ReadInt(carBasePtr + $",0x{(carOffset + 0x7E4):X}");
@@ -576,7 +580,6 @@ namespace MemoryReader
                 telemetry.Car[i].Driver.DriveCleanAir = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF6):X}");
                 telemetry.Car[i].Driver.AvoidHighKerbs = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF7):X}");
                 telemetry.Car[i].Driver.DontFightTeammate = _mem.ReadByte(carBasePtr + $",0x{(carOffset + 0xEF8):X}");
-
                 telemetry.Car[i].flSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x97C):X}");
                 telemetry.Car[i].flTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x980):X}", round: false);
                 telemetry.Car[i].frSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x988):X}");
@@ -585,25 +588,19 @@ namespace MemoryReader
                 telemetry.Car[i].rlTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x998):X}");
                 telemetry.Car[i].rrSurfaceTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A0):X}");
                 telemetry.Car[i].rrTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A4):X}");
-
                 telemetry.Car[i].flWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x984):X}");
                 telemetry.Car[i].frWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x990):X}");
                 telemetry.Car[i].rlWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x99C):X}");
                 telemetry.Car[i].rrWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x9A8):X}");
-
                 telemetry.Car[i].engineTemp = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x77C):X}");
                 telemetry.Car[i].engineWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x784):X}");
                 telemetry.Car[i].gearboxWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x78C):X}");
                 telemetry.Car[i].ersWear = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x788):X}");
-
                 telemetry.Car[i].charge = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x878):X}");
                 telemetry.Car[i].energyHarvested = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x884):X}");
                 telemetry.Car[i].energySpent = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x888):X}");
                 telemetry.Car[i].fuel = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x778):X}");
                 telemetry.Car[i].fuelDelta = _mem.ReadFloat(carBasePtr + $",0x{(carOffset + 0x7C8):X}");
-
-                string driverPtr = carBasePtr + $",0x{(carOffset + 0x708):X}";
-
                 telemetry.Car[i].Driver.teamId = _mem.ReadByte(driverPtr + ",0x579");
                 telemetry.Car[i].Driver.driverNumber = _mem.ReadInt(driverPtr + ",0x58C");
                 telemetry.Car[i].Driver.driverId = _mem.ReadInt(driverPtr + ",0x590");
@@ -625,22 +622,16 @@ namespace MemoryReader
                 telemetry.Car[i].frBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D4");
                 telemetry.Car[i].rlBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5D8");
                 telemetry.Car[i].rrBrakeTemp = _mem.ReadFloat(driverPtr + ",0x5DC");
-
-                telemetry.cameraFocus = _mem.ReadInt(gameObjPtr + ",0x23C");
-
-                string sessionPtr = gameObjPtr + ",0x260";
-
-                telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round: false);
-                telemetry.Session.rubber = _mem.ReadFloat(sessionPtr + ",0x278");
-                telemetry.Session.trackId = _mem.ReadInt(sessionPtr + ",0x228");
-                telemetry.Session.sessionType = _mem.ReadInt(sessionPtr + ",0x288");
-                telemetry.Session.Weather.waterOnTrack = _mem.ReadFloat(sessionPtr + ",0xA132C8");
-
-                string weatherPtr = sessionPtr + $",0xA12990";
-                telemetry.Session.Weather.airTemp = _mem.ReadFloat(weatherPtr + ",0xAC");
-                telemetry.Session.Weather.trackTemp = _mem.ReadFloat(weatherPtr + ",0xB0");
-                telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
             }
+            telemetry.cameraFocus = _mem.ReadInt(gameObjPtr + ",0x23C");
+            telemetry.Session.timeElapsed = _mem.ReadFloat(sessionPtr + ",0x148", round: false);
+            telemetry.Session.rubber = _mem.ReadFloat(sessionPtr + ",0x278");
+            telemetry.Session.trackId = _mem.ReadInt(sessionPtr + ",0x228");
+            telemetry.Session.sessionType = _mem.ReadInt(sessionPtr + ",0x288");
+            telemetry.Session.Weather.waterOnTrack = _mem.ReadFloat(sessionPtr + ",0xA132C8");
+            telemetry.Session.Weather.airTemp = _mem.ReadFloat(weatherPtr + ",0xAC");
+            telemetry.Session.Weather.trackTemp = _mem.ReadFloat(weatherPtr + ",0xB0");
+            telemetry.Session.Weather.weather = _mem.ReadInt(weatherPtr + ",0xBC");
             return telemetry;
         }
 

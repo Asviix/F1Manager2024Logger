@@ -39,12 +39,6 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms">
-      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Windows.Forms.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 <ItemGroup>
 	<Content Include="icon.ico">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

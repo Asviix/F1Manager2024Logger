@@ -7,7 +7,6 @@ using SimHub.Plugins;
 using SimHub.Plugins.Styles;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Threading;
 
 namespace F1Manager2024Plugin
 {

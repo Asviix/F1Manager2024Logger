@@ -11,7 +11,7 @@ namespace MemoryReader
     public class PluginConfig
     {
         public bool LaunchSimHubOnStart { get; set; } = true;
-        public bool DebugMode { get; set; } = false;
+        public bool DebugMode { get; set; } = true;
     }
 
     class Program
@@ -138,7 +138,7 @@ namespace MemoryReader
         {
             Logger.Debug("Debug Mode Enabled.");
 
-            Logger.Info($"Application started - Version: {FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion}");
+            Logger.Debug($"Application started - Version: {FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion}", "Application started");
             Console.Title = "Memory Reader";
 
             if (!OperatingSystem.IsWindows())
@@ -148,7 +148,7 @@ namespace MemoryReader
             }
             bool hasUpdate = await GitHubUpdateChecker.CheckForUpdates();
 
-            Logger.Info("Displaying Header...");
+            Logger.Debug("Displaying Header...");
             while (_isRunning)
             {
                 Console.Clear();
@@ -440,6 +440,8 @@ namespace MemoryReader
 
             var config = ConfigManager.LoadConfig();
 
+            Logger.Debug("Entering options menu...");
+
             while (inOptionsMenu)
             {
                 Console.Clear();
@@ -510,11 +512,13 @@ namespace MemoryReader
                 case "LaunchSimHubOnStart":
                     config.LaunchSimHubOnStart = !config.LaunchSimHubOnStart;
                     ConfigManager.SaveConfig(config);
+                    Logger.Debug($"LaunchSimHubOnStart set to {config.LaunchSimHubOnStart}");
                     break;
 
                 case "DebugMode":
                     config.DebugMode = !config.DebugMode;
                     ConfigManager.SaveConfig(config);
+                    Logger.Debug($"DebugMode set to {config.DebugMode}");
                     break;
             }
         }
@@ -682,10 +686,13 @@ namespace MemoryReader
             }
         }
 
-        public static void Debug(string message)
+        public static void Debug(string message, string? fallBackMessage = null)
         {
             if (_debugModeEnabled)
                 Log(message, LogLevel.DEBUG);
+
+            else if (fallBackMessage != null)
+                Log(fallBackMessage, LogLevel.INFO);
         }
         public static void Info(string message) => Log(message, LogLevel.INFO);
         public static void Warn(string message) => Log(message, LogLevel.WARNING);
@@ -792,15 +799,23 @@ namespace MemoryReader
 
     public static class ConfigManager
     {
-        private static readonly string ConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+        private static readonly string ConfigDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "F1Manager2024MemoryReader",
+            "config"
+        );
+
+        private static string ConfigFilePath => Path.Combine(ConfigDirectory, "config.json");
 
         public static PluginConfig LoadConfig()
         {
+            Directory.CreateDirectory(ConfigDirectory);
+
             try
             {
-                if (File.Exists(ConfigPath))
+                if (File.Exists(ConfigFilePath))
                 {
-                    string json = File.ReadAllText(ConfigPath);
+                    string json = File.ReadAllText(ConfigFilePath);
                     return JsonConvert.DeserializeObject<PluginConfig>(json) ?? new PluginConfig();
                 }
             }
@@ -818,7 +833,8 @@ namespace MemoryReader
             try
             {
                 string json = JsonConvert.SerializeObject(config, Formatting.Indented);
-                File.WriteAllText(ConfigPath, json);
+                Directory.CreateDirectory(ConfigDirectory); // Ensure directory exists before saving
+                File.WriteAllText(ConfigFilePath, json);
             }
             catch (Exception ex)
             {
@@ -844,6 +860,7 @@ namespace MemoryReader
         public static void EnsurePluginInstalled(bool force)
         {
             var config = ConfigManager.LoadConfig();
+            Logger.Debug($"Ensuring plugin is installed..., is Forced? {force}");
 
             try
             {
@@ -853,9 +870,6 @@ namespace MemoryReader
                     Console.WriteLine("SimHub installation not found");
                     return;
                 }
-
-                // Kill SimHub process if running
-                KillSimHubProcess();
 
                 // Define all required files
                 var requiredFiles = new Dictionary<string, string>
@@ -876,6 +890,7 @@ namespace MemoryReader
                 // First check if main plugin needs update
                 if (File.Exists(requiredFiles[PluginName]))
                 {
+                    Logger.Debug($"Checking plugin version: {PluginName}");
                     string? sourceVersion = FileVersionInfo.GetVersionInfo(requiredFiles[PluginName]).FileVersion;
                     string destPluginPath = Path.Combine(simHubPath, PluginName);
 
@@ -884,12 +899,14 @@ namespace MemoryReader
                         string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
                         if (sourceVersion != destVersion)
                         {
+                            Logger.Debug($"Plugin version mismatch: {sourceVersion} != {destVersion}");
                             Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
                             needsCopy = true;
                         }
                     }
                     else
                     {
+                        Logger.Debug($"Plugin not found in SimHub installation: {PluginName}");
                         Console.WriteLine("Plugin not found in SimHub installation");
                         needsCopy = true;
                     }
@@ -904,6 +921,7 @@ namespace MemoryReader
 
                     if (!File.Exists(destPath) && File.Exists(file.Value))
                     {
+                        Logger.Debug($"Dependency missing: {file.Key} at {destPath}");
                         Console.WriteLine($"Dependency missing: {file.Key}");
                         needsCopy = true;
                         break;
@@ -913,10 +931,15 @@ namespace MemoryReader
                 // Copy all files if needed
                 if (needsCopy || force)
                 {
+                    // Kill SimHub process if running
+                    Logger.Debug("Killing SimHub process if running...");
+                    KillSimHubProcess();
+
                     Console.WriteLine("Copying plugin and dependencies...");
 
                     foreach (var file in requiredFiles)
                     {
+                        Logger.Debug($"Copying file: {file.Key} from {file.Value}");
                         string sourcePath = file.Value;
                         string destPath = file.Key == SQLIteInteropName
                             ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
@@ -933,6 +956,7 @@ namespace MemoryReader
 
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);
+                                Logger.Debug($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
                                 Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
                                 Thread.Sleep(200);
                             }
@@ -953,7 +977,10 @@ namespace MemoryReader
 
                 // Start SimHub
                 if (config.LaunchSimHubOnStart)
+                {
+                    Logger.Debug("LaunchSimHubOnStart is enabled, starting SimHub...");
                     StartSimHub(simHubPath);
+                }
             }
             catch (Exception ex)
             {

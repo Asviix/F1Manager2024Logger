@@ -80,8 +80,7 @@ public class UESaveTool
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing save file: {ex.Message}");
-                throw;
+                throw new Exception("Failed to unpack save file", ex);
             }
         }
     }

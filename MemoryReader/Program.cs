@@ -11,6 +11,7 @@ namespace MemoryReader
     {
         public bool LaunchSimHubOnStart { get; set; } = true;
         public bool DebugMode { get; set; } = true;
+        public int UpdateRateHz { get; set; } = 5000; // Default update rate
     }
 
     class Program
@@ -20,7 +21,6 @@ namespace MemoryReader
         const long MinMemoryUsage = 1024 * 1024 * 100; // 100MB
         const string MemoryMapName = "F1ManagerTelemetry";
         const int DriverCount = 22;
-        const int UpdateRateHz = 5000; // 5000Hz
 
         public static readonly List<string[]> _menuItems =
         [
@@ -137,7 +137,7 @@ namespace MemoryReader
         {
             Logger.Debug("Debug Mode Enabled.");
 
-            Logger.Debug($"Application started - Version: {FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion}", "Application started");
+            Logger.Info($"Application started - Version: {FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion}");
             Console.Title = "Memory Reader";
 
             if (!OperatingSystem.IsWindows())
@@ -147,7 +147,7 @@ namespace MemoryReader
             }
             bool hasUpdate = await GitHubUpdateChecker.CheckForUpdates();
 
-            Logger.Debug("Displaying Header...");
+            Logger.Info("Displaying Header...");
             while (_isRunning)
             {
                 Console.Clear();
@@ -297,18 +297,30 @@ namespace MemoryReader
 
         private static void StartTelemetryReader()
         {
-            Logger.Debug("Starting telemetry reader...");
+            Logger.Info("Starting telemetry reader...");
 
             DisplayTelemetryHeader("Starting...");
 
             PluginInstall.EnsurePluginInstalled(false);
             Thread.Sleep(1000);
 
+            var config = ConfigManager.LoadConfig();
+            int UpdateRateHz = config.UpdateRateHz;
+
+            string MemoryDumpPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "F1Manager2024MemoryReader",
+                "MemoryDump");
+
+            Directory.CreateDirectory(MemoryDumpPath);
+
+            string MemoryDumpFile = Path.Combine(MemoryDumpPath, "TelemetryData.json");
+
             int counter = 0;
-            Process? gameProcess = null;
+            Process? gameProcess;
 
             // First find and attach to the process
-            Logger.Debug("Finding target process...");
+            Logger.Info("Finding target process...");
             while (true)
             {
                 gameProcess = FindTargetProcess();
@@ -338,7 +350,7 @@ namespace MemoryReader
 
             try
             {
-                Logger.Debug("Creating memory mapped file...");
+                Logger.Info("Creating memory mapped file...");
 
                 using var mmf = MemoryMappedFile.CreateOrOpen(MemoryMapName, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.ReadWrite);
                 using var accessor = mmf.CreateViewAccessor(0, Marshal.SizeOf<Telemetry>(), MemoryMappedFileAccess.Write);
@@ -352,20 +364,37 @@ namespace MemoryReader
                 while (true)
                 {
                     // Check if game process has exited
-                    if (gameProcess.HasExited)
+                    if (gameProcess.HasExited || Console.KeyAvailable)
                     {
-                        Logger.Debug("Game process has exited.");
-                        DisplayTelemetryHeader("Game process has exited");
-                        Thread.Sleep(2000); // Give user time to see the message
-                        return; // Return to menu
-                    }
+                        // Capture final telemetry before exiting
+                        Telemetry finalTelemetry = ReadTelemetry();
 
-                    // Check if user wants to stop
-                    if (Console.KeyAvailable)
-                    {
-                        Console.ReadKey(true); // Clear the key
-                        Logger.Debug("User stopped telemetry.");
-                        return; // Return to menu
+                        // Write to dump file
+                        try
+                        {
+                            string json = JsonConvert.SerializeObject(finalTelemetry, Formatting.Indented);
+                            File.WriteAllText(MemoryDumpFile, json);
+                            Logger.Info($"Last telemetry state saved to: {MemoryDumpFile}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error($"Failed to save telemetry dump: {ex.Message}");
+                        }
+
+                        if (gameProcess.HasExited)
+                        {
+                            Logger.Info("Game process has exited.");
+                            DisplayTelemetryHeader("Game process has exited");
+                        }
+                        else
+                        {
+                            Console.ReadKey(true); // Clear the key
+                            Logger.Info("User stopped telemetry.");
+                            DisplayTelemetryHeader("User stopped Telemetry.");
+                        }
+
+                        Thread.Sleep(2000);
+                        return;
                     }
 
                     // Read and write telemetry
@@ -431,6 +460,7 @@ namespace MemoryReader
                 new string[] { "ForceInstall" },
                 new string[] { "LaunchSimHubOnStart" },
                 new string[] { "DebugMode" },
+                new string[] { "UpdateRate" },
                 new string[] { "Back" }
             };
 
@@ -439,7 +469,7 @@ namespace MemoryReader
 
             var config = ConfigManager.LoadConfig();
 
-            Logger.Debug("Entering options menu...");
+            Logger.Info("Entering options menu...");
 
             while (inOptionsMenu)
             {
@@ -449,6 +479,7 @@ namespace MemoryReader
                 const int boxWidth = 44;
                 string LaunchSimHubOnStartString = $@"| Launch SimHub on Start - {(config.LaunchSimHubOnStart ? "ON" : "OFF")}".PadRight(boxWidth) + "|";
                 string DebugModeString = $@"| Debug Mode - {(config.DebugMode ? "ON" : "OFF")}".PadRight(boxWidth) + "|";
+                string UpdateRateString = $@"| Update Rate (Hz) - {config.UpdateRateHz}".PadRight(boxWidth) + "|";
 
                 MultiColorConsole.WriteCenteredColored($@"+----------------- OPTIONS -----------------+", ("+----------------- OPTIONS -----------------+", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
@@ -457,6 +488,8 @@ namespace MemoryReader
                 MultiColorConsole.WriteCenteredColored(LaunchSimHubOnStartString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Launch SimHub on Start - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "LaunchSimHubOnStart" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ((config.LaunchSimHubOnStart ? "ON" : "OFF"), config.LaunchSimHubOnStart == true ? ConsoleColor.White : ConsoleColor.Black, config.LaunchSimHubOnStart == true ? ConsoleColor.Green : ConsoleColor.Red), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored(DebugModeString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Debug Mode - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "DebugMode" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ((config.DebugMode ? "ON" : "OFF"), config.DebugMode == true ? ConsoleColor.White : ConsoleColor.Black, config.DebugMode == true ? ConsoleColor.Green : ConsoleColor.Red), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
+                MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
+                MultiColorConsole.WriteCenteredColored(UpdateRateString, ("|", ConsoleColor.DarkRed, ConsoleColor.Black), ("Update Rate (Hz) - ", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "UpdateRate" ? ConsoleColor.Yellow : ConsoleColor.White, ConsoleColor.Black), ("|", ConsoleColor.DarkRed, ConsoleColor.Black));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"| [BACK]                                    |", ("|", ConsoleColor.DarkRed), ("[BACK]", optionsMenuItems[optionsCursor.row][optionsCursor.col] == "Back" ? ConsoleColor.Yellow : ConsoleColor.White), ("|", ConsoleColor.DarkRed));
                 MultiColorConsole.WriteCenteredColored($@"|                                           |", ("|                                           |", ConsoleColor.DarkRed));
@@ -477,10 +510,26 @@ namespace MemoryReader
                         break;
 
                     case ConsoleKey.LeftArrow:
+                        if (optionsMenuItems[optionsCursor.row][optionsCursor.col] == "UpdateRate")
+                        {
+                            // Decrease update rate when left arrow is pressed on UpdateRate option
+                            config.UpdateRateHz = Math.Max(100, config.UpdateRateHz - 100);
+                            Logger.Debug($"Decreased Update Rate by 100, new Update Rate: {config.UpdateRateHz}");
+                            ConfigManager.SaveConfig(config);
+                            break;
+                        }
                         optionsCursor.col = Math.Max(0, optionsCursor.col - 1);
                         break;
 
                     case ConsoleKey.RightArrow:
+                        if (optionsMenuItems[optionsCursor.row][optionsCursor.col] == "UpdateRate")
+                        {
+                            // Increase update rate when right arrow is pressed on UpdateRate option
+                            config.UpdateRateHz = Math.Min(10000, config.UpdateRateHz + 100);
+                            Logger.Debug($"Increased Update Rate by 100, new Update Rate: {config.UpdateRateHz}");
+                            ConfigManager.SaveConfig(config);
+                            break;
+                        }
                         optionsCursor.col = Math.Min(optionsMenuItems[optionsCursor.row].Length - 1, optionsCursor.col + 1);
                         break;
 
@@ -851,7 +900,7 @@ namespace MemoryReader
         public static void EnsurePluginInstalled(bool force)
         {
             var config = ConfigManager.LoadConfig();
-            Logger.Debug($"Ensuring plugin is installed..., is Forced? {force}");
+            Logger.Info($"Ensuring plugin is installed..., is Forced? {force}");
 
             try
             {
@@ -881,7 +930,7 @@ namespace MemoryReader
                 // First check if main plugin needs update
                 if (File.Exists(requiredFiles[PluginName]))
                 {
-                    Logger.Debug($"Checking plugin version: {PluginName}");
+                    Logger.Info($"Checking plugin version: {PluginName}");
                     string? sourceVersion = FileVersionInfo.GetVersionInfo(requiredFiles[PluginName]).FileVersion;
                     string destPluginPath = Path.Combine(simHubPath, PluginName);
 
@@ -890,14 +939,14 @@ namespace MemoryReader
                         string? destVersion = FileVersionInfo.GetVersionInfo(destPluginPath).FileVersion;
                         if (sourceVersion != destVersion)
                         {
-                            Logger.Debug($"Plugin version mismatch: {sourceVersion} != {destVersion}");
+                            Logger.Info($"Plugin version mismatch: {sourceVersion} != {destVersion}");
                             Console.WriteLine($"Plugin version mismatch: {sourceVersion} != {destVersion}");
                             needsCopy = true;
                         }
                     }
                     else
                     {
-                        Logger.Debug($"Plugin not found in SimHub installation: {PluginName}");
+                        Logger.Info($"Plugin not found in SimHub installation: {PluginName}");
                         Console.WriteLine("Plugin not found in SimHub installation");
                         needsCopy = true;
                     }
@@ -912,7 +961,7 @@ namespace MemoryReader
 
                     if (!File.Exists(destPath) && File.Exists(file.Value))
                     {
-                        Logger.Debug($"Dependency missing: {file.Key} at {destPath}");
+                        Logger.Info($"Dependency missing: {file.Key} at {destPath}");
                         Console.WriteLine($"Dependency missing: {file.Key}");
                         needsCopy = true;
                         break;
@@ -923,14 +972,14 @@ namespace MemoryReader
                 if (needsCopy || force)
                 {
                     // Kill SimHub process if running
-                    Logger.Debug("Killing SimHub process if running...");
+                    Logger.Info("Killing SimHub process if running...");
                     KillSimHubProcess();
 
                     Console.WriteLine("Copying plugin and dependencies...");
 
                     foreach (var file in requiredFiles)
                     {
-                        Logger.Debug($"Copying file: {file.Key} from {file.Value}");
+                        Logger.Info($"Copying file: {file.Key} from {file.Value}");
                         string sourcePath = file.Value;
                         string destPath = file.Key == SQLIteInteropName
                             ? Path.Combine(simHubPath, "x86", file.Key)  // Special path for SQLiteInterop
@@ -947,7 +996,7 @@ namespace MemoryReader
 
                                 // Copy with retry logic
                                 RetryFileCopy(sourcePath, destPath);
-                                Logger.Debug($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
+                                Logger.Info($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
                                 Console.WriteLine($"Copied: {file.Key} to {(file.Key == SQLIteInteropName ? "x86 folder" : "main folder")}");
                                 Thread.Sleep(200);
                             }
@@ -969,7 +1018,7 @@ namespace MemoryReader
                 // Start SimHub
                 if (config.LaunchSimHubOnStart)
                 {
-                    Logger.Debug("LaunchSimHubOnStart is enabled, starting SimHub...");
+                    Logger.Info("LaunchSimHubOnStart is enabled, starting SimHub...");
                     StartSimHub(simHubPath);
                 }
             }
@@ -1083,27 +1132,27 @@ namespace MemoryReader
                 switch (selected)
                 {
                     case "Properties":
-                        Logger.Debug("Opening properties file...");
+                        Logger.Info("Opening properties file...");
                         if (File.Exists(propertiesPath))
                         {
                             Process.Start(new ProcessStartInfo(propertiesPath) { UseShellExecute = true });
                         }
                         else
                         {
-                            Logger.Debug($"Properties file not found in {propertiesPath}");
+                            Logger.Info($"Properties file not found in {propertiesPath}");
                             Console.WriteLine("Properties file not found.");
                             Thread.Sleep(1000);
                         }
                         break;
                     case "Documentation":
-                        Logger.Debug("Opening documentation file...");
+                        Logger.Info("Opening documentation file...");
                         if (File.Exists(documentationPath))
                         {
                             Process.Start(new ProcessStartInfo(documentationPath) { UseShellExecute = true });
                         }
                         else
                         {
-                            Logger.Debug($"Documentation file not found in {documentationPath}");
+                            Logger.Info($"Documentation file not found in {documentationPath}");
                             Console.WriteLine("Documentation file not found.");
                             Thread.Sleep(1000);
                         }
@@ -1123,7 +1172,7 @@ namespace MemoryReader
 
             try
             {
-                Logger.Debug("Opening GitHub page...");
+                Logger.Info("Opening GitHub page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
@@ -1139,7 +1188,7 @@ namespace MemoryReader
             string url = "https://discord.gg/gTMQJUNDxk";
             try
             {
-                Logger.Debug("Opening Discord page...");
+                Logger.Info("Opening Discord page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
@@ -1155,7 +1204,7 @@ namespace MemoryReader
             string url = "https://www.overtake.gg/downloads/f1-manager-2024-simhub-plugin.76597/";
             try
             {
-                Logger.Debug("Opening Overtake page...");
+                Logger.Info("Opening Overtake page...");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
@@ -1174,7 +1223,7 @@ namespace MemoryReader
 
         public static async Task<bool> CheckForUpdates()
         {
-            Logger.Debug("Checking for updates...");
+            Logger.Info("Checking for updates...");
             try
             {
                 var latestVersion = await GetLatestVersion();
@@ -1197,7 +1246,7 @@ namespace MemoryReader
 
         private static async Task<string> GetLatestVersion()
         {
-            Logger.Debug("Getting latest version from GitHub...");
+            Logger.Info("Getting latest version from GitHub...");
 
             using var httpClient = new HttpClient();
 
@@ -1239,7 +1288,7 @@ namespace MemoryReader
 
         private static string ExtractVersionFromTitle(string title)
         {
-            Logger.Debug($"Extracting version from title: {title}");
+            Logger.Info($"Extracting version from title: {title}");
 
             // Handle different title formats:
             // "Release v1.2.3"
@@ -1260,7 +1309,7 @@ namespace MemoryReader
 
         private static bool IsVersionNewer(string latestVersion)
         {
-            Logger.Debug($"Comparing versions: {latestVersion} vs {CurrentVersion}");
+            Logger.Info($"Comparing versions: {latestVersion} vs {CurrentVersion}");
 
             try
             {
